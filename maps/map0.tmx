@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="isometric" width="64" height="32" tilewidth="64" tileheight="32">
+ <tileset firstgid="1" name="grass_and_water2" tilewidth="64" tileheight="64">
+  <image source="tilesets/grass_and_water2.png" width="256" height="384"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="64" height="32">
+  <data encoding="base64" compression="zlib">
+   eJztwwEJAAAMBKFr8f2bLsdAwVVTVVVVVVVVVV8/PJ64AQ==
+  </data>
+ </layer>
+</map>
