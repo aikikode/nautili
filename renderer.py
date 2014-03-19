@@ -9,17 +9,33 @@ class Renderer(object):
         self.screen = screen
         self.tiledmap = tiledmap
 
-    def render_layer(self, layer_num, classname=None):
+    def render_layer(self, layer_num, classname=None, coords_list=None):
+        def render_tile_helper(x, y):
+            if x < 0 or y < 0:
+                return
+            tile = self.tiledmap.getTileImage(x, y, layer_num)
+            if tile:
+                if classname:
+                    ort_x, ort_y = self.isometric_to_orthogonal(x, y)
+                    res[x][y] = classname(x, y, pygame.Rect((ort_x + 16, ort_y + 30), (32, 20)))
+                self.screen.blit(tile, self.isometric_to_orthogonal(x, y))
         res = [[None for x in xrange(0, self.tiledmap.width)] for y in xrange(0, self.tiledmap.height)]
-        for y in xrange(0, self.tiledmap.height):
-            for x in xrange(0, self.tiledmap.width):
-                tile = self.tiledmap.getTileImage(x, y, layer_num)
-                if tile:
-                    if classname:
-                        ort_x, ort_y = self.isometric_to_orthogonal(x, y)
-                        res[x][y] = classname(x, y, pygame.Rect((ort_x + 16, ort_y + 30), (32, 20)))
-                    self.screen.blit(tile, self.isometric_to_orthogonal(x, y))
+        if coords_list:
+            for coords in coords_list:
+                try:
+                    render_tile_helper(coords[0], coords[1])
+                except Exception, ex:
+                    print ex
+        else:
+            for y in xrange(0, self.tiledmap.height):
+                for x in xrange(0, self.tiledmap.width):
+                    render_tile_helper(x, y)
         return res
+
+    def render_tile(self, x, y, layer_num):
+        tile = self.tiledmap.getTileImage(x, y, layer_num)
+        if tile:
+            self.screen.blit(tile, self.isometric_to_orthogonal(x, y))
 
     def get_objects(self, object_name, classname):
         res = []

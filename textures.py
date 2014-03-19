@@ -21,7 +21,7 @@ class BaseTexture(object):
 class Sea(BaseTexture):
     def check_click(self, event_position):
         if self.rect.collidepoint(event_position):
-            print "Clicked on " + repr(self)
+            #print "Clicked on " + repr(self)
             return self
         return None
 
