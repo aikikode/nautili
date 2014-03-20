@@ -42,7 +42,7 @@ class Renderer(object):
         objects = filter(lambda gr: gr.name == object_name, self.tiledmap.objectgroups)[0]
         for object in objects:
             # convert to global coords:
-            res.append(classname(self, *self.tile_to_isometric(object.x, object.y)))
+            res.append(classname(self, *self.tile_to_isometric(object.x, object.y), **object.__dict__))
         return res
 
     def isometric_to_orthogonal(self, x, y):

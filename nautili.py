@@ -74,7 +74,7 @@ if __name__ == "__main__":
     load_map("./maps/map1.tmx", bg)
     selected_ship = None
     highlighted = None
-    allsprites = pygame.sprite.RenderPlain(ships)
+    allsprites = pygame.sprite.OrderedUpdates(sorted(ships, key=lambda s: s.x+s.y))
     while True:
         for e in pygame.event.get():
             clicked = False
@@ -94,12 +94,13 @@ if __name__ == "__main__":
                     selected_ship = filter(lambda obj: obj.coords() == (clicked.coords()), ships)[0]
                     #print "Object {} clicked".format(selected_ship)
                     # Highlight possible movements
-                    highlighted = selected_ship.calculate_moves(obstacles=obstacles)
+                    highlighted = selected_ship.calculate_moves(obstacles=obstacles + map(lambda x: x.coords(), ships))
                     rerender_map(map_renderer, bg, highlighted)
                 except IndexError:
                     if selected_ship:
                         # we clicked on empty sea - move object there
                         selected_ship.move(*clicked.coords())
+                        allsprites = pygame.sprite.OrderedUpdates(sorted(ships, key=lambda s: s.x+s.y))
                         rerender_map(map_renderer, bg)
                         selected_ship = None
 

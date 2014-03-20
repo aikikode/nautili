@@ -33,7 +33,15 @@
   </data>
  </layer>
  <objectgroup name="ships" width="20" height="20">
-  <object name="Player1" gid="25" x="128" y="159"/>
-  <object name="Player2" gid="25" x="126" y="414"/>
+  <object name="Player1" gid="25" x="128" y="159">
+   <properties>
+    <property name="model" value="galleon"/>
+   </properties>
+  </object>
+  <object name="Player2" gid="25" x="126" y="414">
+   <properties>
+    <property name="model" value="steam_corvette"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>
