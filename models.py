@@ -25,19 +25,21 @@ class Model(pygame.sprite.Sprite):
     def __repr__(self):
         return "{}({}, {}): {}, {}".format(self.__class__.__name__, self.x, self.y, self.model, self.player)
 
-    def draw(self, display):
-        display.blit(self.image, (self.rect.x, self.rect.y))
-
 
 class Ship(Model):
-    def __init__(self, renderer, isom_x, isom_y, model='steam_corvette', player='yellow', **kwargs):
+    def __init__(self, renderer, isom_x, isom_y, model='steam_corvette', player='yellow', base_armor=1, fire_range=1, max_move=1, shots_count=1, stille_move=1, storm_move=1, **kwargs):
         Model.__init__(self, renderer, isom_x, isom_y, model, player)
-        self.max_move = 3
         self.accepted_moves = []
         self.direction = 'se'
-        self.__set_image()
+        self.__update_image()
+        self.storm_move = int(storm_move)
+        self.base_armor = int(base_armor)
+        self.fire_range = int(fire_range)
+        self.max_move = int(max_move)
+        self.shots_count = int(shots_count)
+        self.stille_move = int(stille_move)
 
-    def __set_image(self):
+    def __update_image(self):
         self.image = pygame.image.load(
             os.path.join(MODELS_DIR, "{}_{}_{}.png".format(self.model, self.player, self.direction))).convert_alpha()
 
@@ -47,12 +49,13 @@ class Ship(Model):
             self.y = y
             self.rect.topleft = self.renderer.isometric_to_orthogonal(self.x, self.y)
             self.accepted_moves = []
+            self.__update_image()
             return True
         return False
 
     def calculate_moves(self, obstacles=[]):
         moves = []
-        for delta in xrange(1, self.max_move):
+        for delta in xrange(1, self.max_move + 1):
             moves.append((self.x, self.y + delta))
             moves.append((self.x, self.y - delta))
             moves.append((self.x + delta, self.y))
