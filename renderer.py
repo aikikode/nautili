@@ -24,6 +24,9 @@ class Renderer(object):
     def clear(self):
         self.__textures = []
 
+    def fill(self, color):
+        self.screen.fill(color)
+
     def draw(self):
         for obj in self.__textures:
             self.screen.blit(obj.tile, self.layers_handler.isometric_to_orthogonal(obj.x, obj.y))

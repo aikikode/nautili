@@ -32,6 +32,8 @@ if __name__ == "__main__":
     islands = layers_handler.islands
     ships = layers_handler.ships
     ports = layers_handler.ports
+    #background.fill([51, 88, 20]) # fill with grass color
+    background.fill([21, 37, 45]) # fill with water color
     background.add(sea + rocks + islands)
     #foreground.add(islands)
     background.draw()
@@ -76,6 +78,7 @@ if __name__ == "__main__":
                         background.draw()
                         selected_ship = None
 
+        screen.blit(bg, (0, 0))
         screen.blit(bg, (0, 0))
         allsprites.update()
         allsprites.draw(screen)
