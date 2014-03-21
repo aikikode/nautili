@@ -53,6 +53,9 @@ class Ship(Model):
             return True
         return False
 
+    def calculate_shots(self, obstacles=[]):
+        return self.calculate_moves(obstacles)
+
     def calculate_moves(self, obstacles=[]):
         moves = []
         for delta in xrange(1, self.max_move + 1):

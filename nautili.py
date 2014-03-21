@@ -27,6 +27,7 @@ if __name__ == "__main__":
     clickable_objects_list = layers_handler.get_clickable_objects()
     sea = layers_handler.sea
     highlighted_sea = layers_handler.highlighted_sea
+    fire = layers_handler.fire
     rocks = layers_handler.rocks
     islands = layers_handler.islands
     ships = layers_handler.ships
@@ -59,9 +60,11 @@ if __name__ == "__main__":
                     #print "Object {} clicked".format(selected_ship)
                     # Highlight possible movements
                     highlighted = selected_ship.calculate_moves(obstacles=layers_handler.ground_obstacles + map(lambda x: x.coords(), ships) + map(lambda x: x.coords(), ports))
+                    shots = selected_ship.calculate_shots(obstacles=layers_handler.ground_obstacles)
                     background.clear()
                     background.add(sea + rocks + islands)
                     background.add(LayersHandler.filter_layer(highlighted_sea, highlighted))
+                    background.add(LayersHandler.filter_layer(fire, shots))
                     background.draw()
                 except IndexError:
                     if selected_ship:

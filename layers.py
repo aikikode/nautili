@@ -9,8 +9,9 @@ __author__ = 'aikikode'
 class LayersHandler(object):
     BACKGROUND_LAYER = 0
     HIGHLIGHT_LAYER = 1
-    ISLANDS_LAYER = 2
-    ROCKS_LAYER = 3
+    FIRE_LAYER = 2
+    ISLANDS_LAYER = 3
+    ROCKS_LAYER = 4
 
     def __init__(self, tiledmap):
         self.tiledmap = tiledmap
@@ -18,6 +19,7 @@ class LayersHandler(object):
         self.rocks = self.get_layer_tiles(LayersHandler.ROCKS_LAYER, Rock)
         self.islands = self.get_layer_tiles(LayersHandler.ISLANDS_LAYER, Island)
         self.highlighted_sea = self.get_layer_tiles(LayersHandler.HIGHLIGHT_LAYER, Sea)
+        self.fire = self.get_layer_tiles(LayersHandler.FIRE_LAYER, Sea)
         self.visible_sea = LayersHandler.exclude_defined(
             LayersHandler.exclude_defined(
                 self.sea,
