@@ -6,20 +6,20 @@
  <tileset firstgid="25" name="Rocks" tilewidth="64" tileheight="64">
   <image source="../tilesets/grass_and_water_rocks.png" width="256" height="384"/>
  </tileset>
- <tileset firstgid="49" name="water_highlight" tilewidth="64" tileheight="64">
-  <image source="../tilesets/grass_and_water_light.png" width="256" height="384"/>
- </tileset>
- <tileset firstgid="73" name="galleon_yellow_se" tilewidth="64" tileheight="64">
+ <tileset firstgid="49" name="galleon_yellow_se" tilewidth="64" tileheight="64">
   <image source="../tilesets/models/galleon_yellow_se.png" width="64" height="64"/>
  </tileset>
- <tileset firstgid="74" name="steam_corvette_yellow_se" tilewidth="64" tileheight="64">
+ <tileset firstgid="50" name="steam_corvette_yellow_se" tilewidth="64" tileheight="64">
   <image source="../tilesets/models/steam_corvette_yellow_se.png" width="64" height="64"/>
  </tileset>
- <tileset firstgid="75" name="port_1_yellow" tilewidth="64" tileheight="64">
+ <tileset firstgid="51" name="port_1_yellow" tilewidth="64" tileheight="64">
   <image source="../tilesets/models/port_1_yellow.png" width="64" height="64"/>
  </tileset>
- <tileset firstgid="76" name="fire" tilewidth="64" tileheight="64">
+ <tileset firstgid="52" name="fire" tilewidth="64" tileheight="64">
   <image source="../tilesets/grass_and_water_fire.png" width="256" height="384"/>
+ </tileset>
+ <tileset firstgid="76" name="water_highlight" tilewidth="64" tileheight="64">
+  <image source="../tilesets/grass_and_water_light2.png" width="256" height="384"/>
  </tileset>
  <layer name="sea" width="20" height="20">
   <data encoding="base64" compression="zlib">
@@ -28,12 +28,12 @@
  </layer>
  <layer name="highlight" width="20" height="20" visible="0">
   <data encoding="base64" compression="zlib">
-   eJzzYGBg8BjFo3gUj+JRPIpJxACL4HCB
+   eJxLYmBgSBrFo3gUj+JRPIpJxADYkZkh
   </data>
  </layer>
  <layer name="fire" width="20" height="20" visible="0">
   <data encoding="base64" compression="zlib">
-   eJxLYmBgSBrFo3gUj+JRPIpJxADYkZkh
+   eJzzYmBg8BrFo3gUj+JRPIpJxABWtnOh
   </data>
  </layer>
  <layer name="land" width="20" height="20">
@@ -47,7 +47,7 @@
   </data>
  </layer>
  <objectgroup name="ships_yellow" width="20" height="20">
-  <object name="galleon" gid="73" x="96" y="480">
+  <object name="galleon" gid="49" x="96" y="480">
    <properties>
     <property name="base_armor" value="3"/>
     <property name="fire_range" value="3"/>
@@ -58,7 +58,7 @@
     <property name="storm_move" value="3"/>
    </properties>
   </object>
-  <object name="corvette" gid="73" x="96" y="416">
+  <object name="corvette" gid="49" x="96" y="416">
    <properties>
     <property name="base_armor" value="3"/>
     <property name="fire_range" value="3"/>
@@ -69,7 +69,7 @@
     <property name="storm_move" value="1"/>
    </properties>
   </object>
-  <object name="steamboat" gid="73" x="96" y="352">
+  <object name="steamboat" gid="49" x="96" y="352">
    <properties>
     <property name="base_armor" value="3"/>
     <property name="fire_range" value="3"/>
@@ -80,7 +80,7 @@
     <property name="storm_move" value="2"/>
    </properties>
   </object>
-  <object name="monitor" gid="73" x="96" y="288">
+  <object name="monitor" gid="49" x="96" y="288">
    <properties>
     <property name="base_armor" value="3"/>
     <property name="fire_range" value="3"/>
@@ -91,7 +91,7 @@
     <property name="storm_move" value="3"/>
    </properties>
   </object>
-  <object name="line_100" gid="73" x="96" y="224">
+  <object name="line_100" gid="49" x="96" y="224">
    <properties>
     <property name="base_armor" value="7"/>
     <property name="fire_range" value="6"/>
@@ -102,7 +102,7 @@
     <property name="storm_move" value="3"/>
    </properties>
   </object>
-  <object name="galley" gid="73" x="96" y="160">
+  <object name="galley" gid="49" x="96" y="160">
    <properties>
     <property name="base_armor" value="3"/>
     <property name="fire_range" value="3"/>
@@ -113,7 +113,7 @@
     <property name="storm_move" value="1"/>
    </properties>
   </object>
-  <object name="line_60" gid="73" x="96" y="96">
+  <object name="line_60" gid="49" x="96" y="96">
    <properties>
     <property name="base_armor" value="5"/>
     <property name="fire_range" value="5"/>
@@ -124,7 +124,7 @@
     <property name="storm_move" value="3"/>
    </properties>
   </object>
-  <object name="frigate" gid="73" x="288" y="96">
+  <object name="frigate" gid="49" x="288" y="96">
    <properties>
     <property name="base_armor" value="4"/>
     <property name="fire_range" value="5"/>
@@ -135,7 +135,7 @@
     <property name="storm_move" value="2"/>
    </properties>
   </object>
-  <object name="steam_frigate" gid="73" x="288" y="160">
+  <object name="steam_frigate" gid="49" x="288" y="160">
    <properties>
     <property name="base_armor" value="4"/>
     <property name="fire_range" value="3"/>
@@ -146,7 +146,7 @@
     <property name="storm_move" value="1"/>
    </properties>
   </object>
-  <object name="ironclad" gid="73" x="288" y="224">
+  <object name="ironclad" gid="49" x="288" y="224">
    <properties>
     <property name="base_armor" value="5"/>
     <property name="fire_range" value="6"/>
@@ -157,7 +157,7 @@
     <property name="storm_move" value="2"/>
    </properties>
   </object>
-  <object name="brig" gid="73" x="288" y="288">
+  <object name="brig" gid="49" x="288" y="288">
    <properties>
     <property name="base_armor" value="3"/>
     <property name="fire_range" value="3"/>
@@ -168,7 +168,7 @@
     <property name="storm_move" value="2"/>
    </properties>
   </object>
-  <object name="tender" gid="73" x="288" y="352">
+  <object name="tender" gid="49" x="288" y="352">
    <properties>
     <property name="base_armor" value="2"/>
     <property name="fire_range" value="1"/>
@@ -181,7 +181,7 @@
   </object>
  </objectgroup>
  <objectgroup name="ports_yellow" width="20" height="20">
-  <object name="port_1" gid="75" x="384" y="352">
+  <object name="port_1" gid="51" x="384" y="352">
    <properties>
     <property name="base_armor" value="7"/>
     <property name="fire_range" value="5"/>

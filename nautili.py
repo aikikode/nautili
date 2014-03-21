@@ -20,20 +20,24 @@ MAIN_WIN_HEIGHT = WIN_HEIGHT - HUD_HEIGHT
 WIND_TYPE = wind.STILLE
 WIND_DIRECTION = wind.NORTH
 
+
 class Panel(object):
     def __init__(self, offset, size):
+        self.width, self.height = size
         self.offset = offset
         self.hud_surface = pygame.Surface(size, pygame.SRCALPHA).convert_alpha()
         self.hud = Renderer(self.hud_surface)
-        self.hud.fill([21, 37, 45]) # fill with water color
-        self.hud.draw()
-        pygame.draw.line(self.hud_surface, (44,92,118), [0,0], [size[0], 0], 2)
+        #self.hud.fill([21, 37, 45]) # fill with water color
+        #self.hud.draw()
+        #pygame.draw.line(self.hud_surface, (44, 92, 118), [0, 0], [size[0], 0], 2)
         self.objects = []
         self.button_font = pygame.font.Font(None, 40)
-        get_wind_button = Button(self.hud_surface, self.button_font, "Get wind", (10, 10), on_click=self.get_wind)
+        get_wind_button = Button(self.hud_surface, self.button_font, "New move", (10, 10), on_click=self.get_wind)
         end_move_button = Button(self.hud_surface, self.button_font, "End move", (10, 60))
+        self.current_wind = Button(self.hud_surface, self.button_font, "", (300, 10))
         self.objects.append(get_wind_button)
         self.objects.append(end_move_button)
+        self.objects.append(self.current_wind)
 
     def get_wind(self):
         #wind_type = random.sample([wind.STILLE, wind.WIND, wind.STORM], 1)[0]
@@ -42,9 +46,13 @@ class Panel(object):
         WIND_TYPE = random.sample(wind.WIND_TYPES, 1)[0]
         if WIND_TYPE != wind.STILLE:
             WIND_DIRECTION = random.sample(wind.WIND_DIRECTIONS, 1)[0]
-        print "New wind: {}, {}".format(wind.wind_type_to_str(WIND_TYPE), wind.wind_direction_to_str(WIND_DIRECTION))
+        self.current_wind.text = "Current Wind: {}, {}".format(wind.wind_type_to_str(WIND_TYPE),
+                                                               wind.wind_direction_to_str(WIND_DIRECTION))
 
     def draw(self, screen):
+        self.hud.fill([21, 37, 45]) # fill with water color
+        self.hud.draw()
+        pygame.draw.line(self.hud_surface, (44, 92, 118), [0, 0], [self.width, 0], 2)
         for obj in self.objects:
             obj.draw()
         screen.blit(self.hud_surface, self.offset)
@@ -104,9 +112,14 @@ if __name__ == "__main__":
                     selected_ship = filter(lambda obj: obj.coords() == (clicked.coords()), ships)[0]
                     #print "Object {} clicked".format(selected_ship)
                     # Highlight possible movements
-                    highlighted = selected_ship.calculate_moves(WIND_TYPE, WIND_DIRECTION, obstacles=layers_handler.move_obstacles + map(lambda x: x.coords(), ships) + map(lambda x: x.coords(), ports))
+                    highlighted = selected_ship.calculate_moves(WIND_TYPE, WIND_DIRECTION,
+                                                                obstacles=layers_handler.move_obstacles + map(
+                                                                    lambda x: x.coords(), ships) + map(
+                                                                    lambda x: x.coords(), ports))
                     shots = selected_ship.calculate_shots(obstacles=layers_handler.shoot_obstacles)
-                    background.update(sea + rocks + islands + LayersHandler.filter_layer(highlighted_sea, highlighted) + LayersHandler.filter_layer(fire, shots))
+                    background.update(sea + rocks + islands + LayersHandler.filter_layer(highlighted_sea,
+                                                                                         highlighted) + LayersHandler.filter_layer(
+                        fire, shots))
                 except IndexError:
                     if selected_ship:
                         # we clicked on empty sea - move object there
@@ -114,7 +127,7 @@ if __name__ == "__main__":
                         allsprites = layers_handler.get_all_sprites()
                         background.update(sea + rocks + islands)
                         selected_ship = None
-        # Process HUD mouseover
+            # Process HUD mouseover
         panel.mouseover(pygame.mouse.get_pos())
         # end event handing
         screen.blit(bg_surface, (0, 0))
