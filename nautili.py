@@ -30,6 +30,7 @@ if __name__ == "__main__":
     rocks = layers_handler.rocks
     islands = layers_handler.islands
     ships = layers_handler.ships
+    ports = layers_handler.ports
     background.add(sea + rocks + islands)
     #foreground.add(islands)
     background.draw()
@@ -57,7 +58,7 @@ if __name__ == "__main__":
                     selected_ship = filter(lambda obj: obj.coords() == (clicked.coords()), ships)[0]
                     #print "Object {} clicked".format(selected_ship)
                     # Highlight possible movements
-                    highlighted = selected_ship.calculate_moves(obstacles=layers_handler.ground_obstacles + map(lambda x: x.coords(), ships))
+                    highlighted = selected_ship.calculate_moves(obstacles=layers_handler.ground_obstacles + map(lambda x: x.coords(), ships) + map(lambda x: x.coords(), ports))
                     background.clear()
                     background.add(sea + rocks + islands)
                     background.add(LayersHandler.filter_layer(highlighted_sea, highlighted))

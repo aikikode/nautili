@@ -89,6 +89,13 @@ class Ship(Model):
 
 
 class Port(Model):
-    def __init__(self, renderer, isom_x, isom_y, model=None, player=None):
+    def __init__(self, renderer, isom_x, isom_y, model='port_1', player='yellow', base_armor=1, fire_range=1, shots_count=1, **kwargs):
         Model.__init__(self, renderer, isom_x, isom_y, model, player)
+        self.__update_image()
+        self.base_armor = int(base_armor)
+        self.fire_range = int(fire_range)
+        self.shots_count = int(shots_count)
 
+    def __update_image(self):
+        self.image = pygame.image.load(
+            os.path.join(MODELS_DIR, "{}_{}.png".format(self.model, self.player))).convert_alpha()

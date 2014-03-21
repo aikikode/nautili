@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import pygame
-from models import Ship
+from models import Ship, Port
 from textures import Sea, Island, Rock
 
 __author__ = 'aikikode'
@@ -28,6 +28,7 @@ class LayersHandler(object):
                                 map(lambda x: x.coords(),
                                     LayersHandler.filter_not_none(LayersHandler.flatten(self.islands)))
         self.ships = self.get_objects("ships_yellow", Ship)
+        self.ports = self.get_objects("ports_yellow", Port)
 
     def get_layer_tiles(self, layer_num, classname):
         res = [[None for x in xrange(0, self.tiledmap.width)] for y in xrange(0, self.tiledmap.height)]
@@ -48,7 +49,7 @@ class LayersHandler(object):
         return res
 
     def get_all_sprites(self):
-        return pygame.sprite.OrderedUpdates(sorted(self.ships, key=lambda s: s.x + s.y))
+        return pygame.sprite.OrderedUpdates(sorted(self.ships + self.ports, key=lambda s: s.x + s.y))
 
     def get_clickable_objects(self):
         return LayersHandler.filter_not_none(LayersHandler.flatten(self.visible_sea))
@@ -64,7 +65,7 @@ class LayersHandler(object):
 
     def tile_to_isometric(self, x, y):
         tw = self.tiledmap.tilewidth
-        return x / (tw / 2), y / (tw / 2)
+        return (x - 1)/(tw / 2), (y - 1)/(tw / 2)
 
     @staticmethod
     def filter_layer(layer_table, coords_list):
