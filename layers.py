@@ -25,10 +25,8 @@ class LayersHandler(object):
                 self.sea,
                 self.rocks),
             self.islands)
-        self.ground_obstacles = map(lambda x: x.coords(),
-                                    LayersHandler.filter_not_none(LayersHandler.flatten(self.rocks))) + \
-                                map(lambda x: x.coords(),
-                                    LayersHandler.filter_not_none(LayersHandler.flatten(self.islands)))
+        self.shoot_obstacles = map(lambda x: x.coords(), LayersHandler.filter_not_none(LayersHandler.flatten(self.islands)))
+        self.move_obstacles = self.shoot_obstacles + map(lambda x: x.coords(), LayersHandler.filter_not_none(LayersHandler.flatten(self.rocks)))
         self.ships = self.get_objects("ships_yellow", Ship)
         self.ports = self.get_objects("ports_yellow", Port)
 
@@ -93,4 +91,15 @@ class LayersHandler(object):
 
     @staticmethod
     def flatten(list_of_lists):
-        return sum(list_of_lists, [])
+        res = []
+        for el in list_of_lists:
+            if hasattr(el, "__iter__"):
+                res.extend(LayersHandler.flatten(el))
+            else:
+                res.append(el)
+        return res
+        #try:
+        #    [LayersHandler.flatten(el) for el in list]
+        #except:
+        #    yield list
+        #return sum(list_of_lists, [])
