@@ -13,12 +13,13 @@ WIN_WIDTH = 1280
 WIN_HEIGHT = 900
 DISPLAY = (WIN_WIDTH, WIN_HEIGHT)
 HUD_WIDTH = WIN_WIDTH
-HUD_HEIGHT = 100
+HUD_HEIGHT = 200
 MAIN_WIN_WIDTH = WIN_WIDTH
 MAIN_WIN_HEIGHT = WIN_HEIGHT - HUD_HEIGHT
 
 WIND_TYPE = None
 WIND_DIRECTION = None
+
 
 class Panel(object):
     def __init__(self, offset, size):
@@ -28,32 +29,41 @@ class Panel(object):
         self.hud = Renderer(self.hud_surface)
         self.objects = []
         self.button_font = pygame.font.Font(None, 40)
-        self.get_wind_button = Button(self.hud_surface, self.button_font, "Wind:", (self.width / 2 - 80, 10), on_click=self.get_wind)
-        self.end_move_button = Button(self.hud_surface, self.button_font, "End move", (self.width / 2 - 80, 60), on_click=self.end_move)
+        self.get_wind_button = Button(self.hud_surface, self.button_font, "Wind:", (self.width / 2 - 80, 10),
+                                      on_click=self.get_wind)
+        self.shoot_button = Button(self.hud_surface, self.button_font, "Shoot", (self.width / 2 - 80, 60),
+                                      on_click=self.shoot)
+        self.end_move_button = Button(self.hud_surface, self.button_font, "End move", (self.width / 2 - 80, 90),
+                                      on_click=self.end_move)
         self.objects.append(self.get_wind_button)
+        self.objects.append(self.shoot_button)
         self.objects.append(self.end_move_button)
 
     def get_wind(self):
         global WIND_TYPE
         global WIND_DIRECTION
-        for ship in ships:
-            ship.reset()
         self.get_wind_button.disable()
         WIND_TYPE = random.sample(wind.WIND_TYPES, 1)[0]
         if WIND_TYPE != wind.STILLE:
             WIND_DIRECTION = random.sample(wind.WIND_DIRECTIONS, 1)[0]
             self.get_wind_button.text = "Wind: {}, {}".format(wind.wind_type_to_str(WIND_TYPE),
-                                                                   wind.wind_direction_to_str(WIND_DIRECTION))
+                                                              wind.wind_direction_to_str(WIND_DIRECTION))
         else:
             self.get_wind_button.text = "Wind: {}".format(wind.wind_type_to_str(WIND_TYPE))
         if WIND_TYPE == wind.STORM:
             force_ships_move()
+
+    def shoot(self):
+        for ship in ships:
+            ship.shoot()
 
     def end_move(self):
         self.get_wind_button.enable()
         self.get_wind_button.text = "Wind:"
         global WIND_TYPE
         WIND_TYPE = None
+        for ship in ships:
+            ship.reset()
 
     def draw(self, screen):
         self.hud.fill([21, 37, 45]) # fill with water color
@@ -115,13 +125,14 @@ if __name__ == "__main__":
     background.draw()
     #foreground.draw()
     selected_ship = None
+    target_ship = None
     highlighted = None
     while True:
         for e in pygame.event.get():
             clicked = False
             if e.type == pygame.QUIT:
                 raise SystemExit, "QUIT"
-            if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+            if e.type == pygame.MOUSEBUTTONDOWN and (e.button == 1 or e.button == 3):
                 for object in clickable_objects_list:
                     clicked = object.check_click(e.pos)
                     if clicked: break
@@ -129,28 +140,37 @@ if __name__ == "__main__":
                     if not panel.check_click(e.pos) and selected_ship:
                         selected_ship = None
                         background.update(sea + rocks + islands)
-            if clicked:
-                # Check whether there's an object
-                try:
-                    selected_ship = filter(lambda obj: obj.coords() == (clicked.coords()), ships)[0]
-                    #print "Object {} clicked".format(selected_ship)
-                    # Highlight possible movements
-                    highlighted = selected_ship.calculate_moves(WIND_TYPE, WIND_DIRECTION,
-                                                                obstacles=layers_handler.move_obstacles + map(
-                                                                    lambda x: x.coords(), ships) + map(
-                                                                    lambda x: x.coords(), ports))
-                    shots = selected_ship.calculate_shots(obstacles=layers_handler.shoot_obstacles)
-                    background.update(sea + rocks + islands + LayersHandler.filter_layer(highlighted_sea,
-                                                                                         highlighted) + LayersHandler.filter_layer(
-                        fire, shots))
-                except IndexError:
-                    if selected_ship:
-                        # we clicked on empty sea - move object there
-                        selected_ship.move(clicked.coords())
-                        allsprites = layers_handler.get_all_sprites()
-                        background.update(sea + rocks + islands)
-                        selected_ship = None
-                        # Process HUD mouseover
+                if clicked:
+                    # Check whether there's an object
+                    if e.button == 1:
+                        try:
+                            selected_ship = filter(lambda obj: obj.coords() == (clicked.coords()), ships)[0]
+                            #print "Object {} clicked".format(selected_ship)
+                            # Highlight possible movements
+                            highlighted = selected_ship.calculate_moves(WIND_TYPE, WIND_DIRECTION,
+                                                                        obstacles=layers_handler.move_obstacles + map(
+                                                                            lambda x: x.coords(), ships) + map(
+                                                                            lambda x: x.coords(), ports))
+                            shots = selected_ship.calculate_shots(obstacles=layers_handler.shoot_obstacles)
+                            background.update(sea + rocks + islands + LayersHandler.filter_layer(highlighted_sea,
+                                                                                                 highlighted) + LayersHandler.filter_layer(
+                                fire, shots))
+                        except IndexError:
+                            if selected_ship:
+                                # we clicked on empty sea - move object there
+                                selected_ship.move(clicked.coords())
+                                allsprites = layers_handler.get_all_sprites()
+                                background.update(sea + rocks + islands)
+                                selected_ship = None
+                    else:
+                        try:
+                            target_ship = filter(lambda obj: obj.coords() == (clicked.coords()), ships)[0]
+                            if selected_ship and selected_ship != target_ship:
+                                selected_ship.aim(target_ship)
+                        except IndexError:
+                            pass
+
+            # Process HUD mouseover
         panel.mouseover(pygame.mouse.get_pos())
         # end event handing
         screen.blit(bg_surface, (0, 0))

@@ -46,6 +46,8 @@ class Ship(Model):
         self.max_move = int(max_move)
         self.shots_count = int(shots_count)
         self.stille_move = int(stille_move)
+        self.__shots_left = self.shots_count
+        self.targets = []
 
     def __update_image(self):
         self.image = pygame.image.load(
@@ -54,6 +56,8 @@ class Ship(Model):
     def reset(self):
         self.__storm_moves_left = self.storm_move
         self.__has_moved = False
+        self.__shots_left = self.shots_count
+        self.targets = []
 
     def move(self, (x, y)=(None, None)):
         if self.__has_moved:
@@ -196,6 +200,16 @@ class Ship(Model):
             except:
                 pass
         return moves
+
+    def aim(self, target):
+        if self.__shots_left > 0:
+            self.targets.append(target)
+            self.__shots_left -= 1
+            print "{} aimed at {}".format(self, target)
+
+    def shoot(self, hit=True):
+        for target in self.targets:
+            print "{} shot at {}".format(self, target)
 
 
 class Port(Model):
