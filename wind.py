@@ -45,4 +45,4 @@ def wind_direction_to_str(wd):
     elif wd == SOUTH_WEST:
         return "south_west"
     else:
-        return "Unknown wind direction: {}".format(w)
+        return "Unknown wind direction: {}".format(wd)

@@ -36,6 +36,8 @@ class Ship(Model):
         self.direction = 'se'
         self.__update_image()
         self.storm_move = int(storm_move)
+        self.__storm_moves_left = self.storm_move
+        self.__has_moved = False
         self.base_armor = int(base_armor)
         self.fire_range = int(fire_range)
         self.max_move = int(max_move)
@@ -46,22 +48,35 @@ class Ship(Model):
         self.image = pygame.image.load(
             os.path.join(MODELS_DIR, "{}_{}_{}.png".format(self.model, self.player, self.direction))).convert_alpha()
 
-    def move(self, x, y):
+    def reset(self):
+        self.__storm_moves_left = self.storm_move
+        self.__has_moved = False
+
+    def move(self, (x, y)=(None, None)):
+        if self.__has_moved:
+            return False
         if (x, y) in self.possible_moves:
             self.x = x
             self.y = y
-            self.rect.topleft = self.renderer.isometric_to_orthogonal(self.x, self.y)
-            self.possible_moves = []
-            self.__update_image()
-            return True
-        return False
-
+        elif (x, y) == (None, None) and len(self.possible_moves) == 1:
+            coords = self.possible_moves[0]
+            if coords:
+                self.x, self.y = coords
+            else:
+                return False
+        else:
+            return False
+        self.rect.topleft = self.renderer.isometric_to_orthogonal(self.x, self.y)
+        self.possible_moves = []
+        self.__update_image()
+        self.__has_moved = True
+        return True
 
     def calculate_shots(self, obstacles=[]):
         self.possible_shots = self.calculate_area(self.fire_range, obstacles)
         return self.possible_shots
 
-    def calculate_moves(self, wind_type, wind_direction, obstacles=[]):
+    def calculate_moves(self, wind_type, wind_direction, obstacles=[], max=None):
         def rotate(axis, obj):
             """
             Rotate object with obj coords around the axis, getting closer and closer to the axis with each step
@@ -90,30 +105,60 @@ class Ship(Model):
                 elif el[0] == 7:
                     res.append((axis[0] + el[1], axis[1] - el[1]))
             return res
+        if self.__has_moved or wind_type not in [wind.STILLE, wind.WIND, wind.STORM]:
+            return []
         # Handle wind as a number of obstacles
         max_move = self.max_move
-        if wind_type == wind.STILLE:
-            max_move = self.stille_move
-        #elif wind_type == wind.WIND:
+        if wind_type == wind.STORM:
+            if max:
+                max_move = max if max else self.storm_move
+            cur = []
+            for delta in xrange(1, max_move + 1):
+                if wind_direction == wind.NORTH:
+                    next = (self.x - delta, self.y - delta)
+                if wind_direction == wind.EAST:
+                    next = (self.x + delta, self.y - delta)
+                if wind_direction == wind.SOUTH:
+                    next = (self.x + delta, self.y + delta)
+                if wind_direction == wind.WEST:
+                    next = (self.x - delta, self.y + delta)
+                if wind_direction == wind.NORTH_EAST:
+                    next = (self.x, self.y - delta)
+                if wind_direction == wind.NORTH_WEST:
+                    next = (self.x - delta, self.y)
+                if wind_direction == wind.SOUTH_EAST:
+                    next = (self.x + delta, self.y)
+                if wind_direction == wind.SOUTH_WEST:
+                    next = (self.x, self.y + delta)
+                if next in obstacles:
+                    break
+                else:
+                    self.__storm_moves_left -= delta
+                    if self.__storm_moves_left >= 0:
+                        cur = [next]
+            self.possible_moves = cur
         else:
-            delta = self.max_move + 1
-            if wind_direction == wind.NORTH:
-                obstacles += rotate(self.coords(), (self.x - delta, self.y - delta))
-            if wind_direction == wind.EAST:
-                obstacles += rotate(self.coords(), (self.x + delta, self.y - delta))
-            if wind_direction == wind.SOUTH:
-                obstacles += rotate(self.coords(), (self.x + delta, self.y + delta))
-            if wind_direction == wind.WEST:
-                obstacles += rotate(self.coords(), (self.x - delta, self.y + delta))
-            if wind_direction == wind.NORTH_EAST:
-                obstacles += rotate(self.coords(), (self.x, self.y - delta))
-            if wind_direction == wind.NORTH_WEST:
-                obstacles += rotate(self.coords(), (self.x - delta, self.y))
-            if wind_direction == wind.SOUTH_EAST:
-                obstacles += rotate(self.coords(), (self.x + delta, self.y))
-            if wind_direction == wind.SOUTH_WEST:
-                obstacles += rotate(self.coords(), (self.x, self.y + delta))
-        self.possible_moves = self.calculate_area(max_move, obstacles)
+            if wind_type == wind.STILLE:
+                max_move = self.stille_move
+            elif wind_type == wind.WIND:
+                delta = self.max_move + 1
+                if wind_direction == wind.NORTH:
+                    obstacles += rotate(self.coords(), (self.x - delta, self.y - delta))
+                if wind_direction == wind.EAST:
+                    obstacles += rotate(self.coords(), (self.x + delta, self.y - delta))
+                if wind_direction == wind.SOUTH:
+                    obstacles += rotate(self.coords(), (self.x + delta, self.y + delta))
+                if wind_direction == wind.WEST:
+                    obstacles += rotate(self.coords(), (self.x - delta, self.y + delta))
+                if wind_direction == wind.NORTH_EAST:
+                    obstacles += rotate(self.coords(), (self.x, self.y - delta))
+                if wind_direction == wind.NORTH_WEST:
+                    obstacles += rotate(self.coords(), (self.x - delta, self.y))
+                if wind_direction == wind.SOUTH_EAST:
+                    obstacles += rotate(self.coords(), (self.x + delta, self.y))
+                if wind_direction == wind.SOUTH_WEST:
+                    obstacles += rotate(self.coords(), (self.x, self.y + delta))
+            self.possible_moves = self.calculate_area(max_move, obstacles)
         return self.possible_moves
 
     def calculate_area(self, limit, obstacles):

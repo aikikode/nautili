@@ -17,9 +17,8 @@ HUD_HEIGHT = 200
 MAIN_WIN_WIDTH = WIN_WIDTH
 MAIN_WIN_HEIGHT = WIN_HEIGHT - HUD_HEIGHT
 
-WIND_TYPE = wind.STILLE
-WIND_DIRECTION = wind.NORTH
-
+WIND_TYPE = None
+WIND_DIRECTION = None
 
 class Panel(object):
     def __init__(self, offset, size):
@@ -40,14 +39,20 @@ class Panel(object):
         self.objects.append(self.current_wind)
 
     def get_wind(self):
-        #wind_type = random.sample([wind.STILLE, wind.WIND, wind.STORM], 1)[0]
         global WIND_TYPE
         global WIND_DIRECTION
+        for ship in ships:
+            ship.reset()
         WIND_TYPE = random.sample(wind.WIND_TYPES, 1)[0]
         if WIND_TYPE != wind.STILLE:
             WIND_DIRECTION = random.sample(wind.WIND_DIRECTIONS, 1)[0]
-        self.current_wind.text = "Current Wind: {}, {}".format(wind.wind_type_to_str(WIND_TYPE),
-                                                               wind.wind_direction_to_str(WIND_DIRECTION))
+            self.current_wind.text = "Current Wind: {}, {}".format(wind.wind_type_to_str(WIND_TYPE),
+                                                                   wind.wind_direction_to_str(WIND_DIRECTION))
+        else:
+            self.current_wind.text = "Current Wind: {}".format(wind.wind_type_to_str(WIND_TYPE))
+        if WIND_TYPE == wind.STORM:
+            force_ships_move()
+
 
     def draw(self, screen):
         self.hud.fill([21, 37, 45]) # fill with water color
@@ -64,6 +69,22 @@ class Panel(object):
     def check_click(self, event_position):
         for obj in self.objects:
             obj.check_click(map(lambda x, y: x - y, event_position, self.offset))
+
+
+def max_storm_move():
+    return sorted(ships, key=lambda ship: ship.storm_move, reverse=True)[0].x
+
+
+def force_ships_move():
+    # TODO: range to max ship storm move
+    for x in xrange(0, max_storm_move()):
+        for ship in ships:
+            ship.calculate_moves(WIND_TYPE, WIND_DIRECTION,
+                                 obstacles=layers_handler.move_obstacles +
+                                           map(lambda x: x.coords(), ships) +
+                                           map(lambda y: y.coords(), ports),
+                                 max=1)
+            ship.move()
 
 
 if __name__ == "__main__":
@@ -123,11 +144,11 @@ if __name__ == "__main__":
                 except IndexError:
                     if selected_ship:
                         # we clicked on empty sea - move object there
-                        selected_ship.move(*clicked.coords())
+                        selected_ship.move(clicked.coords())
                         allsprites = layers_handler.get_all_sprites()
                         background.update(sea + rocks + islands)
                         selected_ship = None
-            # Process HUD mouseover
+                        # Process HUD mouseover
         panel.mouseover(pygame.mouse.get_pos())
         # end event handing
         screen.blit(bg_surface, (0, 0))
