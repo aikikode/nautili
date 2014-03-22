@@ -13,7 +13,7 @@ class Button(object):
         self.rect = None
         self.set_rect()
         self.on_click = on_click
-        #self.draw()
+        self.__enabled = True
 
     def draw(self):
         self.set_rend()
@@ -34,8 +34,17 @@ class Button(object):
         self.rect.topleft = self.pos
 
     def mouseover(self, mouse_position):
-        self.hovered = self.rect.collidepoint(mouse_position)
+        if self.__enabled:
+            self.hovered = self.rect.collidepoint(mouse_position)
 
     def check_click(self, mouse_position):
-        if self.on_click and self.rect.collidepoint(mouse_position):
+        if self.__enabled and self.on_click and self.rect.collidepoint(mouse_position):
             self.on_click()
+
+    def disable(self):
+        self.__enabled = False
+        self.hovered = False
+
+    def enable(self):
+        self.__enabled = True
+        self.hovered = True

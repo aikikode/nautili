@@ -13,7 +13,7 @@ WIN_WIDTH = 1280
 WIN_HEIGHT = 900
 DISPLAY = (WIN_WIDTH, WIN_HEIGHT)
 HUD_WIDTH = WIN_WIDTH
-HUD_HEIGHT = 200
+HUD_HEIGHT = 100
 MAIN_WIN_WIDTH = WIN_WIDTH
 MAIN_WIN_HEIGHT = WIN_HEIGHT - HUD_HEIGHT
 
@@ -31,28 +31,32 @@ class Panel(object):
         #pygame.draw.line(self.hud_surface, (44, 92, 118), [0, 0], [size[0], 0], 2)
         self.objects = []
         self.button_font = pygame.font.Font(None, 40)
-        get_wind_button = Button(self.hud_surface, self.button_font, "New move", (10, 10), on_click=self.get_wind)
-        end_move_button = Button(self.hud_surface, self.button_font, "End move", (10, 60))
-        self.current_wind = Button(self.hud_surface, self.button_font, "", (300, 10))
-        self.objects.append(get_wind_button)
-        self.objects.append(end_move_button)
-        self.objects.append(self.current_wind)
+        self.get_wind_button = Button(self.hud_surface, self.button_font, "Wind:", (HUD_WIDTH / 2 - 80, 10), on_click=self.get_wind)
+        self.end_move_button = Button(self.hud_surface, self.button_font, "End move", (HUD_WIDTH / 2 - 80, 60), on_click=self.end_move)
+        self.objects.append(self.get_wind_button)
+        self.objects.append(self.end_move_button)
 
     def get_wind(self):
         global WIND_TYPE
         global WIND_DIRECTION
         for ship in ships:
             ship.reset()
+        self.get_wind_button.disable()
         WIND_TYPE = random.sample(wind.WIND_TYPES, 1)[0]
         if WIND_TYPE != wind.STILLE:
             WIND_DIRECTION = random.sample(wind.WIND_DIRECTIONS, 1)[0]
-            self.current_wind.text = "Current Wind: {}, {}".format(wind.wind_type_to_str(WIND_TYPE),
+            self.get_wind_button.text = "Wind: {}, {}".format(wind.wind_type_to_str(WIND_TYPE),
                                                                    wind.wind_direction_to_str(WIND_DIRECTION))
         else:
-            self.current_wind.text = "Current Wind: {}".format(wind.wind_type_to_str(WIND_TYPE))
+            self.get_wind_button.text = "Wind: {}".format(wind.wind_type_to_str(WIND_TYPE))
         if WIND_TYPE == wind.STORM:
             force_ships_move()
 
+    def end_move(self):
+        self.get_wind_button.enable()
+        self.get_wind_button.text = "Wind:"
+        global WIND_TYPE
+        WIND_TYPE = None
 
     def draw(self, screen):
         self.hud.fill([21, 37, 45]) # fill with water color
