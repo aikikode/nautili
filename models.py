@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+"""
+Ships, ports, etc.
+"""
 import os
 import pygame
 import numpy as np

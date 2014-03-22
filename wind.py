@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+"""
+Helper module holding wind types and directions
+"""
 __author__ = 'aikikode'
 
 STILLE = 0

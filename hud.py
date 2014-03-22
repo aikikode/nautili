@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-
+"""
+Base HUD elements: buttons, labels, etc.
+"""
 __author__ = 'aikikode'
 
 

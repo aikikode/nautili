@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+"""
+Tiled maps handlers: read layers, objects
+"""
 import pygame
 from models import Ship, Port
 from textures import Sea, Island, Rock
@@ -27,7 +30,7 @@ class LayersHandler(object):
             self.islands)
         self.shoot_obstacles = map(lambda x: x.coords(), LayersHandler.filter_not_none(LayersHandler.flatten(self.islands)))
         self.move_obstacles = self.shoot_obstacles + map(lambda x: x.coords(), LayersHandler.filter_not_none(LayersHandler.flatten(self.rocks)))
-        self.ships = self.get_objects("ships_yellow", Ship)
+        self.ships = self.get_objects("ships_yellow", Ship) + self.get_objects("ships_green", Ship)
         self.ports = self.get_objects("ports_yellow", Port)
 
     def get_layer_tiles(self, layer_num, classname):
@@ -45,7 +48,8 @@ class LayersHandler(object):
         objects = filter(lambda gr: gr.name == object_name, self.tiledmap.objectgroups)[0]
         for object in objects:
             # convert to global coords:
-            res.append(classname(self, *self.tile_to_isometric(object.x, object.y), **object.__dict__))
+            player = object_name.split('_')[-1]
+            res.append(classname(self, player=player, *self.tile_to_isometric(object.x, object.y), **object.__dict__))
         return res
 
     def get_all_sprites(self):
