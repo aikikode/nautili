@@ -58,7 +58,8 @@ class Ship(Model):
         if (x, y) in self.possible_moves:
             self.x = x
             self.y = y
-        elif (x, y) == (None, None) and len(self.possible_moves) == 1:
+            self.__has_moved = True
+        elif (x, y) == (None, None) and len(self.possible_moves) == 1: # storm step
             coords = self.possible_moves[0]
             if coords:
                 self.x, self.y = coords
@@ -69,7 +70,6 @@ class Ship(Model):
         self.rect.topleft = self.renderer.isometric_to_orthogonal(self.x, self.y)
         self.possible_moves = []
         self.__update_image()
-        self.__has_moved = True
         return True
 
     def calculate_shots(self, obstacles=[]):

@@ -26,13 +26,10 @@ class Panel(object):
         self.offset = offset
         self.hud_surface = pygame.Surface(size, pygame.SRCALPHA).convert_alpha()
         self.hud = Renderer(self.hud_surface)
-        #self.hud.fill([21, 37, 45]) # fill with water color
-        #self.hud.draw()
-        #pygame.draw.line(self.hud_surface, (44, 92, 118), [0, 0], [size[0], 0], 2)
         self.objects = []
         self.button_font = pygame.font.Font(None, 40)
-        self.get_wind_button = Button(self.hud_surface, self.button_font, "Wind:", (HUD_WIDTH / 2 - 80, 10), on_click=self.get_wind)
-        self.end_move_button = Button(self.hud_surface, self.button_font, "End move", (HUD_WIDTH / 2 - 80, 60), on_click=self.end_move)
+        self.get_wind_button = Button(self.hud_surface, self.button_font, "Wind:", (self.width / 2 - 80, 10), on_click=self.get_wind)
+        self.end_move_button = Button(self.hud_surface, self.button_font, "End move", (self.width / 2 - 80, 60), on_click=self.end_move)
         self.objects.append(self.get_wind_button)
         self.objects.append(self.end_move_button)
 
@@ -76,12 +73,13 @@ class Panel(object):
 
 
 def max_storm_move():
-    return sorted(ships, key=lambda ship: ship.storm_move, reverse=True)[0].x
+    return sorted(ships, key=lambda ship: ship.storm_move, reverse=True)[0].storm_move
 
 
 def force_ships_move():
     # TODO: range to max ship storm move
     for x in xrange(0, max_storm_move()):
+        print "step = {}".format(x)
         for ship in ships:
             ship.calculate_moves(WIND_TYPE, WIND_DIRECTION,
                                  obstacles=layers_handler.move_obstacles +
