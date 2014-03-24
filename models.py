@@ -2,6 +2,7 @@
 """
 Ships, ports, etc.
 """
+from collections import Counter
 import os
 import pygame
 import numpy as np
@@ -37,35 +38,37 @@ class Ship(Model):
         self.possible_moves = []
         self.possible_shots = []
         self.direction = 'se'
-        self.__update_image()
+        self._update_image()
         self.storm_move = int(storm_move)
-        self.__storm_moves_left = self.storm_move
-        self.__has_moved = False
+        self._storm_moves_left = self.storm_move
+        self._has_moved = False
         self.base_armor = int(base_armor)
+        self.armor = self.base_armor
         self.fire_range = int(fire_range)
         self.max_move = int(max_move)
         self.shots_count = int(shots_count)
         self.stille_move = int(stille_move)
-        self.__shots_left = self.shots_count
-        self.targets = []
+        self._shots_left = self.shots_count
+        self._targets = []
+        self._is_alive = True
 
-    def __update_image(self):
+    def _update_image(self):
         self.image = pygame.image.load(
             os.path.join(MODELS_DIR, "{}_{}_{}.png".format(self.model, self.player, self.direction))).convert_alpha()
 
     def reset(self):
-        self.__storm_moves_left = self.storm_move
-        self.__has_moved = False
-        self.__shots_left = self.shots_count
-        self.targets = []
+        self._storm_moves_left = self.storm_move
+        self._has_moved = False
+        self._shots_left = self.shots_count
+        self._targets = []
 
     def move(self, (x, y)=(None, None)):
-        if self.__has_moved:
+        if self._has_moved:
             return False
         if (x, y) in self.possible_moves:
             self.x = x
             self.y = y
-            self.__has_moved = True
+            self._has_moved = True
         elif (x, y) == (None, None) and len(self.possible_moves) == 1: # storm step
             coords = self.possible_moves[0]
             if coords:
@@ -76,7 +79,8 @@ class Ship(Model):
             return False
         self.rect.topleft = self.renderer.isometric_to_orthogonal(self.x, self.y)
         self.possible_moves = []
-        self.__update_image()
+        self._update_image()
+        self.aim_reset()
         return True
 
     def calculate_shots(self, obstacles=[]):
@@ -112,7 +116,7 @@ class Ship(Model):
                 elif el[0] == 7:
                     res.append((axis[0] + el[1], axis[1] - el[1]))
             return res
-        if self.__has_moved or wind_type not in [wind.STILLE, wind.WIND, wind.STORM]:
+        if self._has_moved or wind_type not in [wind.STILLE, wind.WIND, wind.STORM]:
             return []
         # Handle wind as a number of obstacles
         max_move = self.max_move
@@ -140,8 +144,8 @@ class Ship(Model):
                 if next in obstacles:
                     break
                 else:
-                    self.__storm_moves_left -= delta
-                    if self.__storm_moves_left >= 0:
+                    self._storm_moves_left -= delta
+                    if self._storm_moves_left >= 0:
                         cur = [next]
             self.possible_moves = cur
         else:
@@ -201,25 +205,56 @@ class Ship(Model):
                 pass
         return moves
 
+    def aim_reset(self):
+        for target in self._targets:
+            self._shots_left += 1
+        self._targets = []
+
     def aim(self, target):
-        if self.__shots_left > 0:
-            self.targets.append(target)
-            self.__shots_left -= 1
-            print "{} aimed at {}".format(self, target)
+        if self._shots_left < 0 or target.coords() not in self.possible_shots:
+            return False
+        if self._shots_left == 0:
+            if self._targets:
+                self._targets.pop(0)
+                self._shots_left += 1
+            else:
+                return False
+        self._targets.append(target)
+        self._shots_left -= 1
+        #print "{} aimed at {}".format(self, target)
+        return True
 
     def shoot(self, hit=True):
-        for target in self.targets:
-            print "{} shot at {}".format(self, target)
+        if hit:
+            c = Counter(self._targets)
+            for target, shot_count in c.items():
+                print "{} shot at {} {} time(s)".format(self, target, shot_count)
+                target.take_damage(shot_count)
+        elif self._targets:
+            print "{} missed".format(self)
+        self._targets = []
+
+    def get_targets(self):
+        return self._targets
+
+    def take_damage(self, damage):
+        self.armor -= damage
+        if self.armor <= 0:
+            #print "{} is down".format(self)
+            self._is_alive = False
+
+    def is_alive(self):
+        return self._is_alive
 
 
 class Port(Model):
     def __init__(self, renderer, isom_x, isom_y, model='port_1', player='yellow', base_armor=1, fire_range=1, shots_count=1, **kwargs):
         Model.__init__(self, renderer, isom_x, isom_y, model, player)
-        self.__update_image()
+        self._update_image()
         self.base_armor = int(base_armor)
         self.fire_range = int(fire_range)
         self.shots_count = int(shots_count)
 
-    def __update_image(self):
+    def _update_image(self):
         self.image = pygame.image.load(
             os.path.join(MODELS_DIR, "{}_{}.png".format(self.model, self.player))).convert_alpha()
