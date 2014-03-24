@@ -89,7 +89,6 @@ def max_storm_move():
 def force_ships_move():
     # TODO: range to max ship storm move
     for x in xrange(0, max_storm_move()):
-        print "step = {}".format(x)
         for ship in ships:
             ship.calculate_moves(WIND_TYPE, WIND_DIRECTION,
                                  obstacles=layers_handler.move_obstacles +
