@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 import pygame
 import random
+import colors
 from layers import LayersHandler
 
 __author__ = 'aikikode'
 
-RED = (255, 0, 0)
 
 class Renderer(object):
     def __init__(self, screen):
@@ -54,7 +54,7 @@ class IsometricRenderer(Renderer):
 
     def draw_lines(self):
         for line in self._lines:
-            pygame.draw.line(self.screen, RED, [line[0][0], line[0][1]], [line[1][0], line[1][1]], 2)
+            pygame.draw.line(self.screen, colors.RED, [line[0][0], line[0][1]], [line[1][0], line[1][1]], 2)
 
     def increase_offset(self, delta):
         self.offset = tuple(map(lambda x, y: x + y, self.offset, delta))

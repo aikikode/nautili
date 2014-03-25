@@ -116,8 +116,3 @@ class LayersHandler(object):
             else:
                 res.append(el)
         return res
-        #try:
-        #    [LayersHandler.flatten(el) for el in list]
-        #except:
-        #    yield list
-        #return sum(list_of_lists, [])

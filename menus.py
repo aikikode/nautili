@@ -10,8 +10,23 @@ from settings import DISPLAY, WIN_HEIGHT, WIN_WIDTH, MAIN_WIN_WIDTH, MAIN_WIN_HE
 __author__ = 'aikikode'
 
 
-class MainMenu(object):
+class Menu(object):
     def __init__(self):
+        self.screen = None
+        self.objects = []
+
+    def get_sprites(self):
+        return pygame.sprite.OrderedUpdates(self.objects)
+
+    def draw_sprites(self):
+        allsprites = self.get_sprites()
+        allsprites.update()
+        allsprites.draw(self.screen)
+
+
+class MainMenu(Menu):
+    def __init__(self):
+        Menu.__init__(self)
         pygame.init()
         self.width, self.height = DISPLAY
         self.screen = pygame.display.set_mode(DISPLAY)
@@ -21,10 +36,10 @@ class MainMenu(object):
         image = os.path.join("tilesets", "bg.png")
         self.bg_image = Image.open(image)
         self.pygame_bg_image = pygame.image.load(image)
-        self.new_game_button = Button(self.bg_surface, self.button_font, "New game",
+        self.new_game_button = Button(self.button_font, "New game",
                                       (self.width / 2 - 110, self.height / 2 - 60),
                                       on_click=self.new_game)
-        self.exit_button = Button(self.bg_surface, self.button_font, "Exit", (self.width / 2 - 45, self.height / 2),
+        self.exit_button = Button(self.button_font, "Exit", (self.width / 2 - 45, self.height / 2),
                                   on_click=self.exit)
         self.objects = []
         self.objects.append(self.new_game_button)
@@ -45,6 +60,7 @@ class MainMenu(object):
     def exit(self):
         raise SystemExit, "QUIT"
 
+
     def redraw(self):
         self.bg_surface.fill([21, 37, 45])
         ypos = 0
@@ -54,9 +70,8 @@ class MainMenu(object):
                 self.bg_surface.blit(self.pygame_bg_image, (xpos, ypos))
                 xpos += self.bg_image.size[0]
             ypos += self.bg_image.size[1]
-        for obj in self.objects:
-            obj.draw()
         self.screen.blit(self.bg_surface, (0, 0))
+        self.draw_sprites()
         pygame.display.update()
 
     def run(self):
@@ -66,14 +81,13 @@ class MainMenu(object):
                     raise SystemExit, "QUIT"
                 if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                     self.check_click(e.pos)
-            for obj in self.objects:
-                obj.draw()
             self.mouseover(pygame.mouse.get_pos())
             self.redraw()
 
 
-class PauseMenu(object):
+class PauseMenu(Menu):
     def __init__(self, screen, text="Other player turn"):
+        Menu.__init__(self)
         self.width, self.height = DISPLAY
         self.screen = screen
         self.bg_surface = pygame.Surface((WIN_WIDTH, WIN_HEIGHT), pygame.SRCALPHA).convert_alpha()
@@ -82,9 +96,9 @@ class PauseMenu(object):
         self.pygame_bg_image = pygame.image.load(image)
         label_font = pygame.font.Font(None, 50)
         prompt_font = pygame.font.Font(None, 30)
-        pause_label = Label(self.bg_surface, label_font, WHITE, text,
+        pause_label = Label(label_font, WHITE, text,
                                   (MAIN_WIN_WIDTH / 2 - 135, MAIN_WIN_HEIGHT / 2 - 90))
-        prompt_label = Label(self.bg_surface, prompt_font, WHITE, "Press Spacebar to continue",
+        prompt_label = Label(prompt_font, WHITE, "Press Spacebar to continue",
                                  (MAIN_WIN_WIDTH / 2 - 130, MAIN_WIN_HEIGHT / 2 - 40))
         self.objects = []
         self.objects.append(prompt_label)
@@ -99,12 +113,11 @@ class PauseMenu(object):
                 self.bg_surface.blit(self.pygame_bg_image, (xpos, ypos))
                 xpos += self.bg_image.size[0]
             ypos += self.bg_image.size[1]
-        for obj in self.objects:
-            obj.draw()
 
     def show(self):
         self.screen.blit(self.bg_surface, (0, 0))
+        self.draw_sprites()
 
 
-class OptionsMenu(object):
+class OptionsMenu(Menu):
     pass

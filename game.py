@@ -49,32 +49,17 @@ class Game(object):
     def next_turn(self):
         if self.player == PLAYER1:
             self.player = PLAYER2
-            self.left_top_panel.label.text = "Green player turn"
-            self.left_top_panel.label.color = colors.GREEN
+            self.left_top_panel.label.set_text("Green player turn", colors.GREEN)
         else:
             self.player = PLAYER1
-            self.left_top_panel.label.text = "Yellow player turn"
-            self.left_top_panel.label.color = colors.YELLOW
+            self.left_top_panel.label.set_text("Yellow player turn", colors.YELLOW)
         self.wind_type = None
         for ship in self.ships:
             ship.reset()
         self.toggle_pause()
 
-
     def toggle_pause(self, text=""):
         self._paused = not self._paused
-        ##self.bg_surface.fill([21, 37, 45])
-        #ypos = 0
-        #while ypos <= MAIN_WIN_HEIGHT:
-        #    xpos = 0
-        #    while xpos <= MAIN_WIN_WIDTH:
-        #        self.fg_surface.blit(self.pygame_shade_image, (xpos, ypos))
-        #        xpos += self.shade_image.size[0]
-        #    ypos += self.shade_image.size[1]
-        #label_font = pygame.font.Font(None, 40)
-        #self.pause_label = Label(self.fg_surface, label_font, WHITE, text, (MAIN_WIN_WIDTH / 2 - 80, MAIN_WIN_HEIGHT / 2 - 20))
-        ##self.screen.blit(self.fg_surface, (0, 0))
-        ##pygame.display.update()
 
     def game_ended(self):
         if not self.yellow_ships:

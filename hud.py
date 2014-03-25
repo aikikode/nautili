@@ -2,13 +2,16 @@
 """
 Base HUD elements: buttons, labels, etc.
 """
+import pygame
+import colors
+
 __author__ = 'aikikode'
 
 
-class HudElement(object):
-    def __init__(self, screen, pos):
-        self.screen = screen
-        self.pos = pos
+class HudElement(pygame.sprite.Sprite):
+    def __init__(self, pos, offset):
+        pygame.sprite.Sprite.__init__(self)
+        self.pos = map(lambda x, y: x + y, pos, offset)
 
     def draw(self):
         pass
@@ -21,34 +24,32 @@ class HudElement(object):
 
 
 class Button(HudElement):
-    def __init__(self, screen, font, text, pos, on_click=None):
-        HudElement.__init__(self, screen, pos)
+    def __init__(self, font, text, pos, offset=(0, 0), on_click=None):
+        HudElement.__init__(self, pos, offset)
         self.hovered = False
         self.font = font
         self.text = text
         self.rect = None
-        self.rend = None
+        self.image = None
         self.__enabled = True
         self.on_click = on_click
-        self.set_rect()
+        self.set_text(text)
 
-    def draw(self):
-        self.set_rend()
-        self.screen.blit(self.rend, self.rect)
+    def update(self):
+        self.set_text(self.text)
 
-    def set_rend(self):
-        self.rend = self.font.render(self.text, True, self.get_color())
+    def set_text(self, text):
+        self.text = text
+        image = self.font.render(text, True, self.get_color())
+        self.image = image.convert_alpha()
+        self.rect = self.image.get_rect()
+        self.rect.topleft = self.pos
 
     def get_color(self):
         if self.hovered:
-            return (255, 255, 255)
+            return colors.WHITE
         else:
             return (100, 100, 100)
-
-    def set_rect(self):
-        self.set_rend()
-        self.rect = self.rend.get_rect()
-        self.rect.topleft = self.pos
 
     def mouseover(self, mouse_position):
         if self.__enabled:
@@ -68,23 +69,20 @@ class Button(HudElement):
 
 
 class Label(HudElement):
-    def __init__(self, screen, font, color, text, pos):
-        HudElement.__init__(self, screen, pos)
+    def __init__(self, font, color, text, pos, offset=(0,0)):
+        HudElement.__init__(self, pos, offset)
         self.color = color
         self.font = font
         self.text = text
         self.rect = None
-        self.rend = None
-        self.set_rect()
+        self.image = None
+        self.set_text(text)
 
-    def draw(self):
-        self.set_rend()
-        self.screen.blit(self.rend, self.rect)
-
-    def set_rend(self):
-        self.rend = self.font.render(self.text, True, self.color)
-
-    def set_rect(self):
-        self.set_rend()
-        self.rect = self.rend.get_rect()
+    def set_text(self, text, color=None):
+        self.text = text
+        if color:
+            self.color = color
+        image = self.font.render(text, True, self.color)
+        self.image = image.convert_alpha()
+        self.rect = self.image.get_rect()
         self.rect.topleft = self.pos
