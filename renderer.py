@@ -39,6 +39,8 @@ class IsometricRenderer(Renderer):
         Renderer.__init__(self, screen)
         self.layers_handler = layers_handler
         self._lines = []
+        self.offset = (0, 0)
+        self.delta = (0, 0)
 
     def clear(self):
         Renderer.clear(self)
@@ -54,7 +56,17 @@ class IsometricRenderer(Renderer):
         for line in self._lines:
             pygame.draw.line(self.screen, RED, [line[0][0], line[0][1]], [line[1][0], line[1][1]], 2)
 
+    def increase_offset(self, delta):
+        self.offset = tuple(map(lambda x, y: x + y, self.offset, delta))
+        self.delta = delta
+        self.move_textures()
+
+    def move_textures(self):
+        for obj in self._textures:
+            obj.rect = obj.rect.move(self.delta[0], self.delta[1])
+
     def draw(self):
         for obj in self._textures:
-            self.screen.blit(obj.tile, self.layers_handler.isometric_to_orthogonal(obj.x, obj.y))
+            x, y = self.layers_handler.isometric_to_orthogonal(obj.x, obj.y)
+            self.screen.blit(obj.tile, (x + self.offset[0], y + self.offset[1]))
         self.draw_lines()

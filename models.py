@@ -51,6 +51,7 @@ class Ship(Model):
         self._shots_left = self.shots_count
         self._targets = []
         self._is_alive = True
+        self.offset = (0, 0)
 
     def _update_image(self):
         self.image = pygame.image.load(
@@ -77,7 +78,7 @@ class Ship(Model):
                 return False
         else:
             return False
-        self.rect.topleft = self.renderer.isometric_to_orthogonal(self.x, self.y)
+        self.rect.topleft = map(lambda x,y: x + y, self.offset, self.renderer.isometric_to_orthogonal(self.x, self.y))
         self.possible_moves = []
         self._update_image()
         self.aim_reset()
@@ -141,6 +142,7 @@ class Ship(Model):
                     next = (self.x + delta, self.y)
                 if wind_direction == wind.SOUTH_WEST:
                     next = (self.x, self.y + delta)
+                print "next = {}".format(next)
                 if next in obstacles:
                     break
                 else:

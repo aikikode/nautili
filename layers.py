@@ -28,8 +28,11 @@ class LayersHandler(object):
                 self.sea,
                 self.rocks),
             self.islands)
-        self.shoot_obstacles = map(lambda x: x.coords(), LayersHandler.filter_not_none(LayersHandler.flatten(self.islands)))
-        self.move_obstacles = self.shoot_obstacles + map(lambda x: x.coords(), LayersHandler.filter_not_none(LayersHandler.flatten(self.rocks)))
+        self.shoot_obstacles = map(lambda x: x.coords(),
+                                   LayersHandler.filter_not_none(LayersHandler.flatten(self.islands)))
+        self.move_obstacles = self.shoot_obstacles +\
+                              map(lambda x: x.coords(),
+                                  LayersHandler.filter_not_none(LayersHandler.flatten(self.rocks)))
         self.yellow_ships = self.get_objects("ships_yellow", Ship)
         self.green_ships = self.get_objects("ships_green", Ship)
         self.ships = self.yellow_ships + self.green_ships
@@ -63,6 +66,13 @@ class LayersHandler(object):
     def isometric_to_orthogonal(self, x, y):
         return (self.tiledmap.height + x - y - 1) * (self.tiledmap.tilewidth / 2), \
                (x + y) * (self.tiledmap.tileheight / 2)
+
+    def get_map_rect(self):
+        xmax = self.isometric_to_orthogonal(self.tiledmap.width, 0)[0]
+        xmin = self.isometric_to_orthogonal(0, self.tiledmap.height)[0]
+        ymin = self.isometric_to_orthogonal(0, 0)[1]
+        ymax = self.isometric_to_orthogonal(self.tiledmap.width, self.tiledmap.height)[1] + self.tiledmap.tileheight
+        return xmax - xmin, ymax - ymin
 
     #def orthogonal_to_isometric(self, x, y):
     #    tw = float(self.tiledmap.tilewidth)

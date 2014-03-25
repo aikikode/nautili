@@ -5,17 +5,32 @@ Base HUD elements: buttons, labels, etc.
 __author__ = 'aikikode'
 
 
-class Button(object):
-    def __init__(self, screen, font, text, pos, on_click=None):
-        self.hovered = False
+class HudElement(object):
+    def __init__(self, screen, pos):
         self.screen = screen
+        self.pos = pos
+
+    def draw(self):
+        pass
+
+    def mouseover(self, mouse_position):
+        pass
+
+    def check_click(self, mouse_position):
+        pass
+
+
+class Button(HudElement):
+    def __init__(self, screen, font, text, pos, on_click=None):
+        HudElement.__init__(self, screen, pos)
+        self.hovered = False
         self.font = font
         self.text = text
-        self.pos = pos
         self.rect = None
-        self.set_rect()
-        self.on_click = on_click
+        self.rend = None
         self.__enabled = True
+        self.on_click = on_click
+        self.set_rect()
 
     def draw(self):
         self.set_rend()
@@ -50,3 +65,26 @@ class Button(object):
     def enable(self):
         self.__enabled = True
         self.hovered = True
+
+
+class Label(HudElement):
+    def __init__(self, screen, font, color, text, pos):
+        HudElement.__init__(self, screen, pos)
+        self.color = color
+        self.font = font
+        self.text = text
+        self.rect = None
+        self.rend = None
+        self.set_rect()
+
+    def draw(self):
+        self.set_rend()
+        self.screen.blit(self.rend, self.rect)
+
+    def set_rend(self):
+        self.rend = self.font.render(self.text, True, self.color)
+
+    def set_rect(self):
+        self.set_rend()
+        self.rect = self.rend.get_rect()
+        self.rect.topleft = self.pos

@@ -25,7 +25,7 @@ class MainMenu(object):
         self.new_game_button = Button(self.bg_surface, self.button_font, "New game",
                                       (self.width / 2 - 110, self.height / 2 - 60),
                                       on_click=self.new_game)
-        self.exit_button = Button(self.bg_surface, self.button_font, "Exit", (self.width / 2 - 55, self.height / 2),
+        self.exit_button = Button(self.bg_surface, self.button_font, "Exit", (self.width / 2 - 45, self.height / 2),
                                   on_click=self.exit)
         self.objects = []
         self.objects.append(self.new_game_button)
