@@ -2,10 +2,10 @@
 import os
 import pygame
 from PIL import Image
+from colors import WHITE
 import game
-from hud import Button
-from renderer import Renderer
-from settings import DISPLAY, WIN_HEIGHT, WIN_WIDTH
+from hud import Button, Label
+from settings import DISPLAY, WIN_HEIGHT, WIN_WIDTH, MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT
 
 __author__ = 'aikikode'
 
@@ -21,7 +21,6 @@ class MainMenu(object):
         image = os.path.join("tilesets", "bg.png")
         self.bg_image = Image.open(image)
         self.pygame_bg_image = pygame.image.load(image)
-        self.renderer = Renderer(self.bg_surface)
         self.new_game_button = Button(self.bg_surface, self.button_font, "New game",
                                       (self.width / 2 - 110, self.height / 2 - 60),
                                       on_click=self.new_game)
@@ -71,6 +70,40 @@ class MainMenu(object):
                 obj.draw()
             self.mouseover(pygame.mouse.get_pos())
             self.redraw()
+
+
+class PauseMenu(object):
+    def __init__(self, screen, text="Other player turn"):
+        self.width, self.height = DISPLAY
+        self.screen = screen
+        self.bg_surface = pygame.Surface((WIN_WIDTH, WIN_HEIGHT), pygame.SRCALPHA).convert_alpha()
+        image = os.path.join("tilesets", "shade.png")
+        self.bg_image = Image.open(image)
+        self.pygame_bg_image = pygame.image.load(image)
+        label_font = pygame.font.Font(None, 50)
+        prompt_font = pygame.font.Font(None, 30)
+        pause_label = Label(self.bg_surface, label_font, WHITE, text,
+                                  (MAIN_WIN_WIDTH / 2 - 135, MAIN_WIN_HEIGHT / 2 - 90))
+        prompt_label = Label(self.bg_surface, prompt_font, WHITE, "Press Spacebar to continue",
+                                 (MAIN_WIN_WIDTH / 2 - 130, MAIN_WIN_HEIGHT / 2 - 40))
+        self.objects = []
+        self.objects.append(prompt_label)
+        self.objects.append(pause_label)
+        self.draw()
+
+    def draw(self):
+        ypos = 0
+        while ypos <= self.height:
+            xpos = 0
+            while xpos <= self.width:
+                self.bg_surface.blit(self.pygame_bg_image, (xpos, ypos))
+                xpos += self.bg_image.size[0]
+            ypos += self.bg_image.size[1]
+        for obj in self.objects:
+            obj.draw()
+
+    def show(self):
+        self.screen.blit(self.bg_surface, (0, 0))
 
 
 class OptionsMenu(object):

@@ -52,10 +52,10 @@ class LayersHandler(object):
     def get_objects(self, object_name, classname):
         res = []
         objects = filter(lambda gr: gr.name == object_name, self.tiledmap.objectgroups)[0]
-        for object in objects:
+        for obj in objects:
             # convert to global coords:
             player = object_name.split('_')[-1]
-            res.append(classname(self, player=player, *self.tile_to_isometric(object.x, object.y), **object.__dict__))
+            res.append(classname(self, player=player, *self.tile_to_isometric(obj.x, obj.y), **obj.__dict__))
         return res
 
     def get_all_sprites(self):

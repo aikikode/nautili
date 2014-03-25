@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-
-__author__ = 'aikikode'
-
+from menus import PauseMenu
 import pygame
 import random
 from pytmx import tmxloader
@@ -12,6 +10,7 @@ from settings import PLAYER1, PLAYER2, DISPLAY, MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT,
 from colors import WHITE, BACKGROUND_COLOR
 import wind
 
+__author__ = 'aikikode'
 
 class Panel(object):
     def __init__(self, game, offset, size):
@@ -26,7 +25,7 @@ class Panel(object):
         self.get_wind_button = Button(self.hud_surface, button_font, "Wind:", (self.width / 2 - 80, 10),
                                       on_click=self.get_wind)
         label_font = pygame.font.Font(None, 40)
-        self.wind_label = Label(self.hud_surface, button_font, WHITE, "", (self.width / 2 - 80, 40))
+        self.wind_label = Label(self.hud_surface, label_font, WHITE, "", (self.width / 2 - 80, 40))
         self.shoot_button = Button(self.hud_surface, button_font, "Shoot", (self.width / 2 - 80, 80),
                                    on_click=self.shoot)
         self.end_move_button = Button(self.hud_surface, button_font, "End move", (self.width / 2 - 80, 140),
@@ -68,6 +67,7 @@ class Panel(object):
         self.game.wind_type = None
         for ship in self.game.ships:
             ship.reset()
+        self.game.toggle_pause()
 
     def draw(self):
         self.hud.fill(BACKGROUND_COLOR) # fill with water color
@@ -93,10 +93,13 @@ class Game(object):
         pygame.init()
         self.screen = pygame.display.set_mode(DISPLAY)
         pygame.display.set_caption("Nautili")
+        # Background
         self.bg_surface = pygame.Surface((MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT), pygame.SRCALPHA).convert_alpha()
+        # Panel
         self.panel = Panel(self, (MAIN_WIN_WIDTH - HUD_WIDTH, 0), (HUD_WIDTH, HUD_HEIGHT))
         self.layers_handler = lh = LayersHandler(tmxloader.load_pygame("./maps/map2.tmx", pixelalpha=True))
         self.background = IsometricRenderer(self.layers_handler, self.bg_surface)
+        # Helper variables from layers handler
         self.allsprites = lh.get_all_sprites()
         self.clickable_objects_list = lh.get_clickable_objects()
         self.sea = lh.sea
@@ -108,13 +111,31 @@ class Game(object):
         self.yellow_ships = lh.yellow_ships
         self.green_ships = lh.green_ships
         self.ports = lh.ports
-        self.background.fill(BACKGROUND_COLOR) # fill with water color
-        self.background.add(self.sea + self.rocks + self.islands)
+        # Initial game variables state
         self.wind_type = None
         self.wind_direction = None
         self.player = PLAYER1
+        self._paused = False
+        # Prepare rendering
+        self.background.fill(BACKGROUND_COLOR) # fill with water color
+        self.background.add(self.sea + self.rocks + self.islands)
         self.map_width, self.map_height = self.layers_handler.get_map_rect()
         self.move_camera(((MAIN_WIN_WIDTH - self.map_width) / 2, 0))
+
+    def toggle_pause(self, text=""):
+        self._paused = not self._paused
+        ##self.bg_surface.fill([21, 37, 45])
+        #ypos = 0
+        #while ypos <= MAIN_WIN_HEIGHT:
+        #    xpos = 0
+        #    while xpos <= MAIN_WIN_WIDTH:
+        #        self.fg_surface.blit(self.pygame_shade_image, (xpos, ypos))
+        #        xpos += self.shade_image.size[0]
+        #    ypos += self.shade_image.size[1]
+        #label_font = pygame.font.Font(None, 40)
+        #self.pause_label = Label(self.fg_surface, label_font, WHITE, text, (MAIN_WIN_WIDTH / 2 - 80, MAIN_WIN_HEIGHT / 2 - 20))
+        ##self.screen.blit(self.fg_surface, (0, 0))
+        ##pygame.display.update()
 
     def game_ended(self):
         if not self.yellow_ships:
@@ -177,9 +198,9 @@ class Game(object):
         selected_ship = None
         exit_game = False
         ctrl_mode = False
+        p = PauseMenu(self.screen)
         while not self.game_ended() and not exit_game:
             for e in pygame.event.get():
-                clicked = False
                 if e.type == pygame.QUIT:
                     raise SystemExit, "QUIT"
                 if e.type == pygame.KEYDOWN and (e.key == pygame.K_LCTRL or e.key == pygame.K_RCTRL):
@@ -189,69 +210,74 @@ class Game(object):
                 if e.type == pygame.KEYDOWN and e.key == pygame.K_q:
                     if ctrl_mode:
                         exit_game = True
-                if e.type == pygame.KEYDOWN and e.key == pygame.K_UP:
-                    self.move_camera((0, 300))
-                if e.type == pygame.KEYDOWN and e.key == pygame.K_DOWN:
-                    self.move_camera((0, -300))
-                if e.type == pygame.KEYDOWN and e.key == pygame.K_LEFT:
-                    self.move_camera((300, 0))
-                if e.type == pygame.KEYDOWN and e.key == pygame.K_RIGHT:
-                    self.move_camera((-300, 0))
-                if e.type == pygame.MOUSEBUTTONDOWN and (e.button == 1 or e.button == 3):
-                    if not panel.check_click(e.pos):
-                        for object in self.clickable_objects_list:
-                            clicked = object.check_click(e.pos)
-                            if clicked:
-                                break
-                        else:
-                            if selected_ship:
-                                #selected_ship.aim_reset()
-                                selected_ship = None
-                                background.update(self.sea + self.rocks + self.islands)
-                    if clicked:
-                        # Check whether there's an object
-                        if e.button == 1:
-                            try:
-                                if self.player == PLAYER1:
-                                    ships_to_select = self.yellow_ships
-                                else:
-                                    ships_to_select = self.green_ships
-                                selected_ship = filter(lambda obj: obj.coords() == (clicked.coords()), ships_to_select)[0]
-                                #print "Object {} clicked".format(selected_ship)
-                                # Highlight possible movements
-                                highlighted = selected_ship.calculate_moves(self.wind_type, self.wind_direction,
-                                                                            obstacles=self.layers_handler.move_obstacles + map(
-                                                                                lambda x: x.coords(), self.ships) + map(
-                                                                                lambda x: x.coords(), self.ports))
-                                shots = selected_ship.calculate_shots(obstacles=self.layers_handler.shoot_obstacles)
-                                background.update(self.sea + self.rocks + self.islands +
-                                                  LayersHandler.filter_layer(self.highlighted_sea, highlighted) +
-                                                  LayersHandler.filter_layer(self.fire, shots))
-                            except IndexError:
+                if self._paused:
+                    if e.type == pygame.KEYDOWN and e.key == pygame.K_SPACE:
+                        self.toggle_pause()
+                else:
+                    if e.type == pygame.KEYDOWN and e.key == pygame.K_UP:
+                        self.move_camera((0, 300))
+                    if e.type == pygame.KEYDOWN and e.key == pygame.K_DOWN:
+                        self.move_camera((0, -300))
+                    if e.type == pygame.KEYDOWN and e.key == pygame.K_LEFT:
+                        self.move_camera((300, 0))
+                    if e.type == pygame.KEYDOWN and e.key == pygame.K_RIGHT:
+                        self.move_camera((-300, 0))
+                    if e.type == pygame.MOUSEBUTTONDOWN and (e.button == 1 or e.button == 3):
+                        clicked = False
+                        if not panel.check_click(e.pos):
+                            for obj in self.clickable_objects_list:
+                                clicked = obj.check_click(e.pos)
+                                if clicked:
+                                    break
+                            else:
                                 if selected_ship:
-                                    # we clicked on empty sea - move object there
-                                    selected_ship.move(clicked.coords())
-                                    self.allsprites = self.layers_handler.get_all_sprites()
-                                    background.update(self.sea + self.rocks + self.islands)
+                                    #selected_ship.aim_reset()
                                     selected_ship = None
-                        else:
-                            try:
-                                target_ship = filter(lambda obj: obj.coords() == (clicked.coords()), self.ships)[0]
-                                if selected_ship and selected_ship != target_ship:
-                                    if selected_ship.aim(target_ship):
-                                        pass
-                                        #TODO: Draw curved arrow to the target
-                                        #background.clear()
-                                        #background.add(self.sea + self.rocks + self.islands +
-                                        #               LayersHandler.filter_layer(self.highlighted_sea, highlighted) +
-                                        #               LayersHandler.filter_layer(self.fire, shots))
-                                        #(x0, y0) = self.layers_handler.isometric_to_orthogonal(selected_ship.x, selected_ship.y)
-                                        #for target in selected_ship.get_targets():
-                                        #    (x1, y1) = self.layers_handler.isometric_to_orthogonal(target.x, target.y)
-                                        #    background.add_line((x0, y0), (x1, y1))
-                                        #background.draw()
-                            except IndexError:
-                                pass
+                                    background.update(self.sea + self.rocks + self.islands)
+                        if clicked:
+                            # Check whether there's an object
+                            if e.button == 1:
+                                try:
+                                    if self.player == PLAYER1:
+                                        ships_to_select = self.yellow_ships
+                                    else:
+                                        ships_to_select = self.green_ships
+                                    selected_ship = filter(lambda obj: obj.coords() == (clicked.coords()), ships_to_select)[0]
+                                    #print "Object {} clicked".format(selected_ship)
+                                    # Highlight possible movements
+                                    highlighted = selected_ship.calculate_moves(self.wind_type, self.wind_direction,
+                                                                                obstacles=self.layers_handler.move_obstacles + map(
+                                                                                    lambda x: x.coords(), self.ships) + map(
+                                                                                    lambda x: x.coords(), self.ports))
+                                    shots = selected_ship.calculate_shots(obstacles=self.layers_handler.shoot_obstacles)
+                                    background.update(self.sea + self.rocks + self.islands +
+                                                      LayersHandler.filter_layer(self.highlighted_sea, highlighted) +
+                                                      LayersHandler.filter_layer(self.fire, shots))
+                                except IndexError:
+                                    if selected_ship:
+                                        # we clicked on empty sea - move object there
+                                        selected_ship.move(clicked.coords())
+                                        self.allsprites = self.layers_handler.get_all_sprites()
+                                        background.update(self.sea + self.rocks + self.islands)
+                                        selected_ship = None
+                            else:
+                                try:
+                                    target_ship = filter(lambda obj: obj.coords() == (clicked.coords()), self.ships)[0]
+                                    if selected_ship and selected_ship != target_ship:
+                                        if selected_ship.aim(target_ship):
+                                            pass
+                                            #TODO: Draw curved arrow to the target
+                                            #background.clear()
+                                            #background.add(self.sea + self.rocks + self.islands +
+                                            #               LayersHandler.filter_layer(self.highlighted_sea, highlighted) +
+                                            #               LayersHandler.filter_layer(self.fire, shots))
+                                            #(x0, y0) = self.layers_handler.isometric_to_orthogonal(selected_ship.x, selected_ship.y)
+                                            #for target in selected_ship.get_targets():
+                                            #    (x1, y1) = self.layers_handler.isometric_to_orthogonal(target.x, target.y)
+                                            #    background.add_line((x0, y0), (x1, y1))
+                                            #background.draw()
+                                except IndexError:
+                                    pass
             # Process HUD mouseover
             panel.mouseover(pygame.mouse.get_pos())
             # end event handing
@@ -259,5 +285,6 @@ class Game(object):
             self.allsprites.update()
             self.allsprites.draw(self.screen)
             self.panel.draw()
-            #screen.blit(fg, (0, 0))
+            if self._paused:
+                p.show()
             pygame.display.update()
