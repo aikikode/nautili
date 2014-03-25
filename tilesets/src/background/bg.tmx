@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="isometric" width="100" height="100" tilewidth="64" tileheight="32">
+ <tileset firstgid="1" name="grass_and_water" tilewidth="64" tileheight="64">
+  <image source="../tilesets/grass_and_water.png" width="256" height="384"/>
+ </tileset>
+ <tileset firstgid="25" name="Rocks" tilewidth="64" tileheight="64">
+  <image source="../tilesets/grass_and_water_rocks.png" width="256" height="384"/>
+ </tileset>
+ <tileset firstgid="49" name="galleon_yellow_se" tilewidth="64" tileheight="64">
+  <image source="../tilesets/models/galleon_yellow_se.png" width="64" height="64"/>
+ </tileset>
+ <tileset firstgid="50" name="steam_corvette_yellow_se" tilewidth="64" tileheight="64">
+  <image source="../tilesets/models/steam_corvette_yellow_se.png" width="64" height="64"/>
+ </tileset>
+ <tileset firstgid="51" name="port_1_yellow" tilewidth="64" tileheight="64">
+  <image source="../tilesets/models/port_1_yellow.png" width="64" height="64"/>
+ </tileset>
+ <tileset firstgid="52" name="fire" tilewidth="64" tileheight="64">
+  <image source="../tilesets/grass_and_water_fire.png" width="256" height="384"/>
+ </tileset>
+ <tileset firstgid="76" name="water_highlight" tilewidth="64" tileheight="64">
+  <image source="../tilesets/grass_and_water_light2.png" width="256" height="384"/>
+ </tileset>
+ <layer name="sea" width="100" height="100">
+  <data encoding="base64" compression="zlib">
+   eJztwwEJAAAMBKGL8f2TDpZDwVVTVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/AeQuqa4=
+  </data>
+ </layer>
+ <layer name="highlight" width="100" height="100" visible="0">
+  <data encoding="base64" compression="zlib">
+   eJzt0TENADAMwLBiHX8QA9EeOWwpCPJm5h3GzuULP/b8aPGjxY8WP1r8aPGjxY8WP1r8aPGjxY8WP1r8aPGjxY8WP1r8aPEDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAoOkDqi2ZIQ==
+  </data>
+ </layer>
+ <layer name="fire" width="100" height="100" visible="0">
+  <data encoding="base64" compression="zlib">
+   eJzt2lFugzAURFHWx/4XVKF8pCJNAsXYd57vkapIbWLeeETTEtZlWdaGX7qmZRf2cZ19sNgHi32w2AeLfbBQ+rDLB0If6+5xZrTzYvZOCOfF0e/PgNbF0Z9XRezi7PMqGf1+0fr56YjnRavXJaJ30er1KRK6aL0OWUoXd61Hk9TF3esSpHXRa/1Keu2VnXzXe4/s5L1Re2Mnr0bvyejjk1D2gjLHSLQ9oM3TEzU7da470TPT52spJWvKnFekZUyb94zUbKlzf5KeKX3+36pkqZJjUyVLlRybKlmq5NhUyVIlx6ZKlio5NulZ1t1jBalZ9nOn5vhLWpZ386bl+CQly7c5U3IcQc9ydD56jjOoWc7ORc3xH7Qs1PvHeqJk8R7up9FZvIf7VZX7seyEdzw74R3HTjjr9z5OD1V+l9hJv/Xox71Dlb9FRx+/Jf9X4/FaBs/M1/qoZrwWTjfTZ0UpZvgsNU3lew1SVbwXJ51d8NgJj53w2AmPnfDYCY+d8NiJJEmSJEmSJEmSJEmSJEmSJEmayQ8gwYXX
+  </data>
+ </layer>
+ <layer name="land" width="100" height="100">
+  <data encoding="base64" compression="zlib">
+   eJzt2umOwjAMRtEAs+/b+z/r1KLWmAhBl3TsJPdIFr9GU9U0acyX0v97G2o31o/D/8ef56Huh7pJx358+F5O17QX+7F4PnzJOrXPiufDz9NQd+m0Hw9DvXheVOekJ5/ptC+sWf6kL69jPTpfCwAAAID2yTzrfSzO6P5knnVIx7kicxN/Ol+UfkhfmJv4sv1g9u7PzrBkxsgcqwz25Tj0Nz9Zb+Q3WH5f8mN7ocV7kh+bE5HSvZlnxIfth80o8IyUI2vQ91jX7qnth5wftB/sI+XMyappPmF3pujHekuyanqGsH25TeXPEr29U6/NqmlftjrX2exWD/tT9Kxafn1zr23OvhhB9Kyana0syQjVmOFuNatWe4a7pawaGe5You+LvYm+L0akZ4ut7lGr++IlS++pnRFv/b1taV+8xO6Zc+/pV2JeX1q+Z8o9nfqs2BkYWZMy8lzC3HOXzf3oZ+vr+5a0H4espq5f8vd6VqMf6+Vzd72nU99lzs3t6cc6dr5rP6e+y+Q9oR/+9JzQ+vsoAAAAAADANbVl1VpXY1atVbVn1VpCVi0WsmqxkFWLp8esWg16yaoBAAAAAAAAAAAAAAAAAAAAAAAAAAAAQFS/cskLbw==
+  </data>
+ </layer>
+ <layer name="rocks" width="100" height="100" visible="0">
+  <data encoding="base64" compression="zlib">
+   eJztzgENAAAIA6A3sn87Y3w6SEACcNO0AwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC8tG5kADA=
+  </data>
+ </layer>
+ <objectgroup name="ships_yellow" width="100" height="100">
+  <object name="galleon" gid="49" x="288" y="256">
+   <properties>
+    <property name="base_armor" value="3"/>
+    <property name="fire_range" value="3"/>
+    <property name="max_move" value="4"/>
+    <property name="model" value="galleon"/>
+    <property name="shots_count" value="2"/>
+    <property name="stille_move" value="0"/>
+    <property name="storm_move" value="3"/>
+   </properties>
+  </object>
+  <object name="corvette" gid="49" x="288" y="160">
+   <properties>
+    <property name="base_armor" value="3"/>
+    <property name="fire_range" value="3"/>
+    <property name="max_move" value="6"/>
+    <property name="model" value="steam_corvette"/>
+    <property name="shots_count" value="1"/>
+    <property name="stille_move" value="4"/>
+    <property name="storm_move" value="1"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup name="ports_yellow" width="100" height="100" visible="0">
+  <object name="port_1" gid="51" x="384" y="352">
+   <properties>
+    <property name="base_armor" value="7"/>
+    <property name="fire_range" value="5"/>
+    <property name="shots_count" value="3"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup name="ships_green" width="100" height="100" visible="0">
+  <object name="galleon" gid="49" x="384" y="256">
+   <properties>
+    <property name="base_armor" value="3"/>
+    <property name="fire_range" value="3"/>
+    <property name="max_move" value="4"/>
+    <property name="model" value="galleon"/>
+    <property name="shots_count" value="2"/>
+    <property name="stille_move" value="0"/>
+    <property name="storm_move" value="3"/>
+   </properties>
+  </object>
+  <object name="corvette" gid="49" x="384" y="160">
+   <properties>
+    <property name="base_armor" value="3"/>
+    <property name="fire_range" value="3"/>
+    <property name="max_move" value="6"/>
+    <property name="model" value="steam_corvette"/>
+    <property name="shots_count" value="1"/>
+    <property name="stille_move" value="4"/>
+    <property name="storm_move" value="1"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>
