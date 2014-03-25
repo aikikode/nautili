@@ -56,9 +56,7 @@ class Panel(object):
         for ship in ships_to_shoot:
             ship.shoot(not miss)
         self.game.allsprites = self.game.layers_handler.get_all_sprites()
-        self.game.yellow_ships = filter(lambda s: s.is_alive(), self.game.yellow_ships)
-        self.game.green_ships = filter(lambda s: s.is_alive(), self.game.green_ships)
-        self.game.ships = self.game.yellow_ships + self.game.green_ships
+        self.game.remove_dead_ships()
 
     def end_move(self):
         if self.game.player == PLAYER1:
@@ -131,7 +129,6 @@ class Game(object):
         return sorted(self.ships, key=lambda ship: ship.storm_move, reverse=True)[0].storm_move
 
     def force_ships_move(self):
-        # TODO: range to max ship storm move
         if self.player == PLAYER1:
             ships_to_move = self.yellow_ships
         else:
@@ -139,11 +136,18 @@ class Game(object):
         for x in xrange(0, self.max_storm_move()):
             for ship in ships_to_move:
                 ship.calculate_moves(self.wind_type, self.wind_direction,
-                                     obstacles=self.layers_handler.move_obstacles +
+                                     obstacles=self.layers_handler.storm_move_obstacles +
                                                map(lambda x: x.coords(), self.ships) +
                                                map(lambda y: y.coords(), self.ports),
                                      max=1)
                 ship.move()
+                ship.check_crash(self.layers_handler.deadly_obstacles)
+        self.remove_dead_ships()
+
+    def remove_dead_ships(self):
+        self.yellow_ships = filter(lambda s: s.is_alive(), self.yellow_ships)
+        self.green_ships = filter(lambda s: s.is_alive(), self.green_ships)
+        self.ships = self.yellow_ships + self.green_ships
 
     def move_camera(self, delta):
         offset_x, offset_y = self.background.offset
@@ -171,11 +175,20 @@ class Game(object):
         #target_ship = None
         #highlighted = None
         selected_ship = None
-        while not self.game_ended():
+        exit_game = False
+        ctrl_mode = False
+        while not self.game_ended() and not exit_game:
             for e in pygame.event.get():
                 clicked = False
                 if e.type == pygame.QUIT:
                     raise SystemExit, "QUIT"
+                if e.type == pygame.KEYDOWN and (e.key == pygame.K_LCTRL or e.key == pygame.K_RCTRL):
+                    ctrl_mode = True
+                if e.type == pygame.KEYUP and (e.key == pygame.K_LCTRL or e.key == pygame.K_RCTRL):
+                    ctrl_mode = False
+                if e.type == pygame.KEYDOWN and e.key == pygame.K_q:
+                    if ctrl_mode:
+                        exit_game = True
                 if e.type == pygame.KEYDOWN and e.key == pygame.K_UP:
                     self.move_camera((0, 300))
                 if e.type == pygame.KEYDOWN and e.key == pygame.K_DOWN:

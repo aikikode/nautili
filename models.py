@@ -142,7 +142,6 @@ class Ship(Model):
                     next = (self.x + delta, self.y)
                 if wind_direction == wind.SOUTH_WEST:
                     next = (self.x, self.y + delta)
-                print "next = {}".format(next)
                 if next in obstacles:
                     break
                 else:
@@ -247,6 +246,10 @@ class Ship(Model):
 
     def is_alive(self):
         return self._is_alive
+
+    def check_crash(self, obstacles):
+        if self.coords() in obstacles:
+            self._is_alive = False
 
 
 class Port(Model):
