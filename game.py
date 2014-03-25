@@ -1,91 +1,14 @@
 #!/usr/bin/env python
+import colors
 from menus import PauseMenu
 import pygame
-import random
 from pytmx import tmxloader
-from hud import Button, Label
-from renderer import Renderer, IsometricRenderer
+from panels import RightTopPanel, LeftTopPanel
+from renderer import IsometricRenderer
 from layers import LayersHandler
-from settings import PLAYER1, PLAYER2, DISPLAY, MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT, HUD_WIDTH, HUD_HEIGHT
-from colors import WHITE, BACKGROUND_COLOR
-import wind
+from settings import *
 
 __author__ = 'aikikode'
-
-class Panel(object):
-    def __init__(self, game, offset, size):
-        self.game = game
-        self.width, self.height = size
-        self.offset = offset
-        self.hud_surface = pygame.Surface(size, pygame.SRCALPHA).convert_alpha()
-        self.rect = pygame.Rect(self.offset, size)
-        self.hud = Renderer(self.hud_surface)
-        self.objects = []
-        button_font = pygame.font.Font(None, 40)
-        self.get_wind_button = Button(self.hud_surface, button_font, "Wind:", (self.width / 2 - 80, 10),
-                                      on_click=self.get_wind)
-        label_font = pygame.font.Font(None, 40)
-        self.wind_label = Label(self.hud_surface, label_font, WHITE, "", (self.width / 2 - 80, 40))
-        self.shoot_button = Button(self.hud_surface, button_font, "Shoot", (self.width / 2 - 80, 80),
-                                   on_click=self.shoot)
-        self.end_move_button = Button(self.hud_surface, button_font, "End move", (self.width / 2 - 80, 140),
-                                      on_click=self.end_move)
-        self.objects.append(self.get_wind_button)
-        self.objects.append(self.wind_label)
-        self.objects.append(self.shoot_button)
-        self.objects.append(self.end_move_button)
-
-    def get_wind(self):
-        self.get_wind_button.disable()
-        self.game.wind_type = random.sample(wind.WIND_TYPES, 1)[0]
-        self.game.wind_direction = random.sample(wind.WIND_DIRECTIONS, 1)[0]
-        if self.game.wind_type == wind.WIND:
-            self.wind_label.text = "{}".format(wind.wind_direction_to_str(self.game.wind_direction))
-        else:
-            self.wind_label.text = "{}".format(wind.wind_type_to_str(self.game.wind_type))
-        if self.game.wind_type == wind.STORM:
-            self.game.force_ships_move()
-
-    def shoot(self):
-        miss = random.randint(0, 2)
-        if self.game.player == PLAYER1:
-            ships_to_shoot = self.game.yellow_ships
-        else:
-            ships_to_shoot = self.game.green_ships
-        for ship in ships_to_shoot:
-            ship.shoot(not miss)
-        self.game.allsprites = self.game.layers_handler.get_all_sprites()
-        self.game.remove_dead_ships()
-
-    def end_move(self):
-        if self.game.player == PLAYER1:
-            self.game.player = PLAYER2
-        else:
-            self.game.player = PLAYER1
-        self.get_wind_button.enable()
-        self.wind_label.text = ""
-        self.game.wind_type = None
-        for ship in self.game.ships:
-            ship.reset()
-        self.game.toggle_pause()
-
-    def draw(self):
-        self.hud.fill(BACKGROUND_COLOR) # fill with water color
-        self.hud.draw()
-        pygame.draw.line(self.hud_surface, (44, 92, 118), [0, 0], [self.width, 0], 2)
-        for obj in self.objects:
-            obj.draw()
-        self.game.screen.blit(self.hud_surface, self.offset)
-
-    def mouseover(self, event_position):
-        for obj in self.objects:
-            obj.mouseover(map(lambda x, y: x - y, event_position, self.offset))
-
-    def check_click(self, event_position):
-        if self.rect.collidepoint(event_position):
-            for obj in self.objects:
-                obj.check_click(map(lambda x, y: x - y, event_position, self.offset))
-            return True
 
 
 class Game(object):
@@ -96,7 +19,8 @@ class Game(object):
         # Background
         self.bg_surface = pygame.Surface((MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT), pygame.SRCALPHA).convert_alpha()
         # Panel
-        self.panel = Panel(self, (MAIN_WIN_WIDTH - HUD_WIDTH, 0), (HUD_WIDTH, HUD_HEIGHT))
+        self.right_top_panel = RightTopPanel(self, (MAIN_WIN_WIDTH - RIGHT_PANEL_WIDTH, 0), (RIGHT_PANEL_WIDTH, RIGHT_PANEL_HEIGHT))
+        self.left_top_panel = LeftTopPanel(self, (0, 0), (LEFT_PANEL_WIDTH, LEFT_PANEL_HEIGHT))
         self.layers_handler = lh = LayersHandler(tmxloader.load_pygame("./maps/map2.tmx", pixelalpha=True))
         self.background = IsometricRenderer(self.layers_handler, self.bg_surface)
         # Helper variables from layers handler
@@ -117,10 +41,25 @@ class Game(object):
         self.player = PLAYER1
         self._paused = False
         # Prepare rendering
-        self.background.fill(BACKGROUND_COLOR) # fill with water color
+        self.background.fill(colors.BACKGROUND_COLOR) # fill with water color
         self.background.add(self.sea + self.rocks + self.islands)
         self.map_width, self.map_height = self.layers_handler.get_map_rect()
         self.move_camera(((MAIN_WIN_WIDTH - self.map_width) / 2, 0))
+
+    def next_turn(self):
+        if self.player == PLAYER1:
+            self.player = PLAYER2
+            self.left_top_panel.label.text = "Green player turn"
+            self.left_top_panel.label.color = colors.GREEN
+        else:
+            self.player = PLAYER1
+            self.left_top_panel.label.text = "Yellow player turn"
+            self.left_top_panel.label.color = colors.YELLOW
+        self.wind_type = None
+        for ship in self.ships:
+            ship.reset()
+        self.toggle_pause()
+
 
     def toggle_pause(self, text=""):
         self._paused = not self._paused
@@ -182,7 +121,7 @@ class Game(object):
         elif offset_y + delta_y > 0:
             delta_y = -offset_y
         delta = (delta_x, delta_y)
-        self.background.fill(BACKGROUND_COLOR) # fill with water color
+        self.background.fill(colors.BACKGROUND_COLOR) # fill with water color
         self.background.increase_offset(delta)
         for obj in self.ships + self.ports:
             obj.offset = self.background.offset
@@ -191,7 +130,7 @@ class Game(object):
 
     def start(self):
         background = self.background
-        panel = self.panel
+        right_top_panel = self.right_top_panel
         background.draw()
         #target_ship = None
         #highlighted = None
@@ -224,7 +163,7 @@ class Game(object):
                         self.move_camera((-300, 0))
                     if e.type == pygame.MOUSEBUTTONDOWN and (e.button == 1 or e.button == 3):
                         clicked = False
-                        if not panel.check_click(e.pos):
+                        if not right_top_panel.check_click(e.pos):
                             for obj in self.clickable_objects_list:
                                 clicked = obj.check_click(e.pos)
                                 if clicked:
@@ -279,12 +218,13 @@ class Game(object):
                                 except IndexError:
                                     pass
             # Process HUD mouseover
-            panel.mouseover(pygame.mouse.get_pos())
+            right_top_panel.mouseover(pygame.mouse.get_pos())
             # end event handing
             self.screen.blit(self.bg_surface, (0, 0))
             self.allsprites.update()
             self.allsprites.draw(self.screen)
-            self.panel.draw()
+            right_top_panel.draw()
+            self.left_top_panel.draw()
             if self._paused:
                 p.show()
             pygame.display.update()
