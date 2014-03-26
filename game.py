@@ -3,7 +3,7 @@ import colors
 from menus import PauseMenu
 import pygame
 from pytmx import tmxloader
-from panels import RightTopPanel, LeftTopPanel, MiniMap
+from panels import RightTopPanel, TopPanel, MiniMap
 from renderer import IsometricRenderer
 from layers import LayersHandler
 from settings import *
@@ -12,16 +12,18 @@ __author__ = 'aikikode'
 
 
 class Game(object):
-    def __init__(self):
+    def __init__(self, map_file):
         pygame.init()
         self.screen = pygame.display.set_mode(DISPLAY)
         pygame.display.set_caption("Nautili")
-        self.layers_handler = lh = LayersHandler(tmxloader.load_pygame("./maps/map2.tmx", pixelalpha=True))
+        self.layers_handler = lh = LayersHandler(tmxloader.load_pygame(map_file, pixelalpha=True))
         # Background
         self.bg_surface = pygame.Surface((MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT), pygame.SRCALPHA).convert_alpha()
         # Panel
-        self.right_top_panel = RightTopPanel(self, (MAIN_WIN_WIDTH - RIGHT_PANEL_WIDTH, MINIMAP_HEIGHT), (RIGHT_PANEL_WIDTH, RIGHT_PANEL_HEIGHT))
-        self.left_top_panel = LeftTopPanel(self, (0, 0), (LEFT_PANEL_WIDTH, LEFT_PANEL_HEIGHT))
+        self.right_top_panel = RightTopPanel(self,
+                                             (MAIN_WIN_WIDTH - RIGHT_PANEL_WIDTH, MINIMAP_HEIGHT),
+                                             (RIGHT_PANEL_WIDTH, RIGHT_PANEL_HEIGHT))
+        self.top_panel = TopPanel(self, (0, 0), (TOP_PANEL_WIDTH, TOP_PANEL_HEIGHT))
         self.minimap = MiniMap(self, (MAIN_WIN_WIDTH - MINIMAP_WIDTH, 0), (MINIMAP_WIDTH, MINIMAP_HEIGHT))
         self.background = IsometricRenderer(self.layers_handler, self.bg_surface)
         # Helper variables from layers handler
@@ -48,7 +50,14 @@ class Game(object):
         self.move_camera(((MAIN_WIN_WIDTH - self.map_width) / 2, 0))
         self.DEFAULT_CURSOR = pygame.mouse.get_cursor()
         self.CLOSE_HAND_CURSOR = self.DEFAULT_CURSOR
+        self.selected_ship = None
         self.setup_cursors()
+
+    def drop_selection(self):
+        if self.selected_ship:
+            self.selected_ship.aim_reset()
+            self.selected_ship = None
+        self.background.update(self.sea + self.rocks + self.islands)
 
     def setup_cursors(self):
         self.DEFAULT_CURSOR = pygame.mouse.get_cursor()
@@ -91,12 +100,13 @@ class Game(object):
         self.CLOSE_HAND_CURSOR = ((16, 16), (5, 1), _HCURS, _HMASK)
 
     def next_turn(self):
+        self.drop_selection()
         if self.player == PLAYER1:
             self.player = PLAYER2
-            self.left_top_panel.label.set_text("Green player turn", colors.GREEN)
+            self.top_panel.turn_label.set_text("Green player turn", colors.GREEN)
         else:
             self.player = PLAYER1
-            self.left_top_panel.label.set_text("Yellow player turn", colors.YELLOW)
+            self.top_panel.turn_label.set_text("Yellow player turn", colors.YELLOW)
         self.wind_type = None
         for ship in self.ships:
             ship.reset()
@@ -166,7 +176,7 @@ class Game(object):
         background.draw()
         #target_ship = None
         #highlighted = None
-        selected_ship = None
+        selected_ship = self.selected_ship = None
         exit_game = False
         ctrl_mode = False
         drag_mode = False
@@ -184,17 +194,19 @@ class Game(object):
                 if e.type == pygame.KEYDOWN and e.key == pygame.K_q:
                     if ctrl_mode:
                         exit_game = True
+                if e.type == pygame.KEYDOWN and e.key == pygame.K_RETURN:
+                    right_top_panel.end_move()
                 if self._paused:
                     if e.type == pygame.KEYDOWN and e.key == pygame.K_SPACE:
                         self.toggle_pause()
                 else:
-                    if e.type == pygame.KEYDOWN and e.key == pygame.K_UP:
+                    if e.type == pygame.KEYDOWN and (e.key == pygame.K_UP or e.key == pygame.K_w):
                         self.move_camera((0, 300))
-                    if e.type == pygame.KEYDOWN and e.key == pygame.K_DOWN:
+                    if e.type == pygame.KEYDOWN and (e.key == pygame.K_DOWN or e.key == pygame.K_s):
                         self.move_camera((0, -300))
-                    if e.type == pygame.KEYDOWN and e.key == pygame.K_LEFT:
+                    if e.type == pygame.KEYDOWN and (e.key == pygame.K_LEFT or e.key == pygame.K_a):
                         self.move_camera((300, 0))
-                    if e.type == pygame.KEYDOWN and e.key == pygame.K_RIGHT:
+                    if e.type == pygame.KEYDOWN and (e.key == pygame.K_RIGHT or e.key == pygame.K_d):
                         self.move_camera((-300, 0))
                     if e.type == pygame.MOUSEBUTTONDOWN and e.button == 2:
                         drag_mode = True
@@ -272,7 +284,8 @@ class Game(object):
             self.allsprites.update()
             self.allsprites.draw(self.screen)
             right_top_panel.draw()
-            self.left_top_panel.draw()
+            self.top_panel.update()
+            self.top_panel.draw()
             self.minimap.draw()
             if self._paused:
                 p.show()

@@ -24,7 +24,7 @@ class HudElement(pygame.sprite.Sprite):
 
 
 class Button(HudElement):
-    def __init__(self, font, text, pos, offset=(0, 0), on_click=None):
+    def __init__(self, font, text, pos, offset=(0, 0), on_click=None, args=[]):
         HudElement.__init__(self, pos, offset)
         self.hovered = False
         self.font = font
@@ -33,6 +33,7 @@ class Button(HudElement):
         self.image = None
         self.__enabled = True
         self.on_click = on_click
+        self.args = args
         self.set_text(text)
 
     def update(self):
@@ -49,7 +50,7 @@ class Button(HudElement):
         if self.hovered:
             return colors.WHITE
         else:
-            return (100, 100, 100)
+            return colors.GREY
 
     def mouseover(self, mouse_position):
         if self.__enabled:
@@ -57,7 +58,7 @@ class Button(HudElement):
 
     def check_click(self, mouse_position):
         if self.__enabled and self.on_click and self.rect.collidepoint(mouse_position):
-            self.on_click()
+            self.on_click(*self.args)
 
     def disable(self):
         self.__enabled = False

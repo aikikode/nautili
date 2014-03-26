@@ -67,6 +67,7 @@ class RightTopPanel(Panel):
         self.objects.append(self.end_move_button)
 
     def get_wind(self):
+        self.game.drop_selection()
         self.get_wind_button.disable()
         self.game.wind_type = random.sample(wind.WIND_TYPES, 1)[0]
         self.game.wind_direction = random.sample(wind.WIND_DIRECTIONS, 1)[0]
@@ -94,12 +95,25 @@ class RightTopPanel(Panel):
         self.wind_label.set_text("")
 
 
-class LeftTopPanel(Panel):
+class TopPanel(Panel):
     def __init__(self, game, offset, size):
         Panel.__init__(self, game, offset, size)
-        label_font = pygame.font.Font(None, 40)
-        self.label = Label(label_font, colors.YELLOW, "Yellow player turn", (10, 10))
-        self.objects.append(self.label)
+        label_header_font = pygame.font.Font(None, 40)
+        label_font = pygame.font.Font(None, 25)
+        self.turn_label = Label(label_header_font, colors.YELLOW, "Yellow player turn", (10, 10))
+        self.yellow_label = Label(label_font, colors.YELLOW, "Yellow", (self.width / 2 - 300, 15))
+        self.yellow_counts = Label(label_font, colors.YELLOW, "ships: 0  ports: 0", (self.width / 2 - 240, 15))
+        self.green_label = Label(label_font, colors.GREEN, "Green", (self.width / 2 + 90, 15))
+        self.green_counts = Label(label_font, colors.GREEN, "ships: 0  ports: 0", (self.width / 2 + 150, 15))
+        self.objects.append(self.turn_label)
+        self.objects.append(self.yellow_label)
+        self.objects.append(self.yellow_counts)
+        self.objects.append(self.green_label)
+        self.objects.append(self.green_counts)
+
+    def update(self):
+        self.yellow_counts.set_text("ships: {}  ports: {}".format(len(self.game.yellow_ships), 0))
+        self.green_counts.set_text("ships: {}  ports: {}".format(len(self.game.green_ships), 0))
 
 
 class MiniMap(Panel):

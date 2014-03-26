@@ -189,4 +189,39 @@
    </properties>
   </object>
  </objectgroup>
+ <objectgroup name="ships_green" width="20" height="20">
+  <object name="frigate" gid="49" x="352" y="96">
+   <properties>
+    <property name="base_armor" value="4"/>
+    <property name="fire_range" value="5"/>
+    <property name="max_move" value="6"/>
+    <property name="model" value="frigate"/>
+    <property name="shots_count" value="1"/>
+    <property name="stille_move" value="0"/>
+    <property name="storm_move" value="2"/>
+   </properties>
+  </object>
+  <object name="steam_frigate" gid="49" x="352" y="160">
+   <properties>
+    <property name="base_armor" value="4"/>
+    <property name="fire_range" value="3"/>
+    <property name="max_move" value="6"/>
+    <property name="model" value="steam_frigate"/>
+    <property name="shots_count" value="1"/>
+    <property name="stille_move" value="4"/>
+    <property name="storm_move" value="1"/>
+   </properties>
+  </object>
+  <object name="ironclad" gid="49" x="352" y="224">
+   <properties>
+    <property name="base_armor" value="5"/>
+    <property name="fire_range" value="6"/>
+    <property name="max_move" value="4"/>
+    <property name="model" value="ironclad"/>
+    <property name="shots_count" value="3"/>
+    <property name="stille_move" value="2"/>
+    <property name="storm_move" value="2"/>
+   </properties>
+  </object>
+ </objectgroup>
 </map>
