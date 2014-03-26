@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 import os
 import pygame
+import shutil
 from PIL import Image
 from colors import WHITE
 import colors
 import game
 from hud import Button, Label
 from settings import DISPLAY, WIN_HEIGHT, WIN_WIDTH, MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT
+import settings
 
 __author__ = 'aikikode'
 
@@ -94,7 +96,18 @@ class MainMenu(BaseMainMenu):
         l.run()
 
     def exit(self):
+        if os.path.exists(settings.TMP_DIR):
+            shutil.rmtree(settings.TMP_DIR)
         raise SystemExit, "QUIT"
+
+    def process_events(self):
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                raise SystemExit, "QUIT"
+            if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                self.check_click(e.pos)
+        self.mouseover(pygame.mouse.get_pos())
+        return True
 
 
 class LoadMapMenu(BaseMainMenu):

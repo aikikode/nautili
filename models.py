@@ -38,9 +38,13 @@ class HealthBar(pygame.sprite.Sprite):
     def __init__(self, model):
         pygame.sprite.Sprite.__init__(self)
         self.model = model
-        self.red_image = Image.open(os.path.join(MODELS_DIR, "health_bar_cell_red.png"))
-        self.green_image = Image.open(os.path.join(MODELS_DIR, "health_bar_cell_green.png"))
-        self._cell_width, self._cell_height = self.red_image.size
+        self.damage_image = Image.open(os.path.join(MODELS_DIR, "health_bar_cell_red.png"))
+        print self.model.player
+        if self.model.player == settings.PLAYER1:
+            self.health_image = Image.open(os.path.join(MODELS_DIR, "health_bar_cell_yellow.png"))
+        else:
+            self.health_image = Image.open(os.path.join(MODELS_DIR, "health_bar_cell_green.png"))
+        self._cell_width, self._cell_height = self.damage_image.size
         self.image = None
         self.health_bar_width = 0
         self._delta = 0
@@ -50,14 +54,15 @@ class HealthBar(pygame.sprite.Sprite):
 
     def draw(self):
         out_fname = os.path.join(settings.TMP_DIR,
-                                 "green_{}_red_{}.png".format(self.model.armor,
-                                                              self.model.base_armor - self.model.armor))
+                                 "{}_health_{}_damage_{}.png".format(self.model.player,
+                                                                     self.model.armor,
+                                                                     self.model.base_armor - self.model.armor))
         if not os.path.exists(out_fname):
             blank_image = Image.new("RGBA", (64, 4), None)
             for x in xrange(self.model.armor):
-                blank_image.paste(self.green_image, (self._cell_width * x, 0), self.green_image)
+                blank_image.paste(self.health_image, (self._cell_width * x, 0), self.health_image)
             for x in xrange(self.model.armor, self.model.base_armor):
-                blank_image.paste(self.red_image, (self._cell_width * x, 0), self.red_image)
+                blank_image.paste(self.damage_image, (self._cell_width * x, 0), self.damage_image)
             blank_image.save(out_fname)
         self.image = pygame.image.load(out_fname).convert_alpha()
         tile_width = 64  # TODO: remove hardcode value
@@ -72,7 +77,7 @@ class HealthBar(pygame.sprite.Sprite):
 
 
 class Ship(Model):
-    def __init__(self, renderer, isom_x, isom_y, model='steam_corvette', player='yellow', base_armor=1, fire_range=1, max_move=1, shots_count=1, stille_move=1, storm_move=1, **kwargs):
+    def __init__(self, renderer, isom_x, isom_y, model='steam_corvette', player=settings.PLAYER1, base_armor=1, fire_range=1, max_move=1, shots_count=1, stille_move=1, storm_move=1, **kwargs):
         Model.__init__(self, renderer, isom_x, isom_y, model, player)
         self.possible_moves = []
         self.possible_shots = []
