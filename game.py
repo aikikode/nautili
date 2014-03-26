@@ -169,7 +169,7 @@ class Game(object):
         delta = (delta_x, delta_y)
         self.background.fill(colors.BACKGROUND_COLOR) # fill with water color
         self.background.increase_offset(delta)
-        for obj in self.ships + self.ports:
+        for obj in self.ships + self.ports + [ship.health_bar for ship in self.ships]:
             obj.offset = self.background.offset
             obj.rect = obj.rect.move(delta)
         self.background.draw()
@@ -244,6 +244,7 @@ class Game(object):
                                         self.selected_ship.unselect()
                                     self.selected_ship = filter(lambda obj: obj.coords() == (clicked.coords()), ships_to_select)[0]
                                     self.selected_ship.select()
+                                    self.right_top_panel.shoot_label.set_text("")
                                     #print "Object {} clicked".format(selected_ship)
                                     # Highlight possible movements
                                     highlighted = self.selected_ship.calculate_moves(self.wind_type, self.wind_direction,

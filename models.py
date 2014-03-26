@@ -7,6 +7,8 @@ import os
 import pygame
 import numpy as np
 import math
+from PIL import Image
+import settings
 import wind
 
 __author__ = 'aikikode'
@@ -32,6 +34,43 @@ class Model(pygame.sprite.Sprite):
         return "{}({}, {}): {}, {}".format(self.__class__.__name__, self.x, self.y, self.model, self.player)
 
 
+class HealthBar(pygame.sprite.Sprite):
+    def __init__(self, model):
+        pygame.sprite.Sprite.__init__(self)
+        self.model = model
+        self.red_image = Image.open(os.path.join(MODELS_DIR, "health_bar_cell_red.png"))
+        self.green_image = Image.open(os.path.join(MODELS_DIR, "health_bar_cell_green.png"))
+        self._cell_width, self._cell_height = self.red_image.size
+        self.image = None
+        self.health_bar_width = 0
+        self._delta = 0
+        if not os.path.exists(settings.TMP_DIR):
+            os.makedirs(settings.TMP_DIR)
+        self.draw()
+
+    def draw(self):
+        out_fname = os.path.join(settings.TMP_DIR,
+                                 "green_{}_red_{}.png".format(self.model.armor,
+                                                              self.model.base_armor - self.model.armor))
+        if not os.path.exists(out_fname):
+            blank_image = Image.new("RGBA", (64, 4), None)
+            for x in xrange(self.model.armor):
+                blank_image.paste(self.green_image, (self._cell_width * x, 0), self.green_image)
+            for x in xrange(self.model.armor, self.model.base_armor):
+                blank_image.paste(self.red_image, (self._cell_width * x, 0), self.red_image)
+            blank_image.save(out_fname)
+        self.image = pygame.image.load(out_fname).convert_alpha()
+        tile_width = 64  # TODO: remove hardcode value
+        self.health_bar_width = self._cell_width * self.model.base_armor
+        self._delta = (tile_width - self.health_bar_width) / 2
+        self.move()
+
+    def move(self):
+        x, y = self.model.rect.topleft
+        x, y = x + self._delta, y - 5
+        self.rect = pygame.Rect(x, y, self.health_bar_width, self._cell_height)
+
+
 class Ship(Model):
     def __init__(self, renderer, isom_x, isom_y, model='steam_corvette', player='yellow', base_armor=1, fire_range=1, max_move=1, shots_count=1, stille_move=1, storm_move=1, **kwargs):
         Model.__init__(self, renderer, isom_x, isom_y, model, player)
@@ -52,6 +91,7 @@ class Ship(Model):
         self._targets = []
         self._is_alive = True
         self.offset = (0, 0)
+        self.health_bar = HealthBar(self)
 
     def select(self):
         self._update_image("selected")
@@ -93,6 +133,7 @@ class Ship(Model):
         else:
             return False
         self.rect.topleft = map(lambda x,y: x + y, self.offset, self.renderer.isometric_to_orthogonal(self.x, self.y))
+        self.health_bar.move()
         self.possible_moves = []
         self._update_image()
         self.aim_reset()
@@ -220,6 +261,9 @@ class Ship(Model):
                 pass
         return moves
 
+    def has_targets(self):
+        return self._targets != []
+
     def aim_reset(self):
         for target in self._targets:
             target.unset_aimed()
@@ -260,6 +304,7 @@ class Ship(Model):
         if self.armor <= 0:
             #print "{} is down".format(self)
             self._is_alive = False
+        self.health_bar.draw()
 
     def is_alive(self):
         return self._is_alive

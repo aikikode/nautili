@@ -17,3 +17,4 @@ MINIMAP_HEIGHT = 150
 PLAYER1 = "yellow"
 PLAYER2 = "green"
 
+TMP_DIR = ".tmp"

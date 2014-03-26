@@ -58,17 +58,20 @@ class RightTopPanel(Panel):
         self.shoot_button = Button(button_font, "Shoot", (0, 80),
                                    offset=offset,
                                    on_click=self.shoot)
-        self.end_move_button = Button(button_font, "End move", (0, 140),
+        self.shoot_label = Label(label_font, colors.WHITE, "", (0, 110), offset=offset)
+        self.end_move_button = Button(button_font, "End move", (0, 170),
                                       offset=offset,
                                       on_click=self.end_move)
         self.objects.append(self.get_wind_button)
         self.objects.append(self.wind_label)
         self.objects.append(self.shoot_button)
+        self.objects.append(self.shoot_label)
         self.objects.append(self.end_move_button)
 
     def get_wind(self):
         self.game.drop_selection()
         self.get_wind_button.disable()
+        self.shoot_label.set_text("")
         self.game.wind_type = random.sample(wind.WIND_TYPES, 1)[0]
         self.game.wind_direction = random.sample(wind.WIND_DIRECTIONS, 1)[0]
         if self.game.wind_type == wind.WIND:
@@ -84,8 +87,14 @@ class RightTopPanel(Panel):
             ships_to_shoot = self.game.yellow_ships
         else:
             ships_to_shoot = self.game.green_ships
+        ships_to_shoot = filter(lambda s: s.has_targets(), ships_to_shoot)
         for ship in ships_to_shoot:
             ship.shoot(not miss)
+        if ships_to_shoot:
+            if miss:
+                self.shoot_label.set_text("missed")
+            else:
+                self.shoot_label.set_text("hit!")
         self.game.allsprites = self.game.layers_handler.get_all_sprites()
         self.game.remove_dead_ships()
         self.game.drop_selection()
@@ -94,6 +103,7 @@ class RightTopPanel(Panel):
         self.game.next_turn()
         self.get_wind_button.enable()
         self.wind_label.set_text("")
+        self.shoot_label.set_text("")
 
 
 class TopPanel(Panel):
