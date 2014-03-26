@@ -69,7 +69,14 @@ class LayersHandler(object):
         return (self.tiledmap.height + x - y - 1) * (self.tiledmap.tilewidth / 2), \
                (x + y) * (self.tiledmap.tileheight / 2)
 
-    def get_map_rect(self):
+    def get_map_polygon(self):
+        p0 = self.isometric_to_orthogonal(0, 0)
+        p1 = self.isometric_to_orthogonal(self.tiledmap.width, 0)
+        p2 = self.isometric_to_orthogonal(self.tiledmap.width, self.tiledmap.height)
+        p3 = self.isometric_to_orthogonal(0, self.tiledmap.height)
+        return p0, p1, p2, p3
+
+    def get_map_dimensions(self):
         xmax = self.isometric_to_orthogonal(self.tiledmap.width, 0)[0]
         xmin = self.isometric_to_orthogonal(0, self.tiledmap.height)[0]
         ymin = self.isometric_to_orthogonal(0, 0)[1]

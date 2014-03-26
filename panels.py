@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 import pygame
+import pygame.gfxdraw
 import random
 import colors
 from hud import Button, Label
+from layers import LayersHandler
 from renderer import Renderer
-from settings import PLAYER1, PLAYER2
+import settings
 import wind
 
 __author__ = 'aikikode'
@@ -48,15 +50,15 @@ class RightTopPanel(Panel):
     def __init__(self, game, offset, size):
         Panel.__init__(self, game, offset, size)
         button_font = pygame.font.Font(None, 40)
-        self.get_wind_button = Button(button_font, "Wind:", (self.width / 2 - 80, 10),
+        self.get_wind_button = Button(button_font, "Wind:", (0, 10),
                                       offset=offset,
                                       on_click=self.get_wind)
         label_font = pygame.font.Font(None, 40)
-        self.wind_label = Label(label_font, colors.WHITE, "", (self.width / 2 - 80, 40), offset=offset)
-        self.shoot_button = Button(button_font, "Shoot", (self.width / 2 - 80, 80),
+        self.wind_label = Label(label_font, colors.WHITE, "", (0, 40), offset=offset)
+        self.shoot_button = Button(button_font, "Shoot", (0, 80),
                                    offset=offset,
                                    on_click=self.shoot)
-        self.end_move_button = Button(button_font, "End move", (self.width / 2 - 80, 140),
+        self.end_move_button = Button(button_font, "End move", (0, 140),
                                       offset=offset,
                                       on_click=self.end_move)
         self.objects.append(self.get_wind_button)
@@ -77,7 +79,7 @@ class RightTopPanel(Panel):
 
     def shoot(self):
         miss = random.randint(0, 2)
-        if self.game.player == PLAYER1:
+        if self.game.player == settings.PLAYER1:
             ships_to_shoot = self.game.yellow_ships
         else:
             ships_to_shoot = self.game.green_ships
@@ -91,12 +93,6 @@ class RightTopPanel(Panel):
         self.get_wind_button.enable()
         self.wind_label.set_text("")
 
-    def draw(self):
-        self.hud.draw()
-        pygame.draw.line(self.hud_surface, (44, 92, 118), [0, 0], [self.width, 0], 2)
-        self.draw_sprites()
-        self.game.screen.blit(self.hud_surface, self.offset)
-
 
 class LeftTopPanel(Panel):
     def __init__(self, game, offset, size):
@@ -104,3 +100,52 @@ class LeftTopPanel(Panel):
         label_font = pygame.font.Font(None, 40)
         self.label = Label(label_font, colors.YELLOW, "Yellow player turn", (10, 10))
         self.objects.append(self.label)
+
+
+class MiniMap(Panel):
+    def __init__(self, game, offset, size):
+        Panel.__init__(self, game, offset, size)
+        self.border = pygame.Rect((0, 0), (self.width, self.height))
+        orig_map_width, orig_map_height = self.game.layers_handler.get_map_dimensions()
+        orig_map_polygon = self.game.layers_handler.get_map_polygon()
+        self.scale = max(orig_map_width / float(self.width), orig_map_height / float(self.height))
+        self.map_offset = ((self.width - orig_map_width / self.scale) / 2,
+                           (self.height - orig_map_height / self.scale) / 2)
+        self.sea_polygon = map(lambda p: (p[0] / self.scale + self.map_offset[0],
+                                          p[1] / self.scale + self.map_offset[1]),
+                               orig_map_polygon)
+        self.cam_width = settings.MAIN_WIN_WIDTH / self.scale
+        self.cam_height = settings.MAIN_WIN_HEIGHT / self.scale
+
+    def draw_layer(self, layer, color):
+        for tile in LayersHandler.filter_not_none(LayersHandler.flatten(layer)):
+            pygame.draw.circle(self.hud_surface, color,
+                               map(lambda x, offs: int(x/self.scale + offs),
+                                   self.game.layers_handler.isometric_to_orthogonal(*tile.coords()), self.map_offset), 1)
+
+    def draw(self):
+        self.hud.fill(colors.BLACK)
+        self.hud.draw()
+        # Draw sea
+        pygame.gfxdraw.filled_polygon(self.hud_surface, self.sea_polygon, colors.LIGHT_BLUE)
+        # Draw islands, rocks and etc.
+        self.draw_layer(self.game.islands, colors.DARK_GREEN)
+        self.draw_layer(self.game.rocks, colors.RED)
+        self.draw_layer(self.game.yellow_ships, colors.YELLOW)
+        self.draw_layer(self.game.green_ships, colors.GREEN)
+        # Draw camera rectangle
+        camera_offset = map(lambda p, offs: p / -self.scale + offs, self.game.get_camera_offset(), self.map_offset)
+        cam_rect = pygame.Rect(camera_offset, (self.cam_width, self.cam_height))
+        pygame.draw.rect(self.hud_surface, colors.WHITE, cam_rect, 1)
+        pygame.draw.rect(self.hud_surface, colors.WHITE, self.border, 1)
+        # Draw additional stuff
+        self.draw_sprites()
+        self.game.screen.blit(self.hud_surface, self.offset)
+
+    def check_click(self, event_position):
+        if self.rect.collidepoint(event_position):
+            current_camera_offset = map(lambda p, offs: p / -self.scale + offs, self.game.get_camera_offset(), self.map_offset)
+            mouse_minimap_coords = map(lambda x, y: x - y, event_position, self.offset)
+            new_camera_offset = (mouse_minimap_coords[0] - self.cam_width / 2, mouse_minimap_coords[1] - self.cam_height / 2)
+            self.game.move_camera(map(lambda x, y: (x - y) * self.scale, current_camera_offset, new_camera_offset))
+            return True

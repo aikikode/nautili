@@ -3,7 +3,7 @@ import colors
 from menus import PauseMenu
 import pygame
 from pytmx import tmxloader
-from panels import RightTopPanel, LeftTopPanel
+from panels import RightTopPanel, LeftTopPanel, MiniMap
 from renderer import IsometricRenderer
 from layers import LayersHandler
 from settings import *
@@ -16,12 +16,13 @@ class Game(object):
         pygame.init()
         self.screen = pygame.display.set_mode(DISPLAY)
         pygame.display.set_caption("Nautili")
+        self.layers_handler = lh = LayersHandler(tmxloader.load_pygame("./maps/map2.tmx", pixelalpha=True))
         # Background
         self.bg_surface = pygame.Surface((MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT), pygame.SRCALPHA).convert_alpha()
         # Panel
-        self.right_top_panel = RightTopPanel(self, (MAIN_WIN_WIDTH - RIGHT_PANEL_WIDTH, 0), (RIGHT_PANEL_WIDTH, RIGHT_PANEL_HEIGHT))
+        self.right_top_panel = RightTopPanel(self, (MAIN_WIN_WIDTH - RIGHT_PANEL_WIDTH, MINIMAP_HEIGHT), (RIGHT_PANEL_WIDTH, RIGHT_PANEL_HEIGHT))
         self.left_top_panel = LeftTopPanel(self, (0, 0), (LEFT_PANEL_WIDTH, LEFT_PANEL_HEIGHT))
-        self.layers_handler = lh = LayersHandler(tmxloader.load_pygame("./maps/map2.tmx", pixelalpha=True))
+        self.minimap = MiniMap(self, (MAIN_WIN_WIDTH - MINIMAP_WIDTH, 0), (MINIMAP_WIDTH, MINIMAP_HEIGHT))
         self.background = IsometricRenderer(self.layers_handler, self.bg_surface)
         # Helper variables from layers handler
         self.allsprites = lh.get_all_sprites()
@@ -43,8 +44,51 @@ class Game(object):
         # Prepare rendering
         self.background.fill(colors.BACKGROUND_COLOR) # fill with water color
         self.background.add(self.sea + self.rocks + self.islands)
-        self.map_width, self.map_height = self.layers_handler.get_map_rect()
+        self.map_width, self.map_height = self.layers_handler.get_map_dimensions()
         self.move_camera(((MAIN_WIN_WIDTH - self.map_width) / 2, 0))
+        self.DEFAULT_CURSOR = pygame.mouse.get_cursor()
+        self.CLOSE_HAND_CURSOR = self.DEFAULT_CURSOR
+        self.setup_cursors()
+
+    def setup_cursors(self):
+        self.DEFAULT_CURSOR = pygame.mouse.get_cursor()
+        #the hand cursor
+        _CLOSE_HAND_CURSOR = (
+            "                ",
+            "                ",
+            "                ",
+            "                ",
+            "    XXXXXXXX    ",
+            "    X..X..X.XX  ",
+            " XXXX..X..X.X.X ",
+            " X.XX.........X ",
+            " X..X.........X ",
+            " X.....X.X.X..X ",
+            "  X....X.X.X..X ",
+            "  X....X.X.X.X  ",
+            "   X...X.X.X.X  ",
+            "    X.......X   ",
+            "     X....X.X   ",
+            "     XXXXX XX   ")
+        _POINT_HAND_CURSOR = (
+            "     XX         ",
+            "    X..X        ",
+            "    X..X        ",
+            "    X..X        ",
+            "    X..XXXXX    ",
+            "    X..X..X.XX  ",
+            " XX X..X..X.X.X ",
+            "X..XX.........X ",
+            "X...X.........X ",
+            " X.....X.X.X..X ",
+            "  X....X.X.X..X ",
+            "  X....X.X.X.X  ",
+            "   X...X.X.X.X  ",
+            "    X.......X   ",
+            "     X....X.X   ",
+            "     XXXXX XX   ")
+        _HCURS, _HMASK = pygame.cursors.compile(_CLOSE_HAND_CURSOR, ".", "X")
+        self.CLOSE_HAND_CURSOR = ((16, 16), (5, 1), _HCURS, _HMASK)
 
     def next_turn(self):
         if self.player == PLAYER1:
@@ -94,8 +138,11 @@ class Game(object):
         self.green_ships = filter(lambda s: s.is_alive(), self.green_ships)
         self.ships = self.yellow_ships + self.green_ships
 
+    def get_camera_offset(self):
+        return self.background.offset
+
     def move_camera(self, delta):
-        offset_x, offset_y = self.background.offset
+        offset_x, offset_y = self.get_camera_offset()
         delta_x, delta_y = delta
         if MAIN_WIN_WIDTH - offset_x - delta_x > self.map_width:
             delta_x = MAIN_WIN_WIDTH - offset_x - self.map_width
@@ -122,8 +169,11 @@ class Game(object):
         selected_ship = None
         exit_game = False
         ctrl_mode = False
+        drag_mode = False
         p = PauseMenu(self.screen)
+        timer = pygame.time.Clock()
         while not self.game_ended() and not exit_game:
+            timer.tick(60)
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     raise SystemExit, "QUIT"
@@ -146,9 +196,17 @@ class Game(object):
                         self.move_camera((300, 0))
                     if e.type == pygame.KEYDOWN and e.key == pygame.K_RIGHT:
                         self.move_camera((-300, 0))
+                    if e.type == pygame.MOUSEBUTTONDOWN and e.button == 2:
+                        drag_mode = True
+                        pygame.mouse.set_cursor(*self.CLOSE_HAND_CURSOR)
+                        previous_mouse_pos = e.pos
+                    if e.type == pygame.MOUSEBUTTONUP and e.button == 2:
+                        drag_mode = False
+                        pygame.mouse.set_cursor(*self.DEFAULT_CURSOR)
+                        previous_mouse_pos = None
                     if e.type == pygame.MOUSEBUTTONDOWN and (e.button == 1 or e.button == 3):
                         clicked = False
-                        if not right_top_panel.check_click(e.pos):
+                        if not right_top_panel.check_click(e.pos) and not self.minimap.check_click(e.pos):
                             for obj in self.clickable_objects_list:
                                 clicked = obj.check_click(e.pos)
                                 if clicked:
@@ -202,6 +260,11 @@ class Game(object):
                                             #background.draw()
                                 except IndexError:
                                     pass
+                    if drag_mode:
+                        cur_mouse_pos = pygame.mouse.get_pos()
+                        if cur_mouse_pos != previous_mouse_pos:
+                            self.move_camera(map(lambda x, y: x - y, cur_mouse_pos, previous_mouse_pos))
+                            previous_mouse_pos = cur_mouse_pos
             # Process HUD mouseover
             right_top_panel.mouseover(pygame.mouse.get_pos())
             # end event handing
@@ -210,6 +273,7 @@ class Game(object):
             self.allsprites.draw(self.screen)
             right_top_panel.draw()
             self.left_top_panel.draw()
+            self.minimap.draw()
             if self._paused:
                 p.show()
             pygame.display.update()
