@@ -51,12 +51,16 @@ class Game(object):
         self.DEFAULT_CURSOR = pygame.mouse.get_cursor()
         self.CLOSE_HAND_CURSOR = self.DEFAULT_CURSOR
         self.selected_ship = None
+        self.target_ships = []
         self.setup_cursors()
 
     def drop_selection(self):
         if self.selected_ship:
+            self.selected_ship.unselect()
             self.selected_ship.aim_reset()
             self.selected_ship = None
+        for ship in self.target_ships:
+            ship.unselect()
         self.background.update(self.sea + self.rocks + self.islands)
 
     def setup_cursors(self):
@@ -176,7 +180,6 @@ class Game(object):
         background.draw()
         #target_ship = None
         #highlighted = None
-        selected_ship = self.selected_ship = None
         exit_game = False
         ctrl_mode = False
         drag_mode = False
@@ -194,12 +197,12 @@ class Game(object):
                 if e.type == pygame.KEYDOWN and e.key == pygame.K_q:
                     if ctrl_mode:
                         exit_game = True
-                if e.type == pygame.KEYDOWN and e.key == pygame.K_RETURN:
-                    right_top_panel.end_move()
                 if self._paused:
                     if e.type == pygame.KEYDOWN and e.key == pygame.K_SPACE:
                         self.toggle_pause()
                 else:
+                    if e.type == pygame.KEYDOWN and e.key == pygame.K_RETURN:
+                        right_top_panel.end_move()
                     if e.type == pygame.KEYDOWN and (e.key == pygame.K_UP or e.key == pygame.K_w):
                         self.move_camera((0, 300))
                     if e.type == pygame.KEYDOWN and (e.key == pygame.K_DOWN or e.key == pygame.K_s):
@@ -224,9 +227,10 @@ class Game(object):
                                 if clicked:
                                     break
                             else:
-                                if selected_ship:
+                                if self.selected_ship:
                                     #selected_ship.aim_reset()
-                                    selected_ship = None
+                                    self.selected_ship.unselect()
+                                    self.selected_ship = None
                                     background.update(self.sea + self.rocks + self.islands)
                         if clicked:
                             # Check whether there's an object
@@ -236,29 +240,33 @@ class Game(object):
                                         ships_to_select = self.yellow_ships
                                     else:
                                         ships_to_select = self.green_ships
-                                    selected_ship = filter(lambda obj: obj.coords() == (clicked.coords()), ships_to_select)[0]
+                                    if self.selected_ship:
+                                        self.selected_ship.unselect()
+                                    self.selected_ship = filter(lambda obj: obj.coords() == (clicked.coords()), ships_to_select)[0]
+                                    self.selected_ship.select()
                                     #print "Object {} clicked".format(selected_ship)
                                     # Highlight possible movements
-                                    highlighted = selected_ship.calculate_moves(self.wind_type, self.wind_direction,
+                                    highlighted = self.selected_ship.calculate_moves(self.wind_type, self.wind_direction,
                                                                                 obstacles=self.layers_handler.move_obstacles + map(
                                                                                     lambda x: x.coords(), self.ships) + map(
                                                                                     lambda x: x.coords(), self.ports))
-                                    shots = selected_ship.calculate_shots(obstacles=self.layers_handler.shoot_obstacles)
+                                    shots = self.selected_ship.calculate_shots(obstacles=self.layers_handler.shoot_obstacles)
                                     background.update(self.sea + self.rocks + self.islands +
                                                       LayersHandler.filter_layer(self.highlighted_sea, highlighted) +
                                                       LayersHandler.filter_layer(self.fire, shots))
                                 except IndexError:
-                                    if selected_ship:
+                                    if self.selected_ship:
                                         # we clicked on empty sea - move object there
-                                        selected_ship.move(clicked.coords())
+                                        self.selected_ship.move(clicked.coords())
                                         self.allsprites = self.layers_handler.get_all_sprites()
                                         background.update(self.sea + self.rocks + self.islands)
-                                        selected_ship = None
+                                        self.selected_ship = None
                             else:
                                 try:
                                     target_ship = filter(lambda obj: obj.coords() == (clicked.coords()), self.ships)[0]
-                                    if selected_ship and selected_ship != target_ship:
-                                        if selected_ship.aim(target_ship):
+                                    if self.selected_ship and self.selected_ship != target_ship:
+                                        if self.selected_ship.aim(target_ship):
+                                            self.target_ships.append(target_ship)
                                             pass
                                             #TODO: Draw curved arrow to the target
                                             #background.clear()

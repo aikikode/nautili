@@ -53,9 +53,23 @@ class Ship(Model):
         self._is_alive = True
         self.offset = (0, 0)
 
-    def _update_image(self):
+    def select(self):
+        self._update_image("selected")
+
+    def unselect(self):
+        self._update_image()
+
+    def set_aimed(self):
+        self._update_image("aimed")
+
+    def unset_aimed(self):
+        self._update_image()
+
+    def _update_image(self, img_type=""):
+        if img_type:
+            img_type = "_{}".format(img_type)
         self.image = pygame.image.load(
-            os.path.join(MODELS_DIR, "{}_{}_{}.png".format(self.model, self.player, self.direction))).convert_alpha()
+            os.path.join(MODELS_DIR, "{}_{}_{}{}.png".format(self.model, self.player, self.direction, img_type))).convert_alpha()
 
     def reset(self):
         self._storm_moves_left = self.storm_move
@@ -208,6 +222,7 @@ class Ship(Model):
 
     def aim_reset(self):
         for target in self._targets:
+            target.unset_aimed()
             self._shots_left += 1
         self._targets = []
 
@@ -215,11 +230,13 @@ class Ship(Model):
         if self._shots_left < 0 or target.coords() not in self.possible_shots:
             return False
         if self._shots_left == 0:
-            if self._targets:
-                self._targets.pop(0)
-                self._shots_left += 1
-            else:
-                return False
+            if self._targets and target in self._targets:
+                c = Counter(self._targets)
+                self._shots_left += c[target]
+                self._targets = filter(lambda t: t != target, self._targets)
+                target.unset_aimed()
+            return False
+        target.set_aimed()
         self._targets.append(target)
         self._shots_left -= 1
         #print "{} aimed at {}".format(self, target)

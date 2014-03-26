@@ -88,6 +88,7 @@ class RightTopPanel(Panel):
             ship.shoot(not miss)
         self.game.allsprites = self.game.layers_handler.get_all_sprites()
         self.game.remove_dead_ships()
+        self.game.drop_selection()
 
     def end_move(self):
         self.game.next_turn()
