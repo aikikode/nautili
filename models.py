@@ -39,7 +39,6 @@ class HealthBar(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.model = model
         self.damage_image = Image.open(os.path.join(MODELS_DIR, "health_bar_cell_red.png"))
-        print self.model.player
         if self.model.player == settings.PLAYER1:
             self.health_image = Image.open(os.path.join(MODELS_DIR, "health_bar_cell_yellow.png"))
         else:
@@ -50,6 +49,7 @@ class HealthBar(pygame.sprite.Sprite):
         self._delta = 0
         if not os.path.exists(settings.TMP_DIR):
             os.makedirs(settings.TMP_DIR)
+        self.rect = None
         self.draw()
 
     def draw(self):
