@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import colors
-from menus import PauseMenu
 import pygame
+from menus import PauseMenu
 from pytmx import tmxloader
 from panels import RightTopPanel, TopPanel, MiniMap
 from renderer import IsometricRenderer
@@ -169,7 +169,7 @@ class Game(object):
         delta = (delta_x, delta_y)
         self.background.fill(colors.BACKGROUND_COLOR) # fill with water color
         self.background.increase_offset(delta)
-        for obj in self.ships + self.ports + [ship.health_bar for ship in self.ships]:
+        for obj in self.ships + self.ports + [ship.health_bar for ship in self.ships] + [ship.cannon_bar for ship in self.ships]:
             obj.offset = self.background.offset
             obj.rect = obj.rect.move(delta)
         self.background.draw()

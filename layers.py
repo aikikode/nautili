@@ -61,8 +61,9 @@ class LayersHandler(object):
     def get_all_sprites(self):
         alive_ships = filter(lambda s: s.is_alive(), self.ships)
         health_bars = [ship.health_bar for ship in alive_ships]
+        cannon_bars = [ship.cannon_bar for ship in alive_ships]
         return pygame.sprite.OrderedUpdates(
-            sorted(alive_ships + self.ports, key=lambda s: s.x + s.y) + health_bars)
+            sorted(alive_ships + self.ports, key=lambda s: s.x + s.y) + health_bars + cannon_bars)
 
     def get_clickable_objects(self):
         return LayersHandler.filter_not_none(LayersHandler.flatten(self.visible_sea))

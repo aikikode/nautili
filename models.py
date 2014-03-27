@@ -16,6 +16,13 @@ __author__ = 'aikikode'
 MODELS_DIR = os.path.join("tilesets", "models")
 
 
+def clear_image(image):
+    p = image.load()
+    for y in range(image.size[1]):
+        for x in range(image.size[0]):
+            p[x, y] = (0, 0, 0, 0)
+
+
 class Model(pygame.sprite.Sprite):
     def __init__(self, renderer, x, y, model=None, player=None, *args):
         pygame.sprite.Sprite.__init__(self)
@@ -59,6 +66,7 @@ class HealthBar(pygame.sprite.Sprite):
                                                                      self.model.base_armor - self.model.armor))
         if not os.path.exists(out_fname):
             blank_image = Image.new("RGBA", (64, 4), None)
+            clear_image(blank_image)
             for x in xrange(self.model.armor):
                 blank_image.paste(self.health_image, (self._cell_width * x, 0), self.health_image)
             for x in xrange(self.model.armor, self.model.base_armor):
@@ -74,6 +82,45 @@ class HealthBar(pygame.sprite.Sprite):
         x, y = self.model.rect.topleft
         x, y = x + self._delta, y - 5
         self.rect = pygame.Rect(x, y, self.health_bar_width, self._cell_height)
+
+
+class CannonBar(pygame.sprite.Sprite):
+    def __init__(self, model):
+        pygame.sprite.Sprite.__init__(self)
+        self.model = model
+        self.empty_image = Image.open(os.path.join(MODELS_DIR, "cannon_bar_cell_empty.png"))
+        self.cannon_image = Image.open(os.path.join(MODELS_DIR, "cannon_bar_cell.png"))
+        self._cell_width, self._cell_height = self.empty_image.size
+        self.image = None
+        self.cannon_bar_width = 0
+        self._delta = 0
+        if not os.path.exists(settings.TMP_DIR):
+            os.makedirs(settings.TMP_DIR)
+        self.rect = None
+        self.draw()
+
+    def draw(self):
+        out_fname = os.path.join(settings.TMP_DIR,
+                                 "cannons_{}_empty_{}.png".format(self.model._shots_left,
+                                                                  self.model.shots_count - self.model._shots_left))
+        if not os.path.exists(out_fname):
+            blank_image = Image.new("RGBA", (64, 7), None)
+            clear_image(blank_image)
+            for x in xrange(self.model._shots_left):
+                blank_image.paste(self.cannon_image, (self._cell_width * x, 0), self.cannon_image)
+            for x in xrange(self.model._shots_left, self.model.shots_count):
+                blank_image.paste(self.empty_image, (self._cell_width * x, 0), self.empty_image)
+            blank_image.save(out_fname)
+        self.image = pygame.image.load(out_fname).convert_alpha()
+        tile_width = 64  # TODO: remove hardcode value
+        self.cannon_bar_width = self._cell_width * self.model.shots_count
+        self._delta = (tile_width - self.cannon_bar_width) / 2
+        self.move()
+
+    def move(self):
+        x, y = self.model.rect.topleft
+        x, y = x + self._delta, y - 15
+        self.rect = pygame.Rect(x, y, self.cannon_bar_width, self._cell_height)
 
 
 class Ship(Model):
@@ -97,6 +144,7 @@ class Ship(Model):
         self._is_alive = True
         self.offset = (0, 0)
         self.health_bar = HealthBar(self)
+        self.cannon_bar = CannonBar(self)
 
     def select(self):
         self._update_image("selected")
@@ -139,6 +187,7 @@ class Ship(Model):
             return False
         self.rect.topleft = map(lambda x,y: x + y, self.offset, self.renderer.isometric_to_orthogonal(self.x, self.y))
         self.health_bar.move()
+        self.cannon_bar.move()
         self.possible_moves = []
         self._update_image()
         self.aim_reset()
@@ -274,6 +323,7 @@ class Ship(Model):
             target.unset_aimed()
             self._shots_left += 1
         self._targets = []
+        self.cannon_bar.draw()
 
     def aim(self, target):
         if self._shots_left < 0 or target.coords() not in self.possible_shots:
@@ -288,6 +338,7 @@ class Ship(Model):
         target.set_aimed()
         self._targets.append(target)
         self._shots_left -= 1
+        self.cannon_bar.draw()
         #print "{} aimed at {}".format(self, target)
         return True
 
@@ -310,6 +361,7 @@ class Ship(Model):
             #print "{} is down".format(self)
             self._is_alive = False
         self.health_bar.draw()
+        self.cannon_bar.draw()
 
     def is_alive(self):
         return self._is_alive
