@@ -13,8 +13,8 @@ class LayersHandler(object):
     BACKGROUND_LAYER = 0
     HIGHLIGHT_LAYER = 1
     FIRE_LAYER = 2
-    ISLANDS_LAYER = 3
-    ROCKS_LAYER = 4
+    ROCKS_LAYER = 3
+    ISLANDS_LAYER = 4
 
     def __init__(self, tiledmap):
         self.tiledmap = tiledmap
