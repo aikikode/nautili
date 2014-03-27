@@ -190,7 +190,40 @@
   </object>
  </objectgroup>
  <objectgroup name="ships_green" width="20" height="20">
-  <object name="frigate" gid="49" x="352" y="96">
+  <object name="tender" gid="49" x="448" y="544">
+   <properties>
+    <property name="base_armor" value="2"/>
+    <property name="fire_range" value="1"/>
+    <property name="max_move" value="6"/>
+    <property name="model" value="tender"/>
+    <property name="shots_count" value="1"/>
+    <property name="stille_move" value="1"/>
+    <property name="storm_move" value="2"/>
+   </properties>
+  </object>
+  <object name="galleon" gid="49" x="580" y="482">
+   <properties>
+    <property name="base_armor" value="3"/>
+    <property name="fire_range" value="3"/>
+    <property name="max_move" value="4"/>
+    <property name="model" value="galleon"/>
+    <property name="shots_count" value="2"/>
+    <property name="stille_move" value="0"/>
+    <property name="storm_move" value="3"/>
+   </properties>
+  </object>
+  <object name="line_100" gid="49" x="576" y="224">
+   <properties>
+    <property name="base_armor" value="7"/>
+    <property name="fire_range" value="6"/>
+    <property name="max_move" value="5"/>
+    <property name="model" value="ship_of_the_line_100"/>
+    <property name="shots_count" value="3"/>
+    <property name="stille_move" value="0"/>
+    <property name="storm_move" value="3"/>
+   </properties>
+  </object>
+  <object name="frigate" gid="49" x="448" y="288">
    <properties>
     <property name="base_armor" value="4"/>
     <property name="fire_range" value="5"/>
@@ -201,7 +234,7 @@
     <property name="storm_move" value="2"/>
    </properties>
   </object>
-  <object name="steam_frigate" gid="49" x="352" y="160">
+  <object name="steam_frigate" gid="49" x="448" y="352">
    <properties>
     <property name="base_armor" value="4"/>
     <property name="fire_range" value="3"/>
@@ -212,7 +245,40 @@
     <property name="storm_move" value="1"/>
    </properties>
   </object>
-  <object name="ironclad" gid="49" x="352" y="224">
+  <object name="galley" gid="49" x="576" y="160">
+   <properties>
+    <property name="base_armor" value="3"/>
+    <property name="fire_range" value="3"/>
+    <property name="max_move" value="5"/>
+    <property name="model" value="galley"/>
+    <property name="shots_count" value="1"/>
+    <property name="stille_move" value="3"/>
+    <property name="storm_move" value="1"/>
+   </properties>
+  </object>
+  <object name="steamboat" gid="49" x="576" y="352">
+   <properties>
+    <property name="base_armor" value="3"/>
+    <property name="fire_range" value="3"/>
+    <property name="max_move" value="5"/>
+    <property name="model" value="steamboat"/>
+    <property name="shots_count" value="1"/>
+    <property name="stille_move" value="2"/>
+    <property name="storm_move" value="2"/>
+   </properties>
+  </object>
+  <object name="line_60" gid="49" x="576" y="96">
+   <properties>
+    <property name="base_armor" value="5"/>
+    <property name="fire_range" value="5"/>
+    <property name="max_move" value="5"/>
+    <property name="model" value="ship_of_the_line_60"/>
+    <property name="shots_count" value="2"/>
+    <property name="stille_move" value="0"/>
+    <property name="storm_move" value="3"/>
+   </properties>
+  </object>
+  <object name="ironclad" gid="49" x="448" y="416">
    <properties>
     <property name="base_armor" value="5"/>
     <property name="fire_range" value="6"/>
@@ -220,6 +286,39 @@
     <property name="model" value="ironclad"/>
     <property name="shots_count" value="3"/>
     <property name="stille_move" value="2"/>
+    <property name="storm_move" value="2"/>
+   </properties>
+  </object>
+  <object name="monitor" gid="49" x="576" y="288">
+   <properties>
+    <property name="base_armor" value="3"/>
+    <property name="fire_range" value="3"/>
+    <property name="max_move" value="3"/>
+    <property name="model" value="monitor"/>
+    <property name="shots_count" value="1"/>
+    <property name="stille_move" value="2"/>
+    <property name="storm_move" value="3"/>
+   </properties>
+  </object>
+  <object name="corvette" gid="49" x="576" y="416">
+   <properties>
+    <property name="base_armor" value="3"/>
+    <property name="fire_range" value="3"/>
+    <property name="max_move" value="6"/>
+    <property name="model" value="steam_corvette"/>
+    <property name="shots_count" value="1"/>
+    <property name="stille_move" value="4"/>
+    <property name="storm_move" value="1"/>
+   </properties>
+  </object>
+  <object name="brig" gid="49" x="448" y="480">
+   <properties>
+    <property name="base_armor" value="3"/>
+    <property name="fire_range" value="3"/>
+    <property name="max_move" value="5"/>
+    <property name="model" value="brig"/>
+    <property name="shots_count" value="1"/>
+    <property name="stille_move" value="1"/>
     <property name="storm_move" value="2"/>
    </properties>
   </object>

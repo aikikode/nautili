@@ -49,17 +49,17 @@ class Panel(object):
 class RightTopPanel(Panel):
     def __init__(self, game, offset, size):
         Panel.__init__(self, game, offset, size)
-        button_font = pygame.font.Font(None, 40)
-        self.get_wind_button = Button(button_font, "Wind:", (0, 10),
+        button_font = pygame.font.Font(None, 35)
+        self.get_wind_button = Button(button_font, "Wind (Tab):", (0, 10),
                                       offset=offset,
                                       on_click=self.get_wind)
-        label_font = pygame.font.Font(None, 40)
+        label_font = pygame.font.Font(None, 35)
         self.wind_label = Label(label_font, colors.WHITE, "", (0, 40), offset=offset)
-        self.shoot_button = Button(button_font, "Shoot", (0, 80),
+        self.shoot_button = Button(button_font, "Shoot (Shift)", (0, 80),
                                    offset=offset,
                                    on_click=self.shoot)
         self.shoot_label = Label(label_font, colors.WHITE, "", (0, 110), offset=offset)
-        self.end_move_button = Button(button_font, "End move", (0, 170),
+        self.end_move_button = Button(button_font, "End turn (Enter)", (0, 170),
                                       offset=offset,
                                       on_click=self.end_move)
         self.objects.append(self.get_wind_button)
@@ -69,6 +69,8 @@ class RightTopPanel(Panel):
         self.objects.append(self.end_move_button)
 
     def get_wind(self):
+        if not self.get_wind_button.enabled():
+            return
         self.game.drop_selection()
         self.get_wind_button.disable()
         self.shoot_label.set_text("")

@@ -68,6 +68,9 @@ class Button(HudElement):
         self.__enabled = True
         self.hovered = True
 
+    def enabled(self):
+        return self.__enabled
+
 
 class Label(HudElement):
     def __init__(self, font, color, text, pos, offset=(0,0)):

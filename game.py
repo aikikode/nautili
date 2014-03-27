@@ -121,11 +121,11 @@ class Game(object):
 
     def game_ended(self):
         if not self.yellow_ships:
-            p = PauseMenu(self.screen, "Green won!")
+            p = PauseMenu(self.screen, "Green won!", color=colors.GREEN)
             p.run()
             return True
         elif not self.green_ships:
-            p = PauseMenu(self.screen, "Yellow won!")
+            p = PauseMenu(self.screen, "Yellow won!", color=colors.YELLOW)
             p.run()
             return True
         return False
@@ -198,6 +198,11 @@ class Game(object):
                     ctrl_mode = False
                 if e.type == pygame.KEYDOWN and e.key == pygame.K_q:
                     if ctrl_mode:
+                        if self.player == PLAYER1:
+                            p = PauseMenu(self.screen, "Green won!", color=colors.GREEN)
+                        else:
+                            p = PauseMenu(self.screen, "Yellow won!", color=colors.YELLOW)
+                        p.run()
                         exit_game = True
                 if e.type == pygame.KEYDOWN and e.key == pygame.K_RETURN:
                     right_top_panel.end_move()

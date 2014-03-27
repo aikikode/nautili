@@ -3,7 +3,6 @@ import os
 import pygame
 import shutil
 from PIL import Image
-from colors import WHITE
 import colors
 import game
 from hud import Button, Label
@@ -117,7 +116,7 @@ class LoadMapMenu(BaseMainMenu):
         BaseMainMenu.__init__(self)
         label_font = pygame.font.Font(None, 50)
         self.button_font = pygame.font.Font(None, 30)
-        label = Label(label_font, WHITE, "Select a map from the list below",
+        label = Label(label_font, colors.WHITE, "Select a map from the list below",
                             (self.width / 2 - 250, 80))
         self.objects.append(label)
         self.read_map_dir()
@@ -138,7 +137,7 @@ class LoadMapMenu(BaseMainMenu):
 
 
 class PauseMenu(Menu):
-    def __init__(self, screen, text="Other player turn"):
+    def __init__(self, screen, text="Other player turn", color=colors.WHITE):
         Menu.__init__(self)
         self.width, self.height = DISPLAY
         self.screen = screen
@@ -149,9 +148,9 @@ class PauseMenu(Menu):
         label_font = pygame.font.Font(None, 50)
         prompt_font = pygame.font.Font(None, 30)
         delta = 135/17. * len(text) # x delta based on font size
-        pause_label = Label(label_font, WHITE, text,
+        pause_label = Label(label_font, color, text,
                                   (MAIN_WIN_WIDTH / 2 - delta, MAIN_WIN_HEIGHT / 2 - 90))
-        prompt_label = Label(prompt_font, WHITE, "Press Spacebar to continue",
+        prompt_label = Label(prompt_font, colors.WHITE, "Press Spacebar to continue",
                                  (MAIN_WIN_WIDTH / 2 - 130, MAIN_WIN_HEIGHT / 2 - 40))
         self.objects = []
         self.objects.append(prompt_label)
