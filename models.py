@@ -135,7 +135,7 @@ class Model(pygame.sprite.Sprite):
         self.target_bar.draw()
 
     def aim(self, target):
-        if self.shots_left < 0 or target.coords() not in self.possible_shots:
+        if not self.is_alive() or self.shots_left < 0 or target.coords() not in self.possible_shots:
             return False
         if self.shots_left == 0:
             if self._targets and target in self._targets:

@@ -16,7 +16,11 @@ class Game(object):
         pygame.init()
         self.screen = pygame.display.set_mode(DISPLAY)
         pygame.display.set_caption("Nautili")
-        self.layers_handler = lh = LayersHandler(tmxloader.load_pygame(map_file, pixelalpha=True))
+        try:
+            self.layers_handler = lh = LayersHandler(tmxloader.load_pygame(map_file, pixelalpha=True))
+        except:
+            print "Unable to read map data. Possibly messed up layers."
+            raise ValueError
         # Background
         self.bg_surface = pygame.Surface((MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT), pygame.SRCALPHA).convert_alpha()
         # Panel
@@ -241,7 +245,6 @@ class Game(object):
                                 break
                         else:
                             if self.selected_ship:
-                                #selected_ship.aim_reset()
                                 self.selected_ship.unselect()
                                 self.selected_ship = None
                                 background.update(self.sea + self.rocks + self.islands)
@@ -259,14 +262,18 @@ class Game(object):
                                 self.selected_ship.select()
                                 self.right_top_panel.shoot_label.set_text("")
                                 #print "Object {} clicked".format(selected_ship)
-                                shots = self.selected_ship.calculate_shots(obstacles=self.layers_handler.shoot_obstacles)
-                                try:
-                                    # Highlight possible movements
-                                    highlighted = self.selected_ship.calculate_moves(self.wind_type, self.wind_direction,
-                                                                                obstacles=self.layers_handler.move_obstacles + map(
-                                                                                    lambda x: x.coords(), self.ships) + map(
-                                                                                    lambda x: x.coords(), self.ports))
-                                except AttributeError, ex:
+                                if self.selected_ship.is_alive():
+                                    shots = self.selected_ship.calculate_shots(obstacles=self.layers_handler.shoot_obstacles)
+                                    try:
+                                        # Highlight possible movements
+                                        highlighted = self.selected_ship.calculate_moves(self.wind_type, self.wind_direction,
+                                                                                    obstacles=self.layers_handler.move_obstacles + map(
+                                                                                        lambda x: x.coords(), self.ships) + map(
+                                                                                        lambda x: x.coords(), self.ports))
+                                    except AttributeError, ex:
+                                        highlighted = []
+                                else:
+                                    shots = []
                                     highlighted = []
                                 background.update(self.sea + self.rocks + self.islands +
                                                   LayersHandler.filter_layer(self.highlighted_sea, highlighted) +

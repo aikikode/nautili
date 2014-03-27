@@ -125,8 +125,8 @@ class TopPanel(Panel):
         self.objects.append(self.green_counts)
 
     def update(self):
-        self.yellow_counts.set_text("ships: {}  ports: {}".format(len(self.game.yellow_ships), 0))
-        self.green_counts.set_text("ships: {}  ports: {}".format(len(self.game.green_ships), 0))
+        self.yellow_counts.set_text("ships: {}  ports: {}".format(len(self.game.yellow_ships), len(self.game.yellow_ports)))
+        self.green_counts.set_text("ships: {}  ports: {}".format(len(self.game.green_ships), len(self.game.green_ports)))
 
 
 class MiniMap(Panel):

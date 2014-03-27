@@ -132,8 +132,11 @@ class LoadMapMenu(BaseMainMenu):
 
     def load_map(self, map_file):
         map = os.path.join(LoadMapMenu.MAP_DIR, map_file + ".tmx")
-        g = game.Game(map)
-        g.start()
+        try:
+            g = game.Game(map)
+            g.start()
+        except ValueError:
+            pass
 
 
 class PauseMenu(Menu):
