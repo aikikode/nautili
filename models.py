@@ -52,7 +52,7 @@ class HealthBar(pygame.sprite.Sprite):
             self.health_image = Image.open(os.path.join(MODELS_DIR, "health_bar_cell_green.png"))
         self._cell_width, self._cell_height = self.damage_image.size
         self.image = None
-        self.health_bar_width = 0
+        self.bar_width = 0
         self._delta = 0
         if not os.path.exists(settings.TMP_DIR):
             os.makedirs(settings.TMP_DIR)
@@ -65,7 +65,7 @@ class HealthBar(pygame.sprite.Sprite):
                                                                      self.model.armor,
                                                                      self.model.base_armor - self.model.armor))
         if not os.path.exists(out_fname):
-            blank_image = Image.new("RGBA", (64, 4), None)
+            blank_image = Image.new("RGBA", (64, self._cell_height), None)
             clear_image(blank_image)
             for x in xrange(self.model.armor):
                 blank_image.paste(self.health_image, (self._cell_width * x, 0), self.health_image)
@@ -74,14 +74,14 @@ class HealthBar(pygame.sprite.Sprite):
             blank_image.save(out_fname)
         self.image = pygame.image.load(out_fname).convert_alpha()
         tile_width = 64  # TODO: remove hardcode value
-        self.health_bar_width = self._cell_width * self.model.base_armor
-        self._delta = (tile_width - self.health_bar_width) / 2
+        self.bar_width = self._cell_width * self.model.base_armor
+        self._delta = (tile_width - self.bar_width) / 2
         self.move()
 
     def move(self):
         x, y = self.model.rect.topleft
         x, y = x + self._delta, y - 5
-        self.rect = pygame.Rect(x, y, self.health_bar_width, self._cell_height)
+        self.rect = pygame.Rect(x, y, self.bar_width, self._cell_height)
 
 
 class CannonBar(pygame.sprite.Sprite):
@@ -92,7 +92,7 @@ class CannonBar(pygame.sprite.Sprite):
         self.cannon_image = Image.open(os.path.join(MODELS_DIR, "cannon_bar_cell.png"))
         self._cell_width, self._cell_height = self.empty_image.size
         self.image = None
-        self.cannon_bar_width = 0
+        self.bar_width = 0
         self._delta = 0
         if not os.path.exists(settings.TMP_DIR):
             os.makedirs(settings.TMP_DIR)
@@ -101,26 +101,64 @@ class CannonBar(pygame.sprite.Sprite):
 
     def draw(self):
         out_fname = os.path.join(settings.TMP_DIR,
-                                 "cannons_{}_empty_{}.png".format(self.model._shots_left,
-                                                                  self.model.shots_count - self.model._shots_left))
+                                 "cannons_{}_empty_{}.png".format(self.model.shots_left,
+                                                                  self.model.shots_count - self.model.shots_left))
         if not os.path.exists(out_fname):
-            blank_image = Image.new("RGBA", (64, 7), None)
+            blank_image = Image.new("RGBA", (64, self._cell_height), None)
             clear_image(blank_image)
-            for x in xrange(self.model._shots_left):
+            for x in xrange(self.model.shots_left):
                 blank_image.paste(self.cannon_image, (self._cell_width * x, 0), self.cannon_image)
-            for x in xrange(self.model._shots_left, self.model.shots_count):
+            for x in xrange(self.model.shots_left, self.model.shots_count):
                 blank_image.paste(self.empty_image, (self._cell_width * x, 0), self.empty_image)
             blank_image.save(out_fname)
         self.image = pygame.image.load(out_fname).convert_alpha()
         tile_width = 64  # TODO: remove hardcode value
-        self.cannon_bar_width = self._cell_width * self.model.shots_count
-        self._delta = (tile_width - self.cannon_bar_width) / 2
+        self.bar_width = self._cell_width * self.model.shots_count
+        self._delta = math.floor((tile_width - self.bar_width) / 2.0 + 0.5)
         self.move()
 
     def move(self):
         x, y = self.model.rect.topleft
-        x, y = x + self._delta, y - 15
-        self.rect = pygame.Rect(x, y, self.cannon_bar_width, self._cell_height)
+        x, y = x + self._delta, y - 20
+        self.rect = pygame.Rect(x, y, self.bar_width, self._cell_height)
+
+
+class TargetBar(pygame.sprite.Sprite):
+    def __init__(self, model):
+        pygame.sprite.Sprite.__init__(self)
+        self.model = model
+        self.target_image = Image.open(os.path.join(MODELS_DIR, "target_bar_cell.png"))
+        self._cell_width, self._cell_height = self.target_image.size
+        self.image = None
+        self.bar_width = 0
+        self._delta = 0
+        if not os.path.exists(settings.TMP_DIR):
+            os.makedirs(settings.TMP_DIR)
+        self.rect = None
+        self.draw()
+
+    def draw(self):
+        if self.model.aimed_count > 0:
+            out_fname = os.path.join(settings.TMP_DIR, "targets_{}.png".format(self.model.aimed_count))
+            if not os.path.exists(out_fname):
+                blank_image = Image.new("RGBA", (self._cell_width * 8, self._cell_height), None)
+                clear_image(blank_image)
+                for x in xrange(self.model.aimed_count):
+                    blank_image.paste(self.target_image, (self._cell_width * x, 0), self.target_image)
+                blank_image.save(out_fname)
+            self.image = pygame.image.load(out_fname).convert_alpha()
+            tile_width = 64  # TODO: remove hardcode value
+            self.bar_width = self._cell_width * self.model.aimed_count
+            self._delta = math.floor((tile_width - self.bar_width) / 2.0 + 0.5)
+            self.move()
+        else:
+            self.image = pygame.Surface((0,0))
+            self.rect = pygame.Rect(0,0,0,0)
+
+    def move(self):
+        x, y = self.model.rect.topleft
+        x, y = x + self._delta, y - 30
+        self.rect = pygame.Rect(x, y, self.bar_width, self._cell_height)
 
 
 class Ship(Model):
@@ -139,12 +177,14 @@ class Ship(Model):
         self.max_move = int(max_move)
         self.shots_count = int(shots_count)
         self.stille_move = int(stille_move)
-        self._shots_left = self.shots_count
+        self.shots_left = self.shots_count
+        self.aimed_count = 0  # number of cannons aimed at this ship
         self._targets = []
         self._is_alive = True
         self.offset = (0, 0)
         self.health_bar = HealthBar(self)
         self.cannon_bar = CannonBar(self)
+        self.target_bar = TargetBar(self)
 
     def select(self):
         self._update_image("selected")
@@ -153,10 +193,16 @@ class Ship(Model):
         self._update_image()
 
     def set_aimed(self):
+        self.aimed_count += 1
+        self.target_bar.draw()
         self._update_image("aimed")
 
-    def unset_aimed(self):
-        self._update_image()
+    def unset_aimed(self, count=1):
+        self.aimed_count -= count
+        self.target_bar.draw()
+        if self.aimed_count <= 0:
+            self.aimed_count = 0
+            self._update_image()
 
     def _update_image(self, img_type=""):
         if img_type:
@@ -165,10 +211,14 @@ class Ship(Model):
             os.path.join(MODELS_DIR, "{}_{}_{}{}.png".format(self.model, self.player, self.direction, img_type))).convert_alpha()
 
     def reset(self):
+        self.aimed_count = 0
         self._storm_moves_left = self.storm_move
         self._has_moved = False
-        self._shots_left = self.shots_count
+        self.shots_left = self.shots_count
         self._targets = []
+        self.health_bar.draw()
+        self.cannon_bar.draw()
+        self.target_bar.draw()
 
     def move(self, (x, y)=(None, None)):
         if self._has_moved:
@@ -188,6 +238,7 @@ class Ship(Model):
         self.rect.topleft = map(lambda x,y: x + y, self.offset, self.renderer.isometric_to_orthogonal(self.x, self.y))
         self.health_bar.move()
         self.cannon_bar.move()
+        self.target_bar.move()
         self.possible_moves = []
         self._update_image()
         self.aim_reset()
@@ -321,36 +372,41 @@ class Ship(Model):
     def aim_reset(self):
         for target in self._targets:
             target.unset_aimed()
-            self._shots_left += 1
+            self.shots_left += 1
         self._targets = []
         self.cannon_bar.draw()
+        self.target_bar.draw()
 
     def aim(self, target):
-        if self._shots_left < 0 or target.coords() not in self.possible_shots:
+        if self.shots_left < 0 or target.coords() not in self.possible_shots:
             return False
-        if self._shots_left == 0:
+        if self.shots_left == 0:
             if self._targets and target in self._targets:
                 c = Counter(self._targets)
-                self._shots_left += c[target]
+                self.shots_left += c[target]
                 self._targets = filter(lambda t: t != target, self._targets)
-                target.unset_aimed()
+                target.unset_aimed(c[target])
+                self.cannon_bar.draw()
             return False
         target.set_aimed()
         self._targets.append(target)
-        self._shots_left -= 1
+        self.shots_left -= 1
         self.cannon_bar.draw()
         #print "{} aimed at {}".format(self, target)
         return True
 
     def shoot(self, hit=True):
-        if hit:
+        if self._targets:
             c = Counter(self._targets)
             for target, shot_count in c.items():
-                print "{} shot at {} {} time(s)".format(self, target, shot_count)
-                target.take_damage(shot_count)
-        elif self._targets:
-            print "{} missed".format(self)
+                if hit:
+                    # print "{} shot at {} {} time(s)".format(self, target, shot_count)
+                    target.take_damage(shot_count)
+                # else:
+                #    print "{} missed".format(self)
+                target.unset_aimed(shot_count)
         self._targets = []
+        self.cannon_bar.draw()
 
     def get_targets(self):
         return self._targets

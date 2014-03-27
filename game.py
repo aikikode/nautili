@@ -203,6 +203,8 @@ class Game(object):
                 else:
                     if e.type == pygame.KEYDOWN and e.key == pygame.K_RETURN:
                         right_top_panel.end_move()
+                    if e.type == pygame.KEYDOWN and (e.key == pygame.K_LSHIFT or e.key == pygame.K_RSHIFT):
+                        right_top_panel.shoot()
                     if e.type == pygame.KEYDOWN and (e.key == pygame.K_UP or e.key == pygame.K_w):
                         self.move_camera((0, 300))
                     if e.type == pygame.KEYDOWN and (e.key == pygame.K_DOWN or e.key == pygame.K_s):
@@ -268,7 +270,6 @@ class Game(object):
                                     if self.selected_ship and self.selected_ship != target_ship:
                                         if self.selected_ship.aim(target_ship):
                                             self.target_ships.append(target_ship)
-                                            pass
                                             #TODO: Draw curved arrow to the target
                                             #background.clear()
                                             #background.add(self.sea + self.rocks + self.islands +
