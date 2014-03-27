@@ -205,6 +205,8 @@ class Game(object):
                         right_top_panel.end_move()
                     if e.type == pygame.KEYDOWN and (e.key == pygame.K_LSHIFT or e.key == pygame.K_RSHIFT):
                         right_top_panel.shoot()
+                    if e.type == pygame.KEYDOWN and e.key == pygame.K_TAB:
+                        right_top_panel.get_wind()
                     if e.type == pygame.KEYDOWN and (e.key == pygame.K_UP or e.key == pygame.K_w):
                         self.move_camera((0, 300))
                     if e.type == pygame.KEYDOWN and (e.key == pygame.K_DOWN or e.key == pygame.K_s):
@@ -270,16 +272,6 @@ class Game(object):
                                     if self.selected_ship and self.selected_ship != target_ship:
                                         if self.selected_ship.aim(target_ship):
                                             self.target_ships.append(target_ship)
-                                            #TODO: Draw curved arrow to the target
-                                            #background.clear()
-                                            #background.add(self.sea + self.rocks + self.islands +
-                                            #               LayersHandler.filter_layer(self.highlighted_sea, highlighted) +
-                                            #               LayersHandler.filter_layer(self.fire, shots))
-                                            #(x0, y0) = self.layers_handler.isometric_to_orthogonal(selected_ship.x, selected_ship.y)
-                                            #for target in selected_ship.get_targets():
-                                            #    (x1, y1) = self.layers_handler.isometric_to_orthogonal(target.x, target.y)
-                                            #    background.add_line((x0, y0), (x1, y1))
-                                            #background.draw()
                                 except IndexError:
                                     pass
                     if drag_mode:

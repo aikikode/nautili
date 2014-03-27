@@ -24,15 +24,15 @@ def clear_image(image):
 
 
 class Model(pygame.sprite.Sprite):
-    def __init__(self, renderer, x, y, model=None, player=None, *args):
+    def __init__(self, layers_handler, x, y, model=None, player=None, *args):
         pygame.sprite.Sprite.__init__(self)
         self.x = x
         self.y = y
         self.model = model
         self.player = player
-        self.renderer = renderer
+        self.layers_handler = layers_handler
         self.image = pygame.image.load("./tilesets/test_player.png").convert_alpha()
-        self.rect = pygame.Rect(*(renderer.isometric_to_orthogonal(x, y) + (64, 64)))
+        self.rect = pygame.Rect(*(layers_handler.isometric_to_orthogonal(x, y) + (64, 64)))
 
     def coords(self):
         return self.x, self.y
@@ -162,8 +162,8 @@ class TargetBar(pygame.sprite.Sprite):
 
 
 class Ship(Model):
-    def __init__(self, renderer, isom_x, isom_y, model='steam_corvette', player=settings.PLAYER1, base_armor=1, fire_range=1, max_move=1, shots_count=1, stille_move=1, storm_move=1, **kwargs):
-        Model.__init__(self, renderer, isom_x, isom_y, model, player)
+    def __init__(self, layers_handler, isom_x, isom_y, model='steam_corvette', player=settings.PLAYER1, base_armor=1, fire_range=1, max_move=1, shots_count=1, stille_move=1, storm_move=1, **kwargs):
+        Model.__init__(self, layers_handler, isom_x, isom_y, model, player)
         self.possible_moves = []
         self.possible_shots = []
         self.direction = 'se'
@@ -235,7 +235,7 @@ class Ship(Model):
                 return False
         else:
             return False
-        self.rect.topleft = map(lambda x,y: x + y, self.offset, self.renderer.isometric_to_orthogonal(self.x, self.y))
+        self.rect.topleft = map(lambda x,y: x + y, self.offset, self.layers_handler.isometric_to_orthogonal(self.x, self.y))
         self.health_bar.move()
         self.cannon_bar.move()
         self.target_bar.move()
@@ -302,7 +302,9 @@ class Ship(Model):
                     next = (self.x + delta, self.y)
                 if wind_direction == wind.SOUTH_WEST:
                     next = (self.x, self.y + delta)
-                if next in obstacles:
+                if next in obstacles or next[0] < 0 or next[1] < 0 or \
+                                next[0] >= self.layers_handler.tiledmap.width or \
+                                next[1] >= self.layers_handler.tiledmap.height:
                     break
                 else:
                     self._storm_moves_left -= delta
@@ -428,8 +430,8 @@ class Ship(Model):
 
 
 class Port(Model):
-    def __init__(self, renderer, isom_x, isom_y, model='port_1', player='yellow', base_armor=1, fire_range=1, shots_count=1, **kwargs):
-        Model.__init__(self, renderer, isom_x, isom_y, model, player)
+    def __init__(self, layers_handler, isom_x, isom_y, model='port_1', player='yellow', base_armor=1, fire_range=1, shots_count=1, **kwargs):
+        Model.__init__(self, layers_handler, isom_x, isom_y, model, player)
         self._update_image()
         self.base_armor = int(base_armor)
         self.fire_range = int(fire_range)
