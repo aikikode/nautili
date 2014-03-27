@@ -37,6 +37,8 @@ class Game(object):
         self.ships = lh.ships
         self.yellow_ships = lh.yellow_ships
         self.green_ships = lh.green_ships
+        self.yellow_ports = lh.yellow_ports
+        self.green_ports = lh.green_ports
         self.ports = lh.ports
         # Initial game variables state
         self.wind_type = None
@@ -112,8 +114,8 @@ class Game(object):
             self.player = PLAYER1
             self.top_panel.turn_label.set_text("Yellow player turn", colors.YELLOW)
         self.wind_type = None
-        for ship in self.ships:
-            ship.reset()
+        for model in self.ships + self.ports:
+            model.reset()
         self.toggle_pause()
 
     def toggle_pause(self):
@@ -171,7 +173,11 @@ class Game(object):
         delta = (delta_x, delta_y)
         self.background.fill(colors.BACKGROUND_COLOR) # fill with water color
         self.background.increase_offset(delta)
-        for obj in self.ships + self.ports + [ship.health_bar for ship in self.ships] + [ship.cannon_bar for ship in self.ships]:
+        for obj in self.ships + self.ports +\
+                [ship.health_bar for ship in self.ships] +\
+                [ship.cannon_bar for ship in self.ships] +\
+                [port.health_bar for port in self.ports] + \
+                [port.cannon_bar for port in self.ports]:
             obj.offset = self.background.offset
             obj.rect = obj.rect.move(delta)
         self.background.draw()
@@ -244,34 +250,41 @@ class Game(object):
                         if e.button == 1:
                             try:
                                 if self.player == PLAYER1:
-                                    ships_to_select = self.yellow_ships
+                                    ships_to_select = self.yellow_ships + self.yellow_ports
                                 else:
-                                    ships_to_select = self.green_ships
+                                    ships_to_select = self.green_ships + self.green_ports
                                 if self.selected_ship:
                                     self.selected_ship.unselect()
                                 self.selected_ship = filter(lambda obj: obj.coords() == (clicked.coords()), ships_to_select)[0]
                                 self.selected_ship.select()
                                 self.right_top_panel.shoot_label.set_text("")
                                 #print "Object {} clicked".format(selected_ship)
-                                # Highlight possible movements
-                                highlighted = self.selected_ship.calculate_moves(self.wind_type, self.wind_direction,
-                                                                            obstacles=self.layers_handler.move_obstacles + map(
-                                                                                lambda x: x.coords(), self.ships) + map(
-                                                                                lambda x: x.coords(), self.ports))
                                 shots = self.selected_ship.calculate_shots(obstacles=self.layers_handler.shoot_obstacles)
+                                try:
+                                    # Highlight possible movements
+                                    highlighted = self.selected_ship.calculate_moves(self.wind_type, self.wind_direction,
+                                                                                obstacles=self.layers_handler.move_obstacles + map(
+                                                                                    lambda x: x.coords(), self.ships) + map(
+                                                                                    lambda x: x.coords(), self.ports))
+                                except AttributeError, ex:
+                                    highlighted = []
                                 background.update(self.sea + self.rocks + self.islands +
                                                   LayersHandler.filter_layer(self.highlighted_sea, highlighted) +
                                                   LayersHandler.filter_layer(self.fire, shots))
                             except IndexError:
                                 if self.selected_ship:
-                                    # we clicked on empty sea - move object there
-                                    self.selected_ship.move(clicked.coords())
+                                    try:
+                                        # we clicked on empty sea - move object there
+                                        self.selected_ship.move(clicked.coords())
+                                    except AttributeError, ex:
+                                        pass
                                     self.allsprites = self.layers_handler.get_all_sprites()
                                     background.update(self.sea + self.rocks + self.islands)
                                     self.selected_ship = None
                         else:
                             try:
-                                target_ship = filter(lambda obj: obj.coords() == (clicked.coords()), self.ships)[0]
+                                targets = self.ships + self.ports
+                                target_ship = filter(lambda obj: obj.coords() == (clicked.coords()), targets)[0]
                                 if self.selected_ship and self.selected_ship != target_ship:
                                     if self.selected_ship.aim(target_ship):
                                         self.target_ships.append(target_ship)

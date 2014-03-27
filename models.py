@@ -24,7 +24,7 @@ def clear_image(image):
 
 
 class Model(pygame.sprite.Sprite):
-    def __init__(self, layers_handler, x, y, model=None, player=None, *args):
+    def __init__(self, layers_handler, x, y, model=None, player=None, base_armor=1, fire_range=1, shots_count=1, **kwargs):
         pygame.sprite.Sprite.__init__(self)
         self.x = x
         self.y = y
@@ -33,12 +33,146 @@ class Model(pygame.sprite.Sprite):
         self.layers_handler = layers_handler
         self.image = pygame.image.load("./tilesets/test_player.png").convert_alpha()
         self.rect = pygame.Rect(*(layers_handler.isometric_to_orthogonal(x, y) + (64, 64)))
+        self.possible_shots = []
+        self._update_image()
+        self.base_armor = int(base_armor)
+        self.armor = self.base_armor
+        self.fire_range = int(fire_range)
+        self.shots_count = int(shots_count)
+        self.shots_left = self.shots_count
+        self.aimed_count = 0  # number of cannons aimed at this ship
+        self._targets = []
+        self._is_alive = True
+        self.offset = (0, 0)
+        self.health_bar = HealthBar(self)
+        self.cannon_bar = CannonBar(self)
+        self.target_bar = TargetBar(self)
 
     def coords(self):
         return self.x, self.y
 
     def __repr__(self):
         return "{}({}, {}): {}, {}".format(self.__class__.__name__, self.x, self.y, self.model, self.player)
+
+    def select(self):
+        self._update_image("selected")
+
+    def unselect(self):
+        self._update_image()
+
+    def set_aimed(self):
+        self.aimed_count += 1
+        self.target_bar.draw()
+        self._update_image("aimed")
+
+    def unset_aimed(self, count=1):
+        self.aimed_count -= count
+        self.target_bar.draw()
+        if self.aimed_count <= 0:
+            self.aimed_count = 0
+            self._update_image()
+
+    def _update_image(self, img_type=""):
+        if img_type:
+            img_type = "_{}".format(img_type)
+        self.image = pygame.image.load(
+            os.path.join(MODELS_DIR, "{}_{}{}.png".format(self.model, self.player, img_type))).convert_alpha()
+
+    def reset(self):
+        self.aimed_count = 0
+        self.shots_left = self.shots_count
+        self._targets = []
+        self.health_bar.draw()
+        self.cannon_bar.draw()
+        self.target_bar.draw()
+
+    def calculate_shots(self, obstacles=[]):
+        self.possible_shots = self.calculate_area(self.fire_range, obstacles)
+        return self.possible_shots
+
+    def calculate_area(self, limit, obstacles):
+        moves = []  # moves are just example, we use it to calculate all types of actions: moves, shots, etc.
+        for delta in xrange(1, limit + 1):
+            moves.append((self.x, self.y + delta))
+            moves.append((self.x, self.y - delta))
+            moves.append((self.x + delta, self.y))
+            moves.append((self.x + delta, self.y + delta))
+            moves.append((self.x + delta, self.y - delta))
+            moves.append((self.x - delta, self.y))
+            moves.append((self.x - delta, self.y + delta))
+            moves.append((self.x - delta, self.y - delta))
+        for move in moves[:]:
+            movex, movey = move
+            try:
+                if movex < 0 or \
+                                movey < 0 or \
+                                move in obstacles:
+                    deltax = movex - self.x
+                    stepx = deltax / abs(deltax) if deltax else 0
+                    deltay = movey - self.y
+                    stepy = deltay / abs(deltay) if deltay else 0
+                    if (movex, movey) in moves: moves.remove((movex, movey))
+                    try:
+                        while abs(stepx) + abs(stepy) <= 2*(limit + 1):
+                            moves.remove((movex + stepx, movey + stepy))
+                            stepx += np.sign(stepx)
+                            stepy += np.sign(stepy)
+                    except:
+                        pass
+            except:
+                pass
+        return moves
+
+    def has_targets(self):
+        return self._targets != []
+
+    def aim_reset(self):
+        for target in self._targets:
+            target.unset_aimed()
+            self.shots_left += 1
+        self._targets = []
+        self.cannon_bar.draw()
+        self.target_bar.draw()
+
+    def aim(self, target):
+        if self.shots_left < 0 or target.coords() not in self.possible_shots:
+            return False
+        if self.shots_left == 0:
+            if self._targets and target in self._targets:
+                c = Counter(self._targets)
+                self.shots_left += c[target]
+                self._targets = filter(lambda t: t != target, self._targets)
+                target.unset_aimed(c[target])
+                self.cannon_bar.draw()
+            return False
+        target.set_aimed()
+        self._targets.append(target)
+        self.shots_left -= 1
+        self.cannon_bar.draw()
+        return True
+
+    def shoot(self, hit=True):
+        if self._targets:
+            c = Counter(self._targets)
+            for target, shot_count in c.items():
+                if hit:
+                    target.take_damage(shot_count)
+                target.unset_aimed(shot_count)
+        self._targets = []
+        self.cannon_bar.draw()
+
+    def get_targets(self):
+        return self._targets
+
+    def take_damage(self, damage):
+        self.armor -= damage
+        if self.armor <= 0:
+            self._is_alive = False
+        self.health_bar.draw()
+        self.cannon_bar.draw()
+
+    def is_alive(self):
+        return self._is_alive
 
 
 class HealthBar(pygame.sprite.Sprite):
@@ -163,46 +297,14 @@ class TargetBar(pygame.sprite.Sprite):
 
 class Ship(Model):
     def __init__(self, layers_handler, isom_x, isom_y, model='steam_corvette', player=settings.PLAYER1, base_armor=1, fire_range=1, max_move=1, shots_count=1, stille_move=1, storm_move=1, **kwargs):
-        Model.__init__(self, layers_handler, isom_x, isom_y, model, player)
-        self.possible_moves = []
-        self.possible_shots = []
         self.direction = 'se'
-        self._update_image()
+        Model.__init__(self, layers_handler, isom_x, isom_y, model, player, base_armor, fire_range, shots_count)
+        self.possible_moves = []
         self.storm_move = int(storm_move)
         self._storm_moves_left = self.storm_move
         self._has_moved = False
-        self.base_armor = int(base_armor)
-        self.armor = self.base_armor
-        self.fire_range = int(fire_range)
         self.max_move = int(max_move)
-        self.shots_count = int(shots_count)
         self.stille_move = int(stille_move)
-        self.shots_left = self.shots_count
-        self.aimed_count = 0  # number of cannons aimed at this ship
-        self._targets = []
-        self._is_alive = True
-        self.offset = (0, 0)
-        self.health_bar = HealthBar(self)
-        self.cannon_bar = CannonBar(self)
-        self.target_bar = TargetBar(self)
-
-    def select(self):
-        self._update_image("selected")
-
-    def unselect(self):
-        self._update_image()
-
-    def set_aimed(self):
-        self.aimed_count += 1
-        self.target_bar.draw()
-        self._update_image("aimed")
-
-    def unset_aimed(self, count=1):
-        self.aimed_count -= count
-        self.target_bar.draw()
-        if self.aimed_count <= 0:
-            self.aimed_count = 0
-            self._update_image()
 
     def _update_image(self, img_type=""):
         if img_type:
@@ -211,14 +313,9 @@ class Ship(Model):
             os.path.join(MODELS_DIR, "{}_{}_{}{}.png".format(self.model, self.player, self.direction, img_type))).convert_alpha()
 
     def reset(self):
-        self.aimed_count = 0
+        Model.reset(self)
         self._storm_moves_left = self.storm_move
         self._has_moved = False
-        self.shots_left = self.shots_count
-        self._targets = []
-        self.health_bar.draw()
-        self.cannon_bar.draw()
-        self.target_bar.draw()
 
     def move(self, (x, y)=(None, None)):
         if self._has_moved:
@@ -243,10 +340,6 @@ class Ship(Model):
         self._update_image()
         self.aim_reset()
         return True
-
-    def calculate_shots(self, obstacles=[]):
-        self.possible_shots = self.calculate_area(self.fire_range, obstacles)
-        return self.possible_shots
 
     def calculate_moves(self, wind_type, wind_direction, obstacles=[], max=None):
         def rotate(axis, obj):
@@ -335,108 +428,11 @@ class Ship(Model):
             self.possible_moves = self.calculate_area(max_move, obstacles)
         return self.possible_moves
 
-    def calculate_area(self, limit, obstacles):
-        moves = []
-        for delta in xrange(1, limit + 1):
-            moves.append((self.x, self.y + delta))
-            moves.append((self.x, self.y - delta))
-            moves.append((self.x + delta, self.y))
-            moves.append((self.x + delta, self.y + delta))
-            moves.append((self.x + delta, self.y - delta))
-            moves.append((self.x - delta, self.y))
-            moves.append((self.x - delta, self.y + delta))
-            moves.append((self.x - delta, self.y - delta))
-        for move in moves[:]:
-            movex, movey = move
-            try:
-                if movex < 0 or \
-                                movey < 0 or \
-                                move in obstacles:
-                    deltax = movex - self.x
-                    stepx = deltax / abs(deltax) if deltax else 0
-                    deltay = movey - self.y
-                    stepy = deltay / abs(deltay) if deltay else 0
-                    if (movex, movey) in moves: moves.remove((movex, movey))
-                    try:
-                        while abs(stepx) + abs(stepy) <= 2*(limit + 1):
-                            moves.remove((movex + stepx, movey + stepy))
-                            stepx += np.sign(stepx)
-                            stepy += np.sign(stepy)
-                    except:
-                        pass
-            except:
-                pass
-        return moves
-
-    def has_targets(self):
-        return self._targets != []
-
-    def aim_reset(self):
-        for target in self._targets:
-            target.unset_aimed()
-            self.shots_left += 1
-        self._targets = []
-        self.cannon_bar.draw()
-        self.target_bar.draw()
-
-    def aim(self, target):
-        if self.shots_left < 0 or target.coords() not in self.possible_shots:
-            return False
-        if self.shots_left == 0:
-            if self._targets and target in self._targets:
-                c = Counter(self._targets)
-                self.shots_left += c[target]
-                self._targets = filter(lambda t: t != target, self._targets)
-                target.unset_aimed(c[target])
-                self.cannon_bar.draw()
-            return False
-        target.set_aimed()
-        self._targets.append(target)
-        self.shots_left -= 1
-        self.cannon_bar.draw()
-        #print "{} aimed at {}".format(self, target)
-        return True
-
-    def shoot(self, hit=True):
-        if self._targets:
-            c = Counter(self._targets)
-            for target, shot_count in c.items():
-                if hit:
-                    # print "{} shot at {} {} time(s)".format(self, target, shot_count)
-                    target.take_damage(shot_count)
-                # else:
-                #    print "{} missed".format(self)
-                target.unset_aimed(shot_count)
-        self._targets = []
-        self.cannon_bar.draw()
-
-    def get_targets(self):
-        return self._targets
-
-    def take_damage(self, damage):
-        self.armor -= damage
-        if self.armor <= 0:
-            #print "{} is down".format(self)
-            self._is_alive = False
-        self.health_bar.draw()
-        self.cannon_bar.draw()
-
-    def is_alive(self):
-        return self._is_alive
-
     def check_crash(self, obstacles):
         if self.coords() in obstacles:
             self._is_alive = False
 
 
 class Port(Model):
-    def __init__(self, layers_handler, isom_x, isom_y, model='port_1', player='yellow', base_armor=1, fire_range=1, shots_count=1, **kwargs):
-        Model.__init__(self, layers_handler, isom_x, isom_y, model, player)
-        self._update_image()
-        self.base_armor = int(base_armor)
-        self.fire_range = int(fire_range)
-        self.shots_count = int(shots_count)
-
-    def _update_image(self):
-        self.image = pygame.image.load(
-            os.path.join(MODELS_DIR, "{}_{}.png".format(self.model, self.player))).convert_alpha()
+    def __init__(self, layers_handler, isom_x, isom_y, model='port_1', player=settings.PLAYER1, base_armor=1, fire_range=1, max_move=1, shots_count=1, stille_move=1, storm_move=1, **kwargs):
+        Model.__init__(self, layers_handler, isom_x, isom_y, model, player, base_armor, fire_range, shots_count)

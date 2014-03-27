@@ -86,13 +86,13 @@ class RightTopPanel(Panel):
     def shoot(self):
         miss = random.randint(0, 2)
         if self.game.player == settings.PLAYER1:
-            ships_to_shoot = self.game.yellow_ships
+            targets_to_shoot = self.game.yellow_ships + self.game.yellow_ports
         else:
-            ships_to_shoot = self.game.green_ships
-        ships_to_shoot = filter(lambda s: s.has_targets(), ships_to_shoot)
-        for ship in ships_to_shoot:
-            ship.shoot(not miss)
-        if ships_to_shoot:
+            targets_to_shoot = self.game.green_ships + self.game.green_ports
+        targets_to_shoot = filter(lambda s: s.has_targets(), targets_to_shoot)
+        for target in targets_to_shoot:
+            target.shoot(not miss)
+        if targets_to_shoot:
             if miss:
                 self.shoot_label.set_text("missed")
             else:

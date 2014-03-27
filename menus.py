@@ -165,6 +165,7 @@ class PauseMenu(Menu):
             obj.check_click(event_position)
 
     def draw(self):
+        self.bg_surface = pygame.Surface((WIN_WIDTH, WIN_HEIGHT), pygame.SRCALPHA).convert_alpha()
         ypos = 0
         while ypos <= self.height:
             xpos = 0

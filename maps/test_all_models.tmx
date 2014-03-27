@@ -181,11 +181,20 @@
   </object>
  </objectgroup>
  <objectgroup name="ports_yellow" width="20" height="20">
-  <object name="port_1" gid="51" x="384" y="352">
+  <object name="port_1" gid="51" x="160" y="544">
    <properties>
     <property name="base_armor" value="7"/>
     <property name="fire_range" value="5"/>
+    <property name="model" value="port_1"/>
     <property name="shots_count" value="3"/>
+   </properties>
+  </object>
+  <object name="port_2" gid="51" x="256" y="544">
+   <properties>
+    <property name="base_armor" value="5"/>
+    <property name="fire_range" value="4"/>
+    <property name="model" value="port_2"/>
+    <property name="shots_count" value="2"/>
    </properties>
   </object>
  </objectgroup>
@@ -320,6 +329,24 @@
     <property name="shots_count" value="1"/>
     <property name="stille_move" value="1"/>
     <property name="storm_move" value="2"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup name="ports_green" width="20" height="20">
+  <object name="port_2" gid="51" x="480" y="64">
+   <properties>
+    <property name="base_armor" value="5"/>
+    <property name="fire_range" value="4"/>
+    <property name="model" value="port_2"/>
+    <property name="shots_count" value="2"/>
+   </properties>
+  </object>
+  <object name="port_1" gid="51" x="384" y="64">
+   <properties>
+    <property name="base_armor" value="7"/>
+    <property name="fire_range" value="5"/>
+    <property name="model" value="port_1"/>
+    <property name="shots_count" value="3"/>
    </properties>
   </object>
  </objectgroup>

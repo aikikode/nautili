@@ -37,7 +37,9 @@ class LayersHandler(object):
         self.yellow_ships = self.get_objects("ships_yellow", Ship)
         self.green_ships = self.get_objects("ships_green", Ship)
         self.ships = self.yellow_ships + self.green_ships
-        self.ports = self.get_objects("ports_yellow", Port)
+        self.yellow_ports = self.get_objects("ports_yellow", Port)
+        self.green_ports = self.get_objects("ports_green", Port)
+        self.ports = self.yellow_ports + self.green_ports
 
     def get_layer_tiles(self, layer_num, classname):
         res = [[None for x in xrange(0, self.tiledmap.width)] for y in xrange(0, self.tiledmap.height)]
@@ -60,11 +62,14 @@ class LayersHandler(object):
 
     def get_all_sprites(self):
         alive_ships = filter(lambda s: s.is_alive(), self.ships)
-        health_bars = [ship.health_bar for ship in alive_ships]
-        cannon_bars = [ship.cannon_bar for ship in alive_ships]
-        target_bars = [ship.target_bar for ship in alive_ships]
+        ships_health_bars = [ship.health_bar for ship in alive_ships]
+        ships_cannon_bars = [ship.cannon_bar for ship in alive_ships]
+        ships_target_bars = [ship.target_bar for ship in alive_ships]
+        ports_health_bars = [port.health_bar for port in self.ports]
+        ports_cannon_bars = [port.cannon_bar for port in self.ports]
+        ports_target_bars = [port.target_bar for port in self.ports]
         return pygame.sprite.OrderedUpdates(
-            sorted(alive_ships + self.ports, key=lambda s: s.x + s.y) + health_bars + cannon_bars + target_bars)
+            sorted(alive_ships + self.ports, key=lambda s: s.x + s.y) + ships_health_bars + ships_cannon_bars + ships_target_bars + ports_health_bars + ports_cannon_bars + ports_target_bars)
 
     def get_clickable_objects(self):
         return LayersHandler.filter_not_none(LayersHandler.flatten(self.visible_sea))
