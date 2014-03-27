@@ -148,14 +148,22 @@ class PauseMenu(Menu):
         self.pygame_bg_image = pygame.image.load(image)
         label_font = pygame.font.Font(None, 50)
         prompt_font = pygame.font.Font(None, 30)
+        delta = 135/17. * len(text) # x delta based on font size
         pause_label = Label(label_font, WHITE, text,
-                                  (MAIN_WIN_WIDTH / 2 - 135, MAIN_WIN_HEIGHT / 2 - 90))
+                                  (MAIN_WIN_WIDTH / 2 - delta, MAIN_WIN_HEIGHT / 2 - 90))
         prompt_label = Label(prompt_font, WHITE, "Press Spacebar to continue",
                                  (MAIN_WIN_WIDTH / 2 - 130, MAIN_WIN_HEIGHT / 2 - 40))
         self.objects = []
         self.objects.append(prompt_label)
         self.objects.append(pause_label)
-        self.draw()
+
+    def mouseover(self, event_position):
+        for obj in self.objects:
+            obj.mouseover(event_position)
+
+    def check_click(self, event_position):
+        for obj in self.objects:
+            obj.check_click(event_position)
 
     def draw(self):
         ypos = 0
@@ -165,10 +173,26 @@ class PauseMenu(Menu):
                 self.bg_surface.blit(self.pygame_bg_image, (xpos, ypos))
                 xpos += self.bg_image.size[0]
             ypos += self.bg_image.size[1]
-
-    def show(self):
         self.screen.blit(self.bg_surface, (0, 0))
         self.draw_sprites()
+
+    def run(self):
+        self.draw()
+        while 1:
+            if not self.process_events():
+                break
+            pygame.display.update()
+
+    def process_events(self):
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                raise SystemExit, "QUIT"
+            if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                self.check_click(e.pos)
+            if e.type == pygame.KEYDOWN and e.key == pygame.K_SPACE:
+                return False
+        self.mouseover(pygame.mouse.get_pos())
+        return True
 
 
 class OptionsMenu(Menu):
