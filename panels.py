@@ -26,18 +26,18 @@ class Panel(object):
         return pygame.sprite.OrderedUpdates(self.objects)
 
     def draw_sprites(self):
-        allsprites = self.get_sprites()
-        allsprites.update()
-        allsprites.draw(self.game.screen)
+        all_sprites = self.get_sprites()
+        all_sprites.update()
+        all_sprites.draw(self.game.screen)
 
     def draw(self):
         self.hud.draw()
         self.draw_sprites()
         self.game.screen.blit(self.hud_surface, self.offset)
 
-    def mouseover(self, event_position):
+    def mouse_over(self, event_position):
         for obj in self.objects:
-            obj.mouseover(event_position)
+            obj.mouse_over(event_position)
 
     def check_click(self, event_position):
         if self.rect.collidepoint(event_position):
@@ -74,8 +74,7 @@ class RightTopPanel(Panel):
         self.game.drop_selection()
         self.get_wind_button.disable()
         self.shoot_label.set_text("")
-        #self.game.wind_type = random.sample(wind.WIND_TYPES, 1)[0]
-        self.game.wind_type = wind.STORM
+        self.game.wind_type = random.sample(wind.WIND_TYPES, 1)[0]
         self.game.wind_direction = random.sample(wind.WIND_DIRECTIONS, 1)[0]
         if self.game.wind_type == wind.WIND:
             self.wind_label.set_text("{}".format(wind.wind_direction_to_str(self.game.wind_direction)))
@@ -98,7 +97,7 @@ class RightTopPanel(Panel):
                 self.shoot_label.set_text("missed")
             else:
                 self.shoot_label.set_text("hit!")
-        self.game.allsprites = self.game.layers_handler.get_all_sprites()
+        self.game.all_sprites = self.game.layers_handler.get_all_sprites()
         self.game.remove_dead_ships()
 
     def end_move(self):
@@ -125,8 +124,10 @@ class TopPanel(Panel):
         self.objects.append(self.green_counts)
 
     def update(self):
-        self.yellow_counts.set_text("ships: {}  ports: {}".format(len(self.game.yellow_ships), len(self.game.yellow_ports)))
-        self.green_counts.set_text("ships: {}  ports: {}".format(len(self.game.green_ships), len(self.game.green_ports)))
+        self.yellow_counts.set_text("ships: {}  ports: {}".format(len(self.game.yellow_ships),
+                                                                  len(self.game.yellow_ports)))
+        self.green_counts.set_text("ships: {}  ports: {}".format(len(self.game.green_ships),
+                                                                 len(self.game.green_ports)))
 
 
 class MiniMap(Panel):
@@ -148,7 +149,8 @@ class MiniMap(Panel):
         for tile in LayersHandler.filter_not_none(LayersHandler.flatten(layer)):
             pygame.draw.circle(self.hud_surface, color,
                                map(lambda x, offs: int(x/self.scale + offs),
-                                   self.game.layers_handler.isometric_to_orthogonal(*tile.coords()), self.map_offset), 1)
+                                   self.game.layers_handler.isometric_to_orthogonal(*tile.coords()), self.map_offset),
+                               1)
 
     def draw(self):
         self.hud.fill(colors.BLACK)
@@ -173,8 +175,11 @@ class MiniMap(Panel):
 
     def check_click(self, event_position):
         if self.rect.collidepoint(event_position):
-            current_camera_offset = map(lambda p, offs: p / -self.scale + offs, self.game.get_camera_offset(), self.map_offset)
-            mouse_minimap_coords = map(lambda x, y: x - y, event_position, self.offset)
-            new_camera_offset = (mouse_minimap_coords[0] - self.cam_width / 2, mouse_minimap_coords[1] - self.cam_height / 2)
+            current_camera_offset = map(lambda p, offs: p / -self.scale + offs,
+                                        self.game.get_camera_offset(),
+                                        self.map_offset)
+            mouse_minimap_coordinates = map(lambda x, y: x - y, event_position, self.offset)
+            new_camera_offset = (mouse_minimap_coordinates[0] - self.cam_width / 2,
+                                 mouse_minimap_coordinates[1] - self.cam_height / 2)
             self.game.move_camera(map(lambda x, y: (x - y) * self.scale, current_camera_offset, new_camera_offset))
             return True

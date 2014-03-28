@@ -327,7 +327,7 @@ class Ship(Model):
             self.x = x
             self.y = y
             self._has_moved = True
-        elif (x, y) == (None, None) and len(self.possible_moves) == 1: # storm step
+        elif (x, y) == (None, None) and len(self.possible_moves) == 1:  # storm step
             coords = self.possible_moves[0]
             if coords:
                 self.x, self.y = coords
@@ -335,7 +335,8 @@ class Ship(Model):
                 return False
         else:
             return False
-        self.rect.topleft = map(lambda x, y: x + y, self.offset,
+        self.rect.topleft = map(lambda offset, self_coord: offset + self_coord,
+                                self.offset,
                                 self.layers_handler.isometric_to_orthogonal(self.x, self.y))
         self.health_bar.move()
         self.cannon_bar.move()
@@ -345,7 +346,7 @@ class Ship(Model):
         self.aim_reset()
         return True
 
-    def calculate_moves(self, wind_type, wind_direction, obstacles=[], max_move=None, docks=[]):
+    def calculate_moves(self, wind_type, wind_direction, obstacles=[], step=None, docks=[]):
         def rotate(axis, obj):
             """
             Rotate object with obj coords around the axis, getting closer and closer to the axis with each step till pi
@@ -383,38 +384,37 @@ class Ship(Model):
 
         if self._has_moved or wind_type not in [wind.STILLE, wind.WIND, wind.STORM]:
             return []
-        # Handle wind as a number of obstacles
+            # Handle wind as a number of obstacles
         max_move = self.max_move
         if wind_type == wind.STORM:
             cur = get_dock_moves()
             if not cur:
-                if max_move:
-                    max_move = max_move if max_move else self.storm_move
+                max_move = step if step else self.storm_move
                 for delta in xrange(1, max_move + 1):
                     if wind_direction == wind.NORTH:
-                        next = (self.x - delta, self.y - delta)
+                        next_move = (self.x - delta, self.y - delta)
                     if wind_direction == wind.EAST:
-                        next = (self.x + delta, self.y - delta)
+                        next_move = (self.x + delta, self.y - delta)
                     if wind_direction == wind.SOUTH:
-                        next = (self.x + delta, self.y + delta)
+                        next_move = (self.x + delta, self.y + delta)
                     if wind_direction == wind.WEST:
-                        next = (self.x - delta, self.y + delta)
+                        next_move = (self.x - delta, self.y + delta)
                     if wind_direction == wind.NORTH_EAST:
-                        next = (self.x, self.y - delta)
+                        next_move = (self.x, self.y - delta)
                     if wind_direction == wind.NORTH_WEST:
-                        next = (self.x - delta, self.y)
+                        next_move = (self.x - delta, self.y)
                     if wind_direction == wind.SOUTH_EAST:
-                        next = (self.x + delta, self.y)
+                        next_move = (self.x + delta, self.y)
                     if wind_direction == wind.SOUTH_WEST:
-                        next = (self.x, self.y + delta)
-                    if next in obstacles or next[0] < 0 or next[1] < 0 or \
-                                    next[0] >= self.layers_handler.tiledmap.width or \
-                                    next[1] >= self.layers_handler.tiledmap.height:
+                        next_move = (self.x, self.y + delta)
+                    if next_move in obstacles or next_move[0] < 0 or next_move[1] < 0 or \
+                                    next_move[0] >= self.layers_handler.tiledmap.width or \
+                                    next_move[1] >= self.layers_handler.tiledmap.height:
                         break
                     else:
                         self._storm_moves_left -= delta
                         if self._storm_moves_left >= 0:
-                            cur = [next]
+                            cur = [next_move]
             self.possible_moves = cur
         else:
             self.possible_moves = get_dock_moves()

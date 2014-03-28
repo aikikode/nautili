@@ -51,5 +51,3 @@ class Rock(BaseTexture):
 
 class Island(BaseTexture):
     pass
-
-

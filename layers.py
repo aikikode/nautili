@@ -29,10 +29,10 @@ class LayersHandler(object):
                 self.sea,
                 self.rocks),
             self.islands)
-        self.shoot_obstacles = map(lambda x: x.coords(),
+        self.shoot_obstacles = map(lambda island: island.coords(),
                                    LayersHandler.filter_not_none(LayersHandler.flatten(self.islands)))
         self.storm_move_obstacles = self.shoot_obstacles
-        self.deadly_obstacles = map(lambda x: x.coords(),
+        self.deadly_obstacles = map(lambda rock: rock.coords(),
                                     LayersHandler.filter_not_none(LayersHandler.flatten(self.rocks)))
         self.move_obstacles = self.storm_move_obstacles + self.deadly_obstacles
         self.yellow_ships = self.get_objects("ships_yellow", Ship)
@@ -83,7 +83,9 @@ class LayersHandler(object):
         ports_cannon_bars = [port.cannon_bar for port in self.ports]
         ports_target_bars = [port.target_bar for port in self.ports]
         return pygame.sprite.OrderedUpdates(
-            sorted(alive_ships + self.ports, key=lambda s: s.x + s.y) + ships_health_bars + ships_cannon_bars + ships_target_bars + ports_health_bars + ports_cannon_bars + ports_target_bars)
+            sorted(alive_ships + self.ports, key=lambda s: s.x + s.y) +
+            ships_health_bars + ships_cannon_bars + ships_target_bars +
+            ports_health_bars + ports_cannon_bars + ports_target_bars)
 
     def get_clickable_objects(self):
         return LayersHandler.filter_not_none(LayersHandler.flatten(self.visible_sea))

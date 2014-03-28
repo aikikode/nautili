@@ -20,9 +20,9 @@ class Menu(object):
         return pygame.sprite.OrderedUpdates(self.objects)
 
     def draw_sprites(self):
-        allsprites = self.get_sprites()
-        allsprites.update()
-        allsprites.draw(self.screen)
+        all_sprites = self.get_sprites()
+        all_sprites.update()
+        all_sprites.draw(self.screen)
 
 
 class BaseMainMenu(Menu):
@@ -38,9 +38,9 @@ class BaseMainMenu(Menu):
         self.pygame_bg_image = pygame.image.load(image)
         self.objects = []
 
-    def mouseover(self, event_position):
+    def mouse_over(self, event_position):
         for obj in self.objects:
-            obj.mouseover(event_position)
+            obj.mouse_over(event_position)
 
     def check_click(self, event_position):
         for obj in self.objects:
@@ -73,7 +73,7 @@ class BaseMainMenu(Menu):
                 self.check_click(e.pos)
             if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
                 return False
-        self.mouseover(pygame.mouse.get_pos())
+        self.mouse_over(pygame.mouse.get_pos())
         return True
 
 
@@ -104,7 +104,7 @@ class MainMenu(BaseMainMenu):
                 raise SystemExit, "QUIT"
             if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                 self.check_click(e.pos)
-        self.mouseover(pygame.mouse.get_pos())
+        self.mouse_over(pygame.mouse.get_pos())
         return True
 
 
@@ -159,9 +159,9 @@ class PauseMenu(Menu):
         self.objects.append(prompt_label)
         self.objects.append(pause_label)
 
-    def mouseover(self, event_position):
+    def mouse_over(self, event_position):
         for obj in self.objects:
-            obj.mouseover(event_position)
+            obj.mouse_over(event_position)
 
     def check_click(self, event_position):
         for obj in self.objects:
@@ -194,7 +194,7 @@ class PauseMenu(Menu):
                 self.check_click(e.pos)
             if e.type == pygame.KEYDOWN and e.key == pygame.K_SPACE:
                 return False
-        self.mouseover(pygame.mouse.get_pos())
+        self.mouse_over(pygame.mouse.get_pos())
         return True
 
 

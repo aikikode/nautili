@@ -7,7 +7,6 @@ from panels import RightTopPanel, TopPanel, MiniMap
 from renderer import IsometricRenderer
 from layers import LayersHandler
 from settings import *
-import wind
 
 __author__ = 'aikikode'
 
@@ -22,7 +21,7 @@ class Game(object):
         except:
             print "Unable to read map data. Possibly messed up layers."
             raise ValueError
-        # Background
+            # Background
         self.bg_surface = pygame.Surface((MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT), pygame.SRCALPHA).convert_alpha()
         # Panel
         self.right_top_panel = RightTopPanel(self,
@@ -32,7 +31,7 @@ class Game(object):
         self.minimap = MiniMap(self, (MAIN_WIN_WIDTH - MINIMAP_WIDTH, 0), (MINIMAP_WIDTH, MINIMAP_HEIGHT))
         self.background = IsometricRenderer(self.layers_handler, self.bg_surface)
         # Helper variables from layers handler
-        self.allsprites = lh.get_all_sprites()
+        self.all_sprites = lh.get_all_sprites()
         self.clickable_objects_list = lh.get_clickable_objects()
         self.sea = lh.sea
         self.docks = lh.docks
@@ -52,12 +51,12 @@ class Game(object):
         self.player = PLAYER1
         self._paused = False
         # Prepare rendering
-        self.background.fill(colors.BACKGROUND_COLOR) # fill with water color
+        self.background.fill(colors.BACKGROUND_COLOR)  # fill with water color
         self.background.add(self.sea + self.docks + self.rocks + self.islands)
         self.map_width, self.map_height = self.layers_handler.get_map_dimensions()
         self.move_camera(((MAIN_WIN_WIDTH - self.map_width) / 2, 0))
-        self.DEFAULT_CURSOR = pygame.mouse.get_cursor()
-        self.CLOSE_HAND_CURSOR = self.DEFAULT_CURSOR
+        self._cursor_default = pygame.mouse.get_cursor()
+        self._cursor_close_hand = self._cursor_default
         self.selected_ship = None
         self.target_ships = []
         self.setup_cursors()
@@ -75,7 +74,7 @@ class Game(object):
         self.background.update(self.sea + self.docks + tiles_list + self.rocks + self.islands)
 
     def setup_cursors(self):
-        self.DEFAULT_CURSOR = pygame.mouse.get_cursor()
+        self._cursor_default = pygame.mouse.get_cursor()
         #the hand cursor
         _CLOSE_HAND_CURSOR = (
             "                ",
@@ -94,25 +93,25 @@ class Game(object):
             "    X.......X   ",
             "     X....X.X   ",
             "     XXXXX XX   ")
-        _POINT_HAND_CURSOR = (
-            "     XX         ",
-            "    X..X        ",
-            "    X..X        ",
-            "    X..X        ",
-            "    X..XXXXX    ",
-            "    X..X..X.XX  ",
-            " XX X..X..X.X.X ",
-            "X..XX.........X ",
-            "X...X.........X ",
-            " X.....X.X.X..X ",
-            "  X....X.X.X..X ",
-            "  X....X.X.X.X  ",
-            "   X...X.X.X.X  ",
-            "    X.......X   ",
-            "     X....X.X   ",
-            "     XXXXX XX   ")
+        # _POINT_HAND_CURSOR = (
+        #     "     XX         ",
+        #     "    X..X        ",
+        #     "    X..X        ",
+        #     "    X..X        ",
+        #     "    X..XXXXX    ",
+        #     "    X..X..X.XX  ",
+        #     " XX X..X..X.X.X ",
+        #     "X..XX.........X ",
+        #     "X...X.........X ",
+        #     " X.....X.X.X..X ",
+        #     "  X....X.X.X..X ",
+        #     "  X....X.X.X.X  ",
+        #     "   X...X.X.X.X  ",
+        #     "    X.......X   ",
+        #     "     X....X.X   ",
+        #     "     XXXXX XX   ")
         _HCURS, _HMASK = pygame.cursors.compile(_CLOSE_HAND_CURSOR, ".", "X")
-        self.CLOSE_HAND_CURSOR = ((16, 16), (5, 1), _HCURS, _HMASK)
+        self._cursor_close_hand = ((16, 16), (5, 1), _HCURS, _HMASK)
 
     def next_turn(self):
         self.drop_selection()
@@ -154,9 +153,9 @@ class Game(object):
                 if ship.coords() not in self.layers_handler.docks_coords:  # Do not move ships that are in ports
                     ship.calculate_moves(self.wind_type, self.wind_direction,
                                          obstacles=self.layers_handler.storm_move_obstacles +
-                                                   map(lambda x: x.coords(), self.ships) +
-                                                   map(lambda y: y.coords(), self.ports),
-                                         max_move=1)
+                                                   map(lambda s: s.coords(), self.ships) +
+                                                   map(lambda p: p.coords(), self.ports),
+                                         step=1)
                     ship.move()
                     ship.check_crash(self.layers_handler.deadly_obstacles)
         self.remove_dead_ships()
@@ -181,7 +180,7 @@ class Game(object):
         elif offset_y + delta_y > 0:
             delta_y = -offset_y
         delta = (delta_x, delta_y)
-        self.background.fill(colors.BACKGROUND_COLOR) # fill with water color
+        self.background.fill(colors.BACKGROUND_COLOR)  # fill with water color
         self.background.increase_offset(delta)
         for obj in self.ships + self.ports + \
                 [ship.health_bar for ship in self.ships] + \
@@ -196,18 +195,17 @@ class Game(object):
         background = self.background
         right_top_panel = self.right_top_panel
         background.draw()
-        #target_ship = None
-        #highlighted = None
         exit_game = False
         ctrl_mode = False
         drag_mode = False
+        previous_mouse_pos = None
         pause = PauseMenu(self.screen)
         timer = pygame.time.Clock()
         while not self.game_ended() and not exit_game:
             timer.tick(60)
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
-                    raise SystemExit, "QUIT"
+                    raise SystemExit("QUIT")
                 if e.type == pygame.KEYDOWN and (e.key == pygame.K_LCTRL or e.key == pygame.K_RCTRL):
                     ctrl_mode = True
                 if e.type == pygame.KEYUP and (e.key == pygame.K_LCTRL or e.key == pygame.K_RCTRL):
@@ -236,11 +234,11 @@ class Game(object):
                     self.move_camera((-300, 0))
                 if e.type == pygame.MOUSEBUTTONDOWN and e.button == 2:
                     drag_mode = True
-                    pygame.mouse.set_cursor(*self.CLOSE_HAND_CURSOR)
+                    pygame.mouse.set_cursor(*self._cursor_close_hand)
                     previous_mouse_pos = e.pos
                 if e.type == pygame.MOUSEBUTTONUP and e.button == 2:
                     drag_mode = False
-                    pygame.mouse.set_cursor(*self.DEFAULT_CURSOR)
+                    pygame.mouse.set_cursor(*self._cursor_default)
                     previous_mouse_pos = None
                 if e.type == pygame.MOUSEBUTTONDOWN and (e.button == 1 or e.button == 3):
                     clicked = False
@@ -275,14 +273,14 @@ class Game(object):
                                     highlighted = []
                                     try:
                                         # Highlight possible movements
-                                        highlighted = self.selected_ship.calculate_moves(self.wind_type,
-                                                                                         self.wind_direction,
-                                                                                         obstacles=self.layers_handler.move_obstacles + map(
-                                                                                             lambda x: x.coords(),
-                                                                                             self.ships) + map(
-                                                                                             lambda x: x.coords(),
-                                                                                             self.ports),
-                                                                                         docks=self.layers_handler.docks_coords)
+                                        highlighted = self.\
+                                            selected_ship.\
+                                            calculate_moves(self.wind_type,
+                                                            self.wind_direction,
+                                                            obstacles=self.layers_handler.move_obstacles + map(
+                                                                lambda x: x.coords(),
+                                                                self.ships) + map(lambda x: x.coords(), self.ports),
+                                                            docks=self.layers_handler.docks_coords)
                                     except AttributeError, ex:
                                         pass
                                 else:
@@ -295,9 +293,9 @@ class Game(object):
                                     try:
                                         # we clicked on empty sea - move object there
                                         self.selected_ship.move(clicked.coords())
-                                    except AttributeError, ex:
+                                    except AttributeError:
                                         pass
-                                    self.allsprites = self.layers_handler.get_all_sprites()
+                                    self.all_sprites = self.layers_handler.get_all_sprites()
                                     self.redraw()
                                     self.selected_ship = None
                         else:
@@ -314,12 +312,12 @@ class Game(object):
                     if cur_mouse_pos != previous_mouse_pos:
                         self.move_camera(map(lambda x, y: x - y, cur_mouse_pos, previous_mouse_pos))
                         previous_mouse_pos = cur_mouse_pos
-                        # Process HUD mouseover
-            right_top_panel.mouseover(pygame.mouse.get_pos())
+                        # Process HUD mouse over
+            right_top_panel.mouse_over(pygame.mouse.get_pos())
             # end event handing
             self.screen.blit(self.bg_surface, (0, 0))
-            self.allsprites.update()
-            self.allsprites.draw(self.screen)
+            self.all_sprites.update()
+            self.all_sprites.draw(self.screen)
             right_top_panel.draw()
             self.top_panel.update()
             self.top_panel.draw()
