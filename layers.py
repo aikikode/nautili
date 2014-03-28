@@ -44,10 +44,7 @@ class LayersHandler(object):
         docks = self.get_layer_tiles(LayersHandler.DOCKS_LAYER, Sea)
         docks_coords = []
         for port in self.ports:
-            for delta_x in xrange(-1, 2):
-                for delta_y in xrange(-1, 2):
-                    if abs(delta_x) + abs(delta_y) != 0:
-                        docks_coords.append((port.x + delta_x, port.y + delta_y))
+            docks_coords.extend(port.get_dock())
         for x in xrange(0, len(docks)):
             for y in xrange(0, len(docks[x])):
                 if docks[x][y].coords() not in docks_coords:

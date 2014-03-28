@@ -377,8 +377,11 @@ class Ship(Model):
                     res.append((axis[0] + el[1], axis[1] - el[1]))
             return res
 
+        def is_in_port():
+            return self.coords() in docks
+
         def get_dock_moves():
-            if self.coords() in docks:
+            if is_in_port():
                 return filter(lambda dock: max(abs(self.x - dock[0]), abs(self.y - dock[1])) == 1, docks)
             return []
 
@@ -388,7 +391,8 @@ class Ship(Model):
         max_move = self.max_move
         if wind_type == wind.STORM:
             cur = get_dock_moves()
-            if not cur:
+            if not is_in_port():
+                obstacles += docks
                 max_move = step if step else self.storm_move
                 for delta in xrange(1, max_move + 1):
                     if wind_direction == wind.NORTH:
@@ -450,3 +454,6 @@ class Port(Model):
     def __init__(self, layers_handler, isom_x, isom_y, model='port_1', player=settings.PLAYER1, base_armor=1,
                  fire_range=1, max_move=1, shots_count=1, stille_move=1, storm_move=1, **kwargs):
         Model.__init__(self, layers_handler, isom_x, isom_y, model, player, base_armor, fire_range, shots_count)
+
+    def get_dock(self):
+        return [(self.x + delta_x, self.y + delta_y) for delta_x in xrange(-1, 2) for delta_y in xrange(-1, 2) if abs(delta_x) + abs(delta_y) != 0]

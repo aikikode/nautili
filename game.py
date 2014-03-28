@@ -60,6 +60,9 @@ class Game(object):
         self.selected_ship = None
         self.target_ships = []
         self.setup_cursors()
+        self.yellow_docks = []
+        self.green_docks = []
+        self.update_player_docks()
 
     def drop_selection(self):
         if self.selected_ship:
@@ -124,7 +127,21 @@ class Game(object):
         self.wind_type = None
         for model in self.ships + self.ports:
             model.reset()
+        self.update_player_docks()
         self.toggle_pause()
+
+    def update_player_docks(self):
+        """
+        Recalculate yellow and green docks coordinates list
+        """
+        self.yellow_docks = sum([port.get_dock() for port in self.yellow_ports], [])
+        self.green_docks = sum([port.get_dock() for port in self.green_ports], [])
+
+    def get_docks_obstacles(self):
+        if self.player == PLAYER1:
+            return self.green_docks
+        else:
+            return self.yellow_docks
 
     def toggle_pause(self):
         self._paused = not self._paused
@@ -154,7 +171,9 @@ class Game(object):
                     ship.calculate_moves(self.wind_type, self.wind_direction,
                                          obstacles=self.layers_handler.storm_move_obstacles +
                                                    map(lambda s: s.coords(), self.ships) +
-                                                   map(lambda p: p.coords(), self.ports),
+                                                   map(lambda p: p.coords(), self.ports) +
+                                                   self.get_docks_obstacles(),
+                                         docks=self.layers_handler.docks_coords,
                                          step=1)
                     ship.move()
                     ship.check_crash(self.layers_handler.deadly_obstacles)
@@ -277,9 +296,10 @@ class Game(object):
                                             selected_ship.\
                                             calculate_moves(self.wind_type,
                                                             self.wind_direction,
-                                                            obstacles=self.layers_handler.move_obstacles + map(
-                                                                lambda x: x.coords(),
-                                                                self.ships) + map(lambda x: x.coords(), self.ports),
+                                                            obstacles=self.layers_handler.move_obstacles +
+                                                                      map(lambda x: x.coords(), self.ships) +
+                                                                      map(lambda x: x.coords(), self.ports) +
+                                                                      self.get_docks_obstacles(),
                                                             docks=self.layers_handler.docks_coords)
                                     except AttributeError, ex:
                                         pass
