@@ -4,7 +4,6 @@ import pygame
 import shutil
 from PIL import Image
 import colors
-import game
 from hud import Button, Label
 from settings import DISPLAY, WIN_HEIGHT, WIN_WIDTH, MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT
 import settings
@@ -133,6 +132,7 @@ class LoadMapMenu(BaseMainMenu):
     def load_map(self, map_file):
         map = os.path.join(LoadMapMenu.MAP_DIR, map_file + ".tmx")
         try:
+            import game
             g = game.Game(map)
             g.start()
         except ValueError:
