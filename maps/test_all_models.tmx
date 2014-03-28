@@ -14,6 +14,11 @@
    eJwTZ2BgEB/Fo3gUj+JRPIpJxACisCPx
   </data>
  </layer>
+ <layer name="ports" width="20" height="20">
+  <data encoding="base64" compression="zlib">
+   eJyTYWBgkBnFo3gUj+JRPIpJxAAdxyvB
+  </data>
+ </layer>
  <layer name="highlight" width="20" height="20" visible="0">
   <data encoding="base64" compression="zlib">
    eJyTZGBgkBzFo3gUj+JRPIpJxABthicR
@@ -35,7 +40,7 @@
   </data>
  </layer>
  <objectgroup name="ships_yellow" width="20" height="20">
-  <object name="galleon" gid="29" x="96" y="480">
+  <object name="galleon" gid="29" x="160" y="512">
    <properties>
     <property name="base_armor" value="3"/>
     <property name="fire_range" value="3"/>
@@ -264,7 +269,7 @@
     <property name="storm_move" value="2"/>
    </properties>
   </object>
-  <object name="line_60" gid="29" x="576" y="96">
+  <object name="line_60" gid="29" x="512" y="64">
    <properties>
     <property name="base_armor" value="5"/>
     <property name="fire_range" value="5"/>

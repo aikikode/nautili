@@ -24,7 +24,8 @@ def clear_image(image):
 
 
 class Model(pygame.sprite.Sprite):
-    def __init__(self, layers_handler, x, y, model=None, player=None, base_armor=1, fire_range=1, shots_count=1, **kwargs):
+    def __init__(self, layers_handler, x, y, model=None, player=None, base_armor=1, fire_range=1, shots_count=1,
+                 **kwargs):
         pygame.sprite.Sprite.__init__(self)
         self.x = x
         self.y = y
@@ -113,7 +114,7 @@ class Model(pygame.sprite.Sprite):
                     stepy = deltay / abs(deltay) if deltay else 0
                     if (movex, movey) in moves: moves.remove((movex, movey))
                     try:
-                        while abs(stepx) + abs(stepy) <= 2*(limit + 1):
+                        while abs(stepx) + abs(stepy) <= 2 * (limit + 1):
                             moves.remove((movex + stepx, movey + stepy))
                             stepx += np.sign(stepx)
                             stepy += np.sign(stepy)
@@ -286,8 +287,8 @@ class TargetBar(pygame.sprite.Sprite):
             self._delta = math.floor((tile_width - self.bar_width) / 2.0 + 0.5)
             self.move()
         else:
-            self.image = pygame.Surface((0,0))
-            self.rect = pygame.Rect(0,0,0,0)
+            self.image = pygame.Surface((0, 0))
+            self.rect = pygame.Rect(0, 0, 0, 0)
 
     def move(self):
         x, y = self.model.rect.topleft
@@ -296,7 +297,8 @@ class TargetBar(pygame.sprite.Sprite):
 
 
 class Ship(Model):
-    def __init__(self, layers_handler, isom_x, isom_y, model='steam_corvette', player=settings.PLAYER1, base_armor=1, fire_range=1, max_move=1, shots_count=1, stille_move=1, storm_move=1, **kwargs):
+    def __init__(self, layers_handler, isom_x, isom_y, model='steam_corvette', player=settings.PLAYER1, base_armor=1,
+                 fire_range=1, max_move=1, shots_count=1, stille_move=1, storm_move=1, **kwargs):
         self.direction = 'se'
         Model.__init__(self, layers_handler, isom_x, isom_y, model, player, base_armor, fire_range, shots_count)
         self.possible_moves = []
@@ -310,7 +312,8 @@ class Ship(Model):
         if img_type:
             img_type = "_{}".format(img_type)
         self.image = pygame.image.load(
-            os.path.join(MODELS_DIR, "{}_{}_{}{}.png".format(self.model, self.player, self.direction, img_type))).convert_alpha()
+            os.path.join(MODELS_DIR,
+                         "{}_{}_{}{}.png".format(self.model, self.player, self.direction, img_type))).convert_alpha()
 
     def reset(self):
         Model.reset(self)
@@ -332,7 +335,8 @@ class Ship(Model):
                 return False
         else:
             return False
-        self.rect.topleft = map(lambda x,y: x + y, self.offset, self.layers_handler.isometric_to_orthogonal(self.x, self.y))
+        self.rect.topleft = map(lambda x, y: x + y, self.offset,
+                                self.layers_handler.isometric_to_orthogonal(self.x, self.y))
         self.health_bar.move()
         self.cannon_bar.move()
         self.target_bar.move()
@@ -341,10 +345,11 @@ class Ship(Model):
         self.aim_reset()
         return True
 
-    def calculate_moves(self, wind_type, wind_direction, obstacles=[], max=None):
+    def calculate_moves(self, wind_type, wind_direction, obstacles=[], max_move=None, docks=[]):
         def rotate(axis, obj):
             """
-            Rotate object with obj coords around the axis, getting closer and closer to the axis with each step
+            Rotate object with obj coords around the axis, getting closer and closer to the axis with each step till pi
+            angle
             """
             res = [obj]
             arr = []
@@ -370,41 +375,49 @@ class Ship(Model):
                 elif el[0] == 7:
                     res.append((axis[0] + el[1], axis[1] - el[1]))
             return res
+
+        def get_dock_moves():
+            if self.coords() in docks:
+                return filter(lambda dock: max(abs(self.x - dock[0]), abs(self.y - dock[1])) == 1, docks)
+            return []
+
         if self._has_moved or wind_type not in [wind.STILLE, wind.WIND, wind.STORM]:
             return []
         # Handle wind as a number of obstacles
         max_move = self.max_move
         if wind_type == wind.STORM:
-            if max:
-                max_move = max if max else self.storm_move
-            cur = []
-            for delta in xrange(1, max_move + 1):
-                if wind_direction == wind.NORTH:
-                    next = (self.x - delta, self.y - delta)
-                if wind_direction == wind.EAST:
-                    next = (self.x + delta, self.y - delta)
-                if wind_direction == wind.SOUTH:
-                    next = (self.x + delta, self.y + delta)
-                if wind_direction == wind.WEST:
-                    next = (self.x - delta, self.y + delta)
-                if wind_direction == wind.NORTH_EAST:
-                    next = (self.x, self.y - delta)
-                if wind_direction == wind.NORTH_WEST:
-                    next = (self.x - delta, self.y)
-                if wind_direction == wind.SOUTH_EAST:
-                    next = (self.x + delta, self.y)
-                if wind_direction == wind.SOUTH_WEST:
-                    next = (self.x, self.y + delta)
-                if next in obstacles or next[0] < 0 or next[1] < 0 or \
-                                next[0] >= self.layers_handler.tiledmap.width or \
-                                next[1] >= self.layers_handler.tiledmap.height:
-                    break
-                else:
-                    self._storm_moves_left -= delta
-                    if self._storm_moves_left >= 0:
-                        cur = [next]
+            cur = get_dock_moves()
+            if not cur:
+                if max_move:
+                    max_move = max_move if max_move else self.storm_move
+                for delta in xrange(1, max_move + 1):
+                    if wind_direction == wind.NORTH:
+                        next = (self.x - delta, self.y - delta)
+                    if wind_direction == wind.EAST:
+                        next = (self.x + delta, self.y - delta)
+                    if wind_direction == wind.SOUTH:
+                        next = (self.x + delta, self.y + delta)
+                    if wind_direction == wind.WEST:
+                        next = (self.x - delta, self.y + delta)
+                    if wind_direction == wind.NORTH_EAST:
+                        next = (self.x, self.y - delta)
+                    if wind_direction == wind.NORTH_WEST:
+                        next = (self.x - delta, self.y)
+                    if wind_direction == wind.SOUTH_EAST:
+                        next = (self.x + delta, self.y)
+                    if wind_direction == wind.SOUTH_WEST:
+                        next = (self.x, self.y + delta)
+                    if next in obstacles or next[0] < 0 or next[1] < 0 or \
+                                    next[0] >= self.layers_handler.tiledmap.width or \
+                                    next[1] >= self.layers_handler.tiledmap.height:
+                        break
+                    else:
+                        self._storm_moves_left -= delta
+                        if self._storm_moves_left >= 0:
+                            cur = [next]
             self.possible_moves = cur
         else:
+            self.possible_moves = get_dock_moves()
             if wind_type == wind.STILLE:
                 max_move = self.stille_move
             elif wind_type == wind.WIND:
@@ -425,7 +438,7 @@ class Ship(Model):
                     obstacles += rotate(self.coords(), (self.x + delta, self.y))
                 if wind_direction == wind.SOUTH_WEST:
                     obstacles += rotate(self.coords(), (self.x, self.y + delta))
-            self.possible_moves = self.calculate_area(max_move, obstacles)
+            self.possible_moves += self.calculate_area(max_move, obstacles)
         return self.possible_moves
 
     def check_crash(self, obstacles):
@@ -434,5 +447,6 @@ class Ship(Model):
 
 
 class Port(Model):
-    def __init__(self, layers_handler, isom_x, isom_y, model='port_1', player=settings.PLAYER1, base_armor=1, fire_range=1, max_move=1, shots_count=1, stille_move=1, storm_move=1, **kwargs):
+    def __init__(self, layers_handler, isom_x, isom_y, model='port_1', player=settings.PLAYER1, base_armor=1,
+                 fire_range=1, max_move=1, shots_count=1, stille_move=1, storm_move=1, **kwargs):
         Model.__init__(self, layers_handler, isom_x, isom_y, model, player, base_armor, fire_range, shots_count)

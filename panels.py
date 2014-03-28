@@ -74,7 +74,8 @@ class RightTopPanel(Panel):
         self.game.drop_selection()
         self.get_wind_button.disable()
         self.shoot_label.set_text("")
-        self.game.wind_type = random.sample(wind.WIND_TYPES, 1)[0]
+        #self.game.wind_type = random.sample(wind.WIND_TYPES, 1)[0]
+        self.game.wind_type = wind.STORM
         self.game.wind_direction = random.sample(wind.WIND_DIRECTIONS, 1)[0]
         if self.game.wind_type == wind.WIND:
             self.wind_label.set_text("{}".format(wind.wind_direction_to_str(self.game.wind_direction)))
@@ -99,7 +100,6 @@ class RightTopPanel(Panel):
                 self.shoot_label.set_text("hit!")
         self.game.allsprites = self.game.layers_handler.get_all_sprites()
         self.game.remove_dead_ships()
-        self.game.drop_selection()
 
     def end_move(self):
         self.game.next_turn()

@@ -10,15 +10,16 @@ __author__ = 'aikikode'
 
 
 class LayersHandler(object):
-    BACKGROUND_LAYER = 0
-    HIGHLIGHT_LAYER = 1
-    FIRE_LAYER = 2
-    ROCKS_LAYER = 3
-    ISLANDS_LAYER = 4
+    SEA_LAYER = 0
+    DOCKS_LAYER = 1
+    HIGHLIGHT_LAYER = 2
+    FIRE_LAYER = 3
+    ROCKS_LAYER = 4
+    ISLANDS_LAYER = 5
 
     def __init__(self, tiledmap):
         self.tiledmap = tiledmap
-        self.sea = self.get_layer_tiles(LayersHandler.BACKGROUND_LAYER, Sea)
+        self.sea = self.get_layer_tiles(LayersHandler.SEA_LAYER, Sea)
         self.rocks = self.get_layer_tiles(LayersHandler.ROCKS_LAYER, Rock)
         self.islands = self.get_layer_tiles(LayersHandler.ISLANDS_LAYER, Island)
         self.highlighted_sea = self.get_layer_tiles(LayersHandler.HIGHLIGHT_LAYER, Sea)
@@ -40,6 +41,19 @@ class LayersHandler(object):
         self.yellow_ports = self.get_objects("ports_yellow", Port)
         self.green_ports = self.get_objects("ports_green", Port)
         self.ports = self.yellow_ports + self.green_ports
+        docks = self.get_layer_tiles(LayersHandler.DOCKS_LAYER, Sea)
+        docks_coords = []
+        for port in self.ports:
+            for delta_x in xrange(-1, 2):
+                for delta_y in xrange(-1, 2):
+                    if abs(delta_x) + abs(delta_y) != 0:
+                        docks_coords.append((port.x + delta_x, port.y + delta_y))
+        for x in xrange(0, len(docks)):
+            for y in xrange(0, len(docks[x])):
+                if docks[x][y].coords() not in docks_coords:
+                    docks[x][y] = None
+        self.docks = docks
+        self.docks_coords = docks_coords
 
     def get_layer_tiles(self, layer_num, classname):
         res = [[None for x in xrange(0, self.tiledmap.width)] for y in xrange(0, self.tiledmap.height)]

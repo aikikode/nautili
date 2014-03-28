@@ -7,6 +7,7 @@ from panels import RightTopPanel, TopPanel, MiniMap
 from renderer import IsometricRenderer
 from layers import LayersHandler
 from settings import *
+import wind
 
 __author__ = 'aikikode'
 
@@ -34,6 +35,7 @@ class Game(object):
         self.allsprites = lh.get_all_sprites()
         self.clickable_objects_list = lh.get_clickable_objects()
         self.sea = lh.sea
+        self.docks = lh.docks
         self.highlighted_sea = lh.highlighted_sea
         self.fire = lh.fire
         self.rocks = lh.rocks
@@ -51,7 +53,7 @@ class Game(object):
         self._paused = False
         # Prepare rendering
         self.background.fill(colors.BACKGROUND_COLOR) # fill with water color
-        self.background.add(self.sea + self.rocks + self.islands)
+        self.background.add(self.sea + self.docks + self.rocks + self.islands)
         self.map_width, self.map_height = self.layers_handler.get_map_dimensions()
         self.move_camera(((MAIN_WIN_WIDTH - self.map_width) / 2, 0))
         self.DEFAULT_CURSOR = pygame.mouse.get_cursor()
@@ -67,7 +69,10 @@ class Game(object):
             self.selected_ship = None
         for ship in self.target_ships:
             ship.unselect()
-        self.background.update(self.sea + self.rocks + self.islands)
+        self.redraw()  # To remove move/aim tiled highlights
+
+    def redraw(self, tiles_list=[]):
+        self.background.update(self.sea + self.docks + tiles_list + self.rocks + self.islands)
 
     def setup_cursors(self):
         self.DEFAULT_CURSOR = pygame.mouse.get_cursor()
@@ -146,13 +151,14 @@ class Game(object):
             ships_to_move = self.green_ships
         for x in xrange(0, self.max_storm_move()):
             for ship in ships_to_move:
-                ship.calculate_moves(self.wind_type, self.wind_direction,
-                                     obstacles=self.layers_handler.storm_move_obstacles +
-                                               map(lambda x: x.coords(), self.ships) +
-                                               map(lambda y: y.coords(), self.ports),
-                                     max=1)
-                ship.move()
-                ship.check_crash(self.layers_handler.deadly_obstacles)
+                if ship.coords() not in self.layers_handler.docks_coords:  # Do not move ships that are in ports
+                    ship.calculate_moves(self.wind_type, self.wind_direction,
+                                         obstacles=self.layers_handler.storm_move_obstacles +
+                                                   map(lambda x: x.coords(), self.ships) +
+                                                   map(lambda y: y.coords(), self.ports),
+                                         max_move=1)
+                    ship.move()
+                    ship.check_crash(self.layers_handler.deadly_obstacles)
         self.remove_dead_ships()
 
     def remove_dead_ships(self):
@@ -177,9 +183,9 @@ class Game(object):
         delta = (delta_x, delta_y)
         self.background.fill(colors.BACKGROUND_COLOR) # fill with water color
         self.background.increase_offset(delta)
-        for obj in self.ships + self.ports +\
-                [ship.health_bar for ship in self.ships] +\
-                [ship.cannon_bar for ship in self.ships] +\
+        for obj in self.ships + self.ports + \
+                [ship.health_bar for ship in self.ships] + \
+                [ship.cannon_bar for ship in self.ships] + \
                 [port.health_bar for port in self.ports] + \
                 [port.cannon_bar for port in self.ports]:
             obj.offset = self.background.offset
@@ -247,7 +253,7 @@ class Game(object):
                             if self.selected_ship:
                                 self.selected_ship.unselect()
                                 self.selected_ship = None
-                                background.update(self.sea + self.rocks + self.islands)
+                                self.redraw()
                     if clicked:
                         # Check whether there's an object
                         if e.button == 1:
@@ -258,26 +264,32 @@ class Game(object):
                                     ships_to_select = self.green_ships + self.green_ports
                                 if self.selected_ship:
                                     self.selected_ship.unselect()
-                                self.selected_ship = filter(lambda obj: obj.coords() == (clicked.coords()), ships_to_select)[0]
+                                self.selected_ship = \
+                                    filter(lambda obj: obj.coords() == (clicked.coords()), ships_to_select)[0]
                                 self.selected_ship.select()
                                 self.right_top_panel.shoot_label.set_text("")
                                 #print "Object {} clicked".format(selected_ship)
                                 if self.selected_ship.is_alive():
-                                    shots = self.selected_ship.calculate_shots(obstacles=self.layers_handler.shoot_obstacles)
+                                    shots = self.selected_ship.calculate_shots(
+                                        obstacles=self.layers_handler.shoot_obstacles)
+                                    highlighted = []
                                     try:
                                         # Highlight possible movements
-                                        highlighted = self.selected_ship.calculate_moves(self.wind_type, self.wind_direction,
-                                                                                    obstacles=self.layers_handler.move_obstacles + map(
-                                                                                        lambda x: x.coords(), self.ships) + map(
-                                                                                        lambda x: x.coords(), self.ports))
+                                        highlighted = self.selected_ship.calculate_moves(self.wind_type,
+                                                                                         self.wind_direction,
+                                                                                         obstacles=self.layers_handler.move_obstacles + map(
+                                                                                             lambda x: x.coords(),
+                                                                                             self.ships) + map(
+                                                                                             lambda x: x.coords(),
+                                                                                             self.ports),
+                                                                                         docks=self.layers_handler.docks_coords)
                                     except AttributeError, ex:
-                                        highlighted = []
+                                        pass
                                 else:
                                     shots = []
                                     highlighted = []
-                                background.update(self.sea + self.rocks + self.islands +
-                                                  LayersHandler.filter_layer(self.highlighted_sea, highlighted) +
-                                                  LayersHandler.filter_layer(self.fire, shots))
+                                self.redraw(LayersHandler.filter_layer(self.highlighted_sea, highlighted) +
+                                            LayersHandler.filter_layer(self.fire, shots))
                             except IndexError:
                                 if self.selected_ship:
                                     try:
@@ -286,7 +298,7 @@ class Game(object):
                                     except AttributeError, ex:
                                         pass
                                     self.allsprites = self.layers_handler.get_all_sprites()
-                                    background.update(self.sea + self.rocks + self.islands)
+                                    self.redraw()
                                     self.selected_ship = None
                         else:
                             try:
@@ -302,7 +314,7 @@ class Game(object):
                     if cur_mouse_pos != previous_mouse_pos:
                         self.move_camera(map(lambda x, y: x - y, cur_mouse_pos, previous_mouse_pos))
                         previous_mouse_pos = cur_mouse_pos
-            # Process HUD mouseover
+                        # Process HUD mouseover
             right_top_panel.mouseover(pygame.mouse.get_pos())
             # end event handing
             self.screen.blit(self.bg_surface, (0, 0))
