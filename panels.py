@@ -162,9 +162,11 @@ class MiniMap(Panel):
         self.draw_layer(self.game.rocks, colors.RED)
         self.draw_layer(self.game.yellow_ships, colors.YELLOW)
         self.draw_layer(self.game.yellow_ports, colors.DARK_YELLOW)
+        self.draw_layer(self.game.yellow_royal_ports, colors.BROWN)
         self.draw_layer(self.game.neutral_ports, colors.BLACK)
         self.draw_layer(self.game.green_ships, colors.GREEN)
         self.draw_layer(self.game.green_ports, colors.YELLOW_GREEN)
+        self.draw_layer(self.game.green_royal_ports, colors.LIGHT_LIGHT_BLUE)
         # Draw camera rectangle
         camera_offset = map(lambda p, offs: p / -self.scale + offs, self.game.get_camera_offset(), self.map_offset)
         cam_rect = pygame.Rect(camera_offset, (self.cam_width, self.cam_height))
