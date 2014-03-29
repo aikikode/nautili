@@ -185,12 +185,15 @@ class Game(object):
                                          step=1)
                     ship.move()
                     ship.check_crash(self.layers_handler.deadly_obstacles)
-        self.remove_dead_ships()
+        self.remove_destroyed_models()
 
-    def remove_dead_ships(self):
+    def remove_destroyed_models(self):
+        self.yellow_ports = filter(lambda s: s.is_alive(), self.yellow_ports)
+        self.green_ports = filter(lambda s: s.is_alive(), self.green_ports)
         self.yellow_ships = filter(lambda s: s.is_alive(), self.yellow_ships)
         self.green_ships = filter(lambda s: s.is_alive(), self.green_ships)
         self.ships = self.yellow_ships + self.green_ships
+        self.update_player_docks()
 
     def get_camera_offset(self):
         return self.background.offset
@@ -284,13 +287,13 @@ class Game(object):
                         if e.button == 1:
                             try:
                                 if self.player == PLAYER1:
-                                    ships_to_select = self.yellow_ships + self.yellow_ports
+                                    allowed_to_select = self.yellow_ships + self.yellow_ports
                                 else:
-                                    ships_to_select = self.green_ships + self.green_ports
+                                    allowed_to_select = self.green_ships + self.green_ports
                                 if self.selected_ship:
                                     self.selected_ship.unselect()
                                 self.selected_ship = \
-                                    filter(lambda obj: obj.coords() == (clicked.coords()), ships_to_select)[0]
+                                    filter(lambda obj: obj.coords() == (clicked.coords()), allowed_to_select)[0]
                                 self.selected_ship.select()
                                 self.right_top_panel.shoot_label.set_text("")
                                 #print "Object {} clicked".format(selected_ship)

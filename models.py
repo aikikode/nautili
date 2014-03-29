@@ -171,6 +171,7 @@ class Model(pygame.sprite.Sprite):
     def take_damage(self, damage):
         self.armor -= damage
         if self.armor <= 0:
+            self.armor = 0
             self._is_alive = False
         self.health_bar.draw()
         self.cannon_bar.draw()
@@ -178,9 +179,9 @@ class Model(pygame.sprite.Sprite):
     def is_alive(self):
         return self._is_alive
 
-    def repair(self):
+    def repair(self, amount=1):
         if self.armor < self.base_armor:
-            self.armor += 1
+            self.armor += amount
 
 
 class HealthBar(pygame.sprite.Sprite):
@@ -190,8 +191,10 @@ class HealthBar(pygame.sprite.Sprite):
         self.damage_image = Image.open(os.path.join(MODELS_DIR, "health_bar_cell_red.png"))
         if self.model.player == settings.PLAYER1:
             self.health_image = Image.open(os.path.join(MODELS_DIR, "health_bar_cell_yellow.png"))
-        else:
+        elif self.model.player == settings.PLAYER2:
             self.health_image = Image.open(os.path.join(MODELS_DIR, "health_bar_cell_green.png"))
+        else:
+            self.health_image = Image.open(os.path.join(MODELS_DIR, "health_bar_cell_neutral.png"))
         self._cell_width, self._cell_height = self.damage_image.size
         self.image = None
         self.bar_width = 0
@@ -468,3 +471,10 @@ class Port(Model):
 
     def get_dock(self):
         return [(self.x + delta_x, self.y + delta_y) for delta_x in xrange(-1, 2) for delta_y in xrange(-1, 2) if abs(delta_x) + abs(delta_y) != 0]
+
+    def take_damage(self, damage):
+        Model.take_damage(self, damage)
+        if not self.is_alive():
+            self.player = settings.NEUTRAL_PLAYER
+            self._update_image()
+            self.health_bar = HealthBar(self)

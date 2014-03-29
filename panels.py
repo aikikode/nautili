@@ -98,7 +98,7 @@ class RightTopPanel(Panel):
             else:
                 self.shoot_label.set_text("hit!")
         self.game.all_sprites = self.game.layers_handler.get_all_sprites()
-        self.game.remove_dead_ships()
+        self.game.remove_destroyed_models()
 
     def end_move(self):
         self.game.next_turn()
