@@ -182,6 +182,9 @@ class Model(pygame.sprite.Sprite):
     def repair(self, amount=1):
         if self.armor < self.base_armor:
             self.armor += amount
+        if self.armor >= self.base_armor:
+            self.armor = self.base_armor
+            self._is_alive = True
 
 
 class HealthBar(pygame.sprite.Sprite):
@@ -459,9 +462,8 @@ class Ship(Model):
         if self.coords() in obstacles:
             self._is_alive = False
 
-    def repair(self):
-        if not self._has_moved and not self._has_shot and self.armor < self.base_armor:
-            self.armor += 1
+    def skipped_turn(self):
+        return not self._has_moved and not self._has_shot
 
 
 class Port(Model):
@@ -471,6 +473,11 @@ class Port(Model):
 
     def get_dock(self):
         return [(self.x + delta_x, self.y + delta_y) for delta_x in xrange(-1, 2) for delta_y in xrange(-1, 2) if abs(delta_x) + abs(delta_y) != 0]
+
+    def set_player(self, player):
+        self.player = player
+        self.health_bar = HealthBar(self)
+        self._update_image()
 
     def take_damage(self, damage):
         Model.take_damage(self, damage)

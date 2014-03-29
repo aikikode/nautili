@@ -98,7 +98,7 @@ class RightTopPanel(Panel):
             else:
                 self.shoot_label.set_text("hit!")
         self.game.all_sprites = self.game.layers_handler.get_all_sprites()
-        self.game.remove_destroyed_models()
+        self.game.update_player_models()
 
     def end_move(self):
         self.game.next_turn()
@@ -162,6 +162,7 @@ class MiniMap(Panel):
         self.draw_layer(self.game.rocks, colors.RED)
         self.draw_layer(self.game.yellow_ships, colors.YELLOW)
         self.draw_layer(self.game.yellow_ports, colors.DARK_YELLOW)
+        self.draw_layer(self.game.neutral_ports, colors.BLACK)
         self.draw_layer(self.game.green_ships, colors.GREEN)
         self.draw_layer(self.game.green_ports, colors.YELLOW_GREEN)
         # Draw camera rectangle

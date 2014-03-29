@@ -7,6 +7,7 @@ from panels import RightTopPanel, TopPanel, MiniMap
 from renderer import IsometricRenderer
 from layers import LayersHandler
 from settings import *
+import settings
 
 __author__ = 'aikikode'
 
@@ -45,6 +46,7 @@ class Game(object):
         self.yellow_ports = lh.yellow_ports
         self.green_ports = lh.green_ports
         self.ports = lh.ports
+        self.neutral_ports = filter(lambda s: s.player == settings.NEUTRAL_PLAYER, self.ports)
         # Initial game variables state
         self.wind_type = None
         self.wind_direction = None
@@ -120,20 +122,40 @@ class Game(object):
         self.drop_selection()
         self.update_player_docks()
         if self.player == PLAYER1:
-            self.player = PLAYER2
+            next_player = PLAYER2
             self.top_panel.turn_label.set_text("Green player turn", colors.GREEN)
             ships = self.yellow_ships
+            enemy_ships = self.green_ships
             docks = self.yellow_docks
+            ports = self.yellow_ports
         else:
-            self.player = PLAYER1
+            next_player = PLAYER1
             self.top_panel.turn_label.set_text("Yellow player turn", colors.YELLOW)
             ships = self.green_ships
+            enemy_ships = self.yellow_ships
             docks = self.green_docks
+            ports = self.green_ports
         self.wind_type = None
         # Repair ships
         for ship in ships:
-            if ship.coords() in docks:
+            if ship.coords() in docks and ship.skipped_turn():
                 ship.repair()
+        # Repair own ports
+        for port in ports:
+            # 3 ships are necessary to repair 2 points of port armor
+            if len(filter(lambda ship: ship.skipped_turn() and ship.coords() in port.get_dock(), ships)) > 2:
+                port.repair(2)
+        # Repair neutral ports
+        for port in self.neutral_ports:
+            # 3 ships are necessary to repair 2 points of port armor
+            if len(filter(lambda ship: ship.skipped_turn() and ship.coords() in port.get_dock(), ships)) > 2 and \
+                            len(filter(lambda ship: ship.coords() in port.get_dock(), enemy_ships)) == 0:
+                port.repair(2)
+                if port.is_alive():
+                    port.set_player(self.player)
+                    self.all_sprites = self.layers_handler.get_all_sprites()
+                    self.update_player_models()
+        self.player = next_player
         for model in self.ships + self.ports:
             model.reset()
         self.toggle_pause()
@@ -185,11 +207,12 @@ class Game(object):
                                          step=1)
                     ship.move()
                     ship.check_crash(self.layers_handler.deadly_obstacles)
-        self.remove_destroyed_models()
+        self.update_player_models()
 
-    def remove_destroyed_models(self):
-        self.yellow_ports = filter(lambda s: s.is_alive(), self.yellow_ports)
-        self.green_ports = filter(lambda s: s.is_alive(), self.green_ports)
+    def update_player_models(self):
+        self.yellow_ports = filter(lambda s: s.is_alive() and s.player == settings.PLAYER1, self.ports)
+        self.green_ports = filter(lambda s: s.is_alive() and s.player == settings.PLAYER2, self.ports)
+        self.neutral_ports = filter(lambda s: s.player == settings.NEUTRAL_PLAYER, self.ports)
         self.yellow_ships = filter(lambda s: s.is_alive(), self.yellow_ships)
         self.green_ships = filter(lambda s: s.is_alive(), self.green_ships)
         self.ships = self.yellow_ships + self.green_ships
@@ -303,8 +326,8 @@ class Game(object):
                                     highlighted = []
                                     try:
                                         # Highlight possible movements
-                                        highlighted = self.\
-                                            selected_ship.\
+                                        highlighted = self. \
+                                            selected_ship. \
                                             calculate_moves(self.wind_type,
                                                             self.wind_direction,
                                                             obstacles=self.layers_handler.move_obstacles +
