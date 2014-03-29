@@ -14,7 +14,7 @@
    eJwTZ2BgEB/Fo3gUj+JRPIpJxACisCPx
   </data>
  </layer>
- <layer name="ports" width="20" height="20">
+ <layer name="ports" width="20" height="20" visible="0">
   <data encoding="base64" compression="zlib">
    eJyTYWBgkBnFo3gUj+JRPIpJxAAdxyvB
   </data>
@@ -340,6 +340,26 @@
     <property name="fire_range" value="5"/>
     <property name="model" value="port_1"/>
     <property name="shots_count" value="3"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup name="royal_ports_green" width="20" height="20">
+  <object name="royal_port" gid="30" x="576" y="64">
+   <properties>
+    <property name="base_armor" value="4"/>
+    <property name="fire_range" value="0"/>
+    <property name="model" value="royal_port"/>
+    <property name="shots_count" value="0"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup name="royal_ports_yellow" width="20" height="20">
+  <object name="royal_port" gid="30" x="64" y="512">
+   <properties>
+    <property name="base_armor" value="4"/>
+    <property name="fire_range" value="0"/>
+    <property name="model" value="royal_port"/>
+    <property name="shots_count" value="0"/>
    </properties>
   </object>
  </objectgroup>

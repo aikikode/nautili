@@ -47,6 +47,9 @@ class Game(object):
         self.green_ports = lh.green_ports
         self.ports = lh.ports
         self.neutral_ports = filter(lambda s: s.player == settings.NEUTRAL_PLAYER, self.ports)
+        self.yellow_royal_ports = lh.yellow_royal_ports
+        self.green_royal_ports = lh.green_royal_ports
+        self.royal_ports = lh.royal_ports
         # Initial game variables state
         self.wind_type = None
         self.wind_direction = None
@@ -64,7 +67,10 @@ class Game(object):
         self.setup_cursors()
         self.yellow_docks = []
         self.green_docks = []
+        self.yellow_royal_docks = []
+        self.green_royal_docks = []
         self.update_player_docks()
+        self.win_menu = PauseMenu(self.screen, "Yellow won!", color=colors.GREEN)
 
     def drop_selection(self):
         if self.selected_ship:
@@ -128,6 +134,8 @@ class Game(object):
             enemy_ships = self.green_ships
             docks = self.yellow_docks
             ports = self.yellow_ports
+            royal_ports = self.yellow_royal_ports
+            enemy_royal_ports = self.green_royal_ports
         else:
             next_player = PLAYER1
             self.top_panel.turn_label.set_text("Yellow player turn", colors.YELLOW)
@@ -135,6 +143,8 @@ class Game(object):
             enemy_ships = self.yellow_ships
             docks = self.green_docks
             ports = self.green_ports
+            royal_ports = self.green_royal_ports
+            enemy_royal_ports = self.yellow_royal_ports
         self.wind_type = None
         # Repair ships
         for ship in ships:
@@ -155,10 +165,23 @@ class Game(object):
                     port.set_player(self.player)
                     self.all_sprites = self.layers_handler.get_all_sprites()
                     self.update_player_models()
+        # Capture enemy royal port...
+        for port in enemy_royal_ports:
+            if len(filter(lambda ship: ship.skipped_turn() and ship.coords() in port.get_dock(), ships)) > 0:
+                port.take_damage(1)
+                self.update_player_models()
+            else:
+                port.repair(port.base_armor)
+        # ...and see whether this turn was the last for us to kill the ship that is capturing our royal port:
+        for port in royal_ports:
+            if len(filter(lambda ship: ship.coords() in port.get_dock(), enemy_ships)) > 0 and port.armor == 1:
+                port.take_damage(1)
+                self.update_player_models()
         self.player = next_player
-        for model in self.ships + self.ports:
+        for model in self.ships + self.ports + self.royal_ports:
             model.reset()
-        self.toggle_pause()
+        if not self.game_ended():
+            self.toggle_pause()
 
     def update_player_docks(self):
         """
@@ -166,24 +189,24 @@ class Game(object):
         """
         self.yellow_docks = sum([port.get_dock() for port in self.yellow_ports], [])
         self.green_docks = sum([port.get_dock() for port in self.green_ports], [])
+        self.yellow_royal_docks = sum([port.get_dock() for port in self.yellow_royal_ports], [])
+        self.green_royal_docks = sum([port.get_dock() for port in self.green_royal_ports], [])
 
     def get_docks_obstacles(self):
         if self.player == PLAYER1:
-            return self.green_docks
+            return self.green_docks + self.yellow_royal_docks
         else:
-            return self.yellow_docks
+            return self.yellow_docks + self.green_royal_docks
 
     def toggle_pause(self):
         self._paused = not self._paused
 
     def game_ended(self):
-        if not self.yellow_ships:
-            p = PauseMenu(self.screen, "Green won!", color=colors.GREEN)
-            p.run()
+        if not self.yellow_ships or not self.yellow_royal_ports:
+            self.win_menu.pause_label.set_text("Green won!", color=colors.GREEN)
             return True
-        elif not self.green_ships:
-            p = PauseMenu(self.screen, "Yellow won!", color=colors.YELLOW)
-            p.run()
+        elif not self.green_ships or not self.green_royal_ports:
+            self.win_menu.pause_label.set_text("Yellow won!", color=colors.YELLOW)
             return True
         return False
 
@@ -202,6 +225,7 @@ class Game(object):
                                          obstacles=self.layers_handler.storm_move_obstacles +
                                                    map(lambda s: s.coords(), self.ships) +
                                                    map(lambda p: p.coords(), self.ports) +
+                                                   map(lambda p: p.coords(), self.royal_ports) +
                                                    self.get_docks_obstacles(),
                                          docks=self.layers_handler.docks_coords,
                                          step=1)
@@ -213,6 +237,8 @@ class Game(object):
         self.yellow_ports = filter(lambda s: s.is_alive() and s.player == settings.PLAYER1, self.ports)
         self.green_ports = filter(lambda s: s.is_alive() and s.player == settings.PLAYER2, self.ports)
         self.neutral_ports = filter(lambda s: s.player == settings.NEUTRAL_PLAYER, self.ports)
+        self.yellow_royal_ports = filter(lambda s: s.is_alive(), self.yellow_royal_ports)
+        self.green_royal_ports = filter(lambda s: s.is_alive(), self.green_royal_ports)
         self.yellow_ships = filter(lambda s: s.is_alive(), self.yellow_ships)
         self.green_ships = filter(lambda s: s.is_alive(), self.green_ships)
         self.ships = self.yellow_ships + self.green_ships
@@ -235,11 +261,13 @@ class Game(object):
         delta = (delta_x, delta_y)
         self.background.fill(colors.BACKGROUND_COLOR)  # fill with water color
         self.background.increase_offset(delta)
-        for obj in self.ships + self.ports + \
+        for obj in self.ships + self.ports + self.royal_ports +\
                 [ship.health_bar for ship in self.ships] + \
                 [ship.cannon_bar for ship in self.ships] + \
                 [port.health_bar for port in self.ports] + \
-                [port.cannon_bar for port in self.ports]:
+                [port.cannon_bar for port in self.ports] + \
+                [port.health_bar for port in self.royal_ports] + \
+                [port.cannon_bar for port in self.royal_ports]:
             obj.offset = self.background.offset
             obj.rect = obj.rect.move(delta)
         self.background.draw()
@@ -249,7 +277,6 @@ class Game(object):
         right_top_panel = self.right_top_panel
         background.draw()
         exit_game = False
-        ctrl_mode = False
         drag_mode = False
         previous_mouse_pos = None
         pause = PauseMenu(self.screen)
@@ -259,18 +286,13 @@ class Game(object):
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     raise SystemExit("QUIT")
-                if e.type == pygame.KEYDOWN and (e.key == pygame.K_LCTRL or e.key == pygame.K_RCTRL):
-                    ctrl_mode = True
-                if e.type == pygame.KEYUP and (e.key == pygame.K_LCTRL or e.key == pygame.K_RCTRL):
-                    ctrl_mode = False
-                if e.type == pygame.KEYDOWN and e.key == pygame.K_q:
-                    if ctrl_mode:
-                        if self.player == PLAYER1:
-                            p = PauseMenu(self.screen, "Green won!", color=colors.GREEN)
-                        else:
-                            p = PauseMenu(self.screen, "Yellow won!", color=colors.YELLOW)
-                        p.run()
-                        exit_game = True
+                if e.type == pygame.KEYDOWN and e.key == pygame.K_q and pygame.key.get_mods() & pygame.KMOD_CTRL:
+                    if self.player == PLAYER1:
+                        p = PauseMenu(self.screen, "Green won!", color=colors.GREEN)
+                    else:
+                        p = PauseMenu(self.screen, "Yellow won!", color=colors.YELLOW)
+                    p.run()
+                    exit_game = True
                 if e.type == pygame.KEYDOWN and e.key == pygame.K_RETURN:
                     right_top_panel.end_move()
                 if e.type == pygame.KEYDOWN and (e.key == pygame.K_LSHIFT or e.key == pygame.K_RSHIFT):
@@ -333,6 +355,7 @@ class Game(object):
                                                             obstacles=self.layers_handler.move_obstacles +
                                                                       map(lambda x: x.coords(), self.ships) +
                                                                       map(lambda x: x.coords(), self.ports) +
+                                                                      map(lambda x: x.coords(), self.royal_ports) +
                                                                       self.get_docks_obstacles(),
                                                             docks=self.layers_handler.docks_coords)
                                     except AttributeError, ex:
@@ -380,4 +403,6 @@ class Game(object):
                 pause.run()
                 self.toggle_pause()
             pygame.display.update()
+        if not exit_game:
+            self.win_menu.run()
         return False

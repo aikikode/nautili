@@ -104,6 +104,8 @@ class MainMenu(BaseMainMenu):
                 raise SystemExit, "QUIT"
             if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                 self.check_click(e.pos)
+            if e.type == pygame.KEYDOWN and e.key == pygame.K_q and pygame.key.get_mods() & pygame.KMOD_CTRL:
+                return False
         self.mouse_over(pygame.mouse.get_pos())
         return True
 
@@ -151,13 +153,13 @@ class PauseMenu(Menu):
         label_font = pygame.font.Font(None, 50)
         prompt_font = pygame.font.Font(None, 30)
         delta = 135/17. * len(text) # x delta based on font size
-        pause_label = Label(label_font, color, text,
+        self.pause_label = Label(label_font, color, text,
                                   (MAIN_WIN_WIDTH / 2 - delta, MAIN_WIN_HEIGHT / 2 - 90))
         prompt_label = Label(prompt_font, colors.WHITE, "Press Spacebar to continue",
                                  (MAIN_WIN_WIDTH / 2 - 130, MAIN_WIN_HEIGHT / 2 - 40))
         self.objects = []
         self.objects.append(prompt_label)
-        self.objects.append(pause_label)
+        self.objects.append(self.pause_label)
 
     def mouse_over(self, event_position):
         for obj in self.objects:

@@ -3,7 +3,7 @@
 Tiled maps handlers: read layers, objects
 """
 import pygame
-from models import Ship, Port
+from models import Ship, Port, RoyalPort
 from textures import Sea, Island, Rock
 
 __author__ = 'aikikode'
@@ -40,10 +40,13 @@ class LayersHandler(object):
         self.ships = self.yellow_ships + self.green_ships
         self.yellow_ports = self.get_objects("ports_yellow", Port)
         self.green_ports = self.get_objects("ports_green", Port)
+        self.yellow_royal_ports = self.get_objects("royal_ports_yellow", RoyalPort)
+        self.green_royal_ports = self.get_objects("royal_ports_green", RoyalPort)
         self.ports = self.yellow_ports + self.green_ports
+        self.royal_ports = self.yellow_royal_ports + self.green_royal_ports
         docks = self.get_layer_tiles(LayersHandler.DOCKS_LAYER, Sea)
         docks_coords = []
-        for port in self.ports:
+        for port in self.ports + self.royal_ports:
             docks_coords.extend(port.get_dock())
         for x in xrange(0, len(docks)):
             for y in xrange(0, len(docks[x])):
@@ -79,10 +82,12 @@ class LayersHandler(object):
         ports_health_bars = [port.health_bar for port in self.ports]
         ports_cannon_bars = [port.cannon_bar for port in self.ports]
         ports_target_bars = [port.target_bar for port in self.ports]
+        royal_ports_health_bars = [port.health_bar for port in self.royal_ports]
         return pygame.sprite.OrderedUpdates(
-            sorted(alive_ships + self.ports, key=lambda s: s.x + s.y) +
+            sorted(alive_ships + self.ports + self.royal_ports, key=lambda s: s.x + s.y) +
             ships_health_bars + ships_cannon_bars + ships_target_bars +
-            ports_health_bars + ports_cannon_bars + ports_target_bars)
+            ports_health_bars + ports_cannon_bars + ports_target_bars +
+            royal_ports_health_bars)
 
     def get_clickable_objects(self):
         return LayersHandler.filter_not_none(LayersHandler.flatten(self.visible_sea))

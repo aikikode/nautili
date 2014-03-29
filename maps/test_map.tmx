@@ -40,7 +40,7 @@
   </data>
  </layer>
  <objectgroup name="ships_yellow" width="40" height="40">
-  <object name="galleon" gid="29" x="192" y="512">
+  <object name="galleon" gid="29" x="192" y="576">
    <properties>
     <property name="base_armor" value="3"/>
     <property name="fire_range" value="3"/>
@@ -51,7 +51,7 @@
     <property name="storm_move" value="3"/>
    </properties>
   </object>
-  <object name="corvette" gid="29" x="192" y="448">
+  <object name="corvette" gid="29" x="192" y="512">
    <properties>
     <property name="base_armor" value="3"/>
     <property name="fire_range" value="3"/>
@@ -62,7 +62,7 @@
     <property name="storm_move" value="1"/>
    </properties>
   </object>
-  <object name="steamboat" gid="29" x="192" y="384">
+  <object name="steamboat" gid="29" x="224" y="704">
    <properties>
     <property name="base_armor" value="3"/>
     <property name="fire_range" value="3"/>
@@ -75,15 +75,7 @@
   </object>
  </objectgroup>
  <objectgroup name="ports_yellow" width="40" height="40">
-  <object name="port_2" gid="30" x="288" y="256">
-   <properties>
-    <property name="base_armor" value="5"/>
-    <property name="fire_range" value="4"/>
-    <property name="model" value="port_2"/>
-    <property name="shots_count" value="2"/>
-   </properties>
-  </object>
-  <object name="port_1" gid="30" x="192" y="864">
+  <object name="port_1" gid="30" x="288" y="384">
    <properties>
     <property name="base_armor" value="7"/>
     <property name="fire_range" value="5"/>
@@ -93,7 +85,7 @@
   </object>
  </objectgroup>
  <objectgroup name="ships_green" width="40" height="40">
-  <object name="galleon" gid="29" x="960" y="864">
+  <object name="galleon" gid="29" x="704" y="736">
    <properties>
     <property name="base_armor" value="3"/>
     <property name="fire_range" value="3"/>
@@ -104,7 +96,7 @@
     <property name="storm_move" value="3"/>
    </properties>
   </object>
-  <object name="corvette" gid="29" x="960" y="800">
+  <object name="corvette" gid="29" x="704" y="480">
    <properties>
     <property name="base_armor" value="3"/>
     <property name="fire_range" value="3"/>
@@ -115,20 +107,17 @@
     <property name="storm_move" value="1"/>
    </properties>
   </object>
-  <object name="steamboat" gid="29" x="960" y="736">
-   <properties>
-    <property name="base_armor" value="3"/>
-    <property name="fire_range" value="3"/>
-    <property name="max_move" value="5"/>
-    <property name="model" value="steamboat"/>
-    <property name="shots_count" value="1"/>
-    <property name="stille_move" value="2"/>
-    <property name="storm_move" value="2"/>
-   </properties>
-  </object>
  </objectgroup>
  <objectgroup name="ports_green" width="40" height="40">
-  <object name="port_1" gid="30" x="800" y="384">
+  <object name="port_2" gid="30" x="800" y="672">
+   <properties>
+    <property name="base_armor" value="5"/>
+    <property name="fire_range" value="4"/>
+    <property name="model" value="port_2"/>
+    <property name="shots_count" value="2"/>
+   </properties>
+  </object>
+  <object name="port_1" gid="30" x="704" y="640">
    <properties>
     <property name="base_armor" value="7"/>
     <property name="fire_range" value="5"/>
@@ -136,12 +125,24 @@
     <property name="shots_count" value="3"/>
    </properties>
   </object>
-  <object name="port_2" gid="30" x="800" y="672">
+ </objectgroup>
+ <objectgroup name="royal_ports_yellow" width="40" height="40">
+  <object name="royal_port" gid="30" x="192" y="960">
    <properties>
-    <property name="base_armor" value="5"/>
-    <property name="fire_range" value="4"/>
-    <property name="model" value="port_2"/>
-    <property name="shots_count" value="2"/>
+    <property name="base_armor" value="4"/>
+    <property name="fire_range" value="0"/>
+    <property name="model" value="royal_port"/>
+    <property name="shots_count" value="0"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup name="royal_ports_green" width="40" height="40">
+  <object name="royal_port" gid="30" x="1216" y="736">
+   <properties>
+    <property name="base_armor" value="4"/>
+    <property name="fire_range" value="0"/>
+    <property name="model" value="royal_port"/>
+    <property name="shots_count" value="0"/>
    </properties>
   </object>
  </objectgroup>

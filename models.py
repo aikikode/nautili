@@ -468,7 +468,7 @@ class Ship(Model):
 
 class Port(Model):
     def __init__(self, layers_handler, isom_x, isom_y, model='port_1', player=settings.PLAYER1, base_armor=1,
-                 fire_range=1, max_move=1, shots_count=1, stille_move=1, storm_move=1, **kwargs):
+                 fire_range=1, shots_count=1, **kwargs):
         Model.__init__(self, layers_handler, isom_x, isom_y, model, player, base_armor, fire_range, shots_count)
 
     def get_dock(self):
@@ -485,3 +485,11 @@ class Port(Model):
             self.player = settings.NEUTRAL_PLAYER
             self._update_image()
             self.health_bar = HealthBar(self)
+
+
+class RoyalPort(Port):
+    def __init__(self, layers_handler, isom_x, isom_y, model='royal_port', player=settings.PLAYER1, base_armor=1, **kwargs):
+        Port.__init__(self, layers_handler, isom_x, isom_y, model, player, base_armor, fire_range=0, shots_count=0)
+
+    def take_damage(self, damage):
+        Model.take_damage(self, damage)
