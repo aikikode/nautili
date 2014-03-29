@@ -56,7 +56,7 @@ class LayersHandler(object):
         self.docks_coords = docks_coords
 
     def get_layer_tiles(self, layer_num, classname):
-        res = [[None for x in xrange(0, self.tiledmap.width)] for y in xrange(0, self.tiledmap.height)]
+        res = [[None for _ in xrange(0, self.tiledmap.height)] for _ in xrange(0, self.tiledmap.width)]
         for y in xrange(0, self.tiledmap.height):
             for x in xrange(0, self.tiledmap.width):
                 tile = self.tiledmap.getTileImage(x, y, layer_num)

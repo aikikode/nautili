@@ -19,10 +19,10 @@ class Game(object):
         pygame.display.set_caption("Nautili")
         try:
             self.layers_handler = lh = LayersHandler(tmxloader.load_pygame(map_file, pixelalpha=True))
-        except:
+        except Exception:
             print "Unable to read map data. Possibly messed up layers."
             raise ValueError
-            # Background
+        # Background
         self.bg_surface = pygame.Surface((MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT), pygame.SRCALPHA).convert_alpha()
         # Panel
         self.right_top_panel = RightTopPanel(self,
