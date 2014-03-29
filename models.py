@@ -44,6 +44,7 @@ class Model(pygame.sprite.Sprite):
         self.aimed_count = 0  # number of cannons aimed at this ship
         self._targets = []
         self._is_alive = True
+        self._has_shot = False
         self.offset = (0, 0)
         self.health_bar = HealthBar(self)
         self.cannon_bar = CannonBar(self)
@@ -86,6 +87,7 @@ class Model(pygame.sprite.Sprite):
         self.health_bar.draw()
         self.cannon_bar.draw()
         self.target_bar.draw()
+        self._has_shot = False
 
     def calculate_shots(self, obstacles=[]):
         self.possible_shots = self.calculate_area(self.fire_range, obstacles)
@@ -161,6 +163,7 @@ class Model(pygame.sprite.Sprite):
                 target.unset_aimed(shot_count)
         self._targets = []
         self.cannon_bar.draw()
+        self._has_shot = True
 
     def get_targets(self):
         return self._targets
@@ -174,6 +177,10 @@ class Model(pygame.sprite.Sprite):
 
     def is_alive(self):
         return self._is_alive
+
+    def repair(self):
+        if self.armor < self.base_armor:
+            self.armor += 1
 
 
 class HealthBar(pygame.sprite.Sprite):
@@ -448,6 +455,10 @@ class Ship(Model):
     def check_crash(self, obstacles):
         if self.coords() in obstacles:
             self._is_alive = False
+
+    def repair(self):
+        if not self._has_moved and not self._has_shot and self.armor < self.base_armor:
+            self.armor += 1
 
 
 class Port(Model):

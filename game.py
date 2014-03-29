@@ -118,16 +118,24 @@ class Game(object):
 
     def next_turn(self):
         self.drop_selection()
+        self.update_player_docks()
         if self.player == PLAYER1:
             self.player = PLAYER2
             self.top_panel.turn_label.set_text("Green player turn", colors.GREEN)
+            ships = self.yellow_ships
+            docks = self.yellow_docks
         else:
             self.player = PLAYER1
             self.top_panel.turn_label.set_text("Yellow player turn", colors.YELLOW)
+            ships = self.green_ships
+            docks = self.green_docks
         self.wind_type = None
+        # Repair ships
+        for ship in ships:
+            if ship.coords() in docks:
+                ship.repair()
         for model in self.ships + self.ports:
             model.reset()
-        self.update_player_docks()
         self.toggle_pause()
 
     def update_player_docks(self):
