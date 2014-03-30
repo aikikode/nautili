@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 import pygame
-import pygame.gfxdraw
 import random
-import colors
+
+import pygame.gfxdraw
+
 from hud import Button, Label
 from layers import LayersHandler
+from nautili import colors
 from renderer import Renderer
 import settings
 import wind
+
 
 __author__ = 'aikikode'
 

@@ -1,13 +1,15 @@
 #!/usr/bin/env python
-import colors
 import pygame
-from menus import PauseMenu
+
 from pytmx import tmxloader
+
+from menus import PauseMenu
+from nautili import colors
 from panels import RightTopPanel, TopPanel, MiniMap
 from renderer import IsometricRenderer
 from layers import LayersHandler
 from settings import *
-import settings
+
 
 __author__ = 'aikikode'
 
@@ -46,7 +48,7 @@ class Game(object):
         self.yellow_ports = lh.yellow_ports
         self.green_ports = lh.green_ports
         self.ports = lh.ports
-        self.neutral_ports = filter(lambda s: s.player == settings.NEUTRAL_PLAYER, self.ports)
+        self.neutral_ports = filter(lambda s: s.player == NEUTRAL_PLAYER, self.ports)
         self.yellow_royal_ports = lh.yellow_royal_ports
         self.green_royal_ports = lh.green_royal_ports
         self.royal_ports = lh.royal_ports
@@ -234,9 +236,9 @@ class Game(object):
         self.update_player_models()
 
     def update_player_models(self):
-        self.yellow_ports = filter(lambda s: s.is_alive() and s.player == settings.PLAYER1, self.ports)
-        self.green_ports = filter(lambda s: s.is_alive() and s.player == settings.PLAYER2, self.ports)
-        self.neutral_ports = filter(lambda s: s.player == settings.NEUTRAL_PLAYER, self.ports)
+        self.yellow_ports = filter(lambda s: s.is_alive() and s.player == PLAYER1, self.ports)
+        self.green_ports = filter(lambda s: s.is_alive() and s.player == PLAYER2, self.ports)
+        self.neutral_ports = filter(lambda s: s.player == NEUTRAL_PLAYER, self.ports)
         self.yellow_royal_ports = filter(lambda s: s.is_alive(), self.yellow_royal_ports)
         self.green_royal_ports = filter(lambda s: s.is_alive(), self.green_royal_ports)
         self.yellow_ships = filter(lambda s: s.is_alive(), self.yellow_ships)

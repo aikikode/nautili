@@ -3,10 +3,9 @@ import os
 import pygame
 import shutil
 from PIL import Image
-import colors
-from hud import Button, Label
-from settings import DISPLAY, WIN_HEIGHT, WIN_WIDTH, MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT
-import settings
+from nautili import colors
+from nautili.hud import Button, Label
+from nautili.settings import DISPLAY, WIN_HEIGHT, WIN_WIDTH, MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT, TMP_DIR, HUD_DIR
 
 __author__ = 'aikikode'
 
@@ -33,7 +32,7 @@ class BaseMainMenu(Menu):
         self.screen = pygame.display.set_mode(DISPLAY)
         pygame.display.set_caption("Nautili")
         self.bg_surface = pygame.Surface((WIN_WIDTH, WIN_HEIGHT), pygame.SRCALPHA).convert_alpha()
-        image = os.path.join("tilesets", "bg.png")
+        image = os.path.join(HUD_DIR, "bg.png")
         self.bg_image = Image.open(image)
         self.pygame_bg_image = pygame.image.load(image)
         self.objects = []
@@ -94,8 +93,8 @@ class MainMenu(BaseMainMenu):
         l.run()
 
     def exit(self):
-        if os.path.exists(settings.TMP_DIR):
-            shutil.rmtree(settings.TMP_DIR)
+        if os.path.exists(TMP_DIR):
+            shutil.rmtree(TMP_DIR)
         raise SystemExit, "QUIT"
 
     def process_events(self):
@@ -134,7 +133,7 @@ class LoadMapMenu(BaseMainMenu):
     def load_map(self, map_file):
         map = os.path.join(LoadMapMenu.MAP_DIR, map_file + ".tmx")
         try:
-            import game
+            from nautili import game
             g = game.Game(map)
             g.start()
         except ValueError:
@@ -147,7 +146,7 @@ class PauseMenu(Menu):
         self.width, self.height = DISPLAY
         self.screen = screen
         self.bg_surface = pygame.Surface((WIN_WIDTH, WIN_HEIGHT), pygame.SRCALPHA).convert_alpha()
-        image = os.path.join("tilesets", "shade.png")
+        image = os.path.join("./data/hud", "shade.png")
         self.bg_image = Image.open(image)
         self.pygame_bg_image = pygame.image.load(image)
         label_font = pygame.font.Font(None, 50)

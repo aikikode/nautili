@@ -8,12 +8,9 @@ import pygame
 import numpy as np
 import math
 from PIL import Image
-import settings
-import wind
+from nautili import wind, settings
 
 __author__ = 'aikikode'
-
-MODELS_DIR = os.path.join("tilesets", "models")
 
 
 def clear_image(image):
@@ -32,7 +29,7 @@ class Model(pygame.sprite.Sprite):
         self.model = model
         self.player = player
         self.layers_handler = layers_handler
-        self.image = pygame.image.load("./tilesets/test_player.png").convert_alpha()
+        self.image = None
         self.rect = pygame.Rect(*(layers_handler.isometric_to_orthogonal(x, y) + (64, 64)))
         self.possible_shots = []
         self._update_image()
@@ -78,7 +75,7 @@ class Model(pygame.sprite.Sprite):
         if img_type:
             img_type = "_{}".format(img_type)
         self.image = pygame.image.load(
-            os.path.join(MODELS_DIR, "{}_{}{}.png".format(self.model, self.player, img_type))).convert_alpha()
+            os.path.join(settings.MODELS_DIR, "{}_{}{}.png".format(self.model, self.player, img_type))).convert_alpha()
 
     def reset(self):
         self.aimed_count = 0
@@ -191,13 +188,13 @@ class HealthBar(pygame.sprite.Sprite):
     def __init__(self, model):
         pygame.sprite.Sprite.__init__(self)
         self.model = model
-        self.damage_image = Image.open(os.path.join(MODELS_DIR, "health_bar_cell_red.png"))
+        self.damage_image = Image.open(os.path.join(settings.MODELS_DIR, "health_bar_cell_red.png"))
         if self.model.player == settings.PLAYER1:
-            self.health_image = Image.open(os.path.join(MODELS_DIR, "health_bar_cell_yellow.png"))
+            self.health_image = Image.open(os.path.join(settings.MODELS_DIR, "health_bar_cell_yellow.png"))
         elif self.model.player == settings.PLAYER2:
-            self.health_image = Image.open(os.path.join(MODELS_DIR, "health_bar_cell_green.png"))
+            self.health_image = Image.open(os.path.join(settings.MODELS_DIR, "health_bar_cell_green.png"))
         else:
-            self.health_image = Image.open(os.path.join(MODELS_DIR, "health_bar_cell_neutral.png"))
+            self.health_image = Image.open(os.path.join(settings.MODELS_DIR, "health_bar_cell_neutral.png"))
         self._cell_width, self._cell_height = self.damage_image.size
         self.image = None
         self.bar_width = 0
@@ -236,8 +233,8 @@ class CannonBar(pygame.sprite.Sprite):
     def __init__(self, model):
         pygame.sprite.Sprite.__init__(self)
         self.model = model
-        self.empty_image = Image.open(os.path.join(MODELS_DIR, "cannon_bar_cell_empty.png"))
-        self.cannon_image = Image.open(os.path.join(MODELS_DIR, "cannon_bar_cell.png"))
+        self.empty_image = Image.open(os.path.join(settings.MODELS_DIR, "cannon_bar_cell_empty.png"))
+        self.cannon_image = Image.open(os.path.join(settings.MODELS_DIR, "cannon_bar_cell.png"))
         self._cell_width, self._cell_height = self.empty_image.size
         self.image = None
         self.bar_width = 0
@@ -275,7 +272,7 @@ class TargetBar(pygame.sprite.Sprite):
     def __init__(self, model):
         pygame.sprite.Sprite.__init__(self)
         self.model = model
-        self.target_image = Image.open(os.path.join(MODELS_DIR, "target_bar_cell.png"))
+        self.target_image = Image.open(os.path.join(settings.MODELS_DIR, "target_bar_cell.png"))
         self._cell_width, self._cell_height = self.target_image.size
         self.image = None
         self.bar_width = 0
@@ -325,7 +322,7 @@ class Ship(Model):
         if img_type:
             img_type = "_{}".format(img_type)
         self.image = pygame.image.load(
-            os.path.join(MODELS_DIR,
+            os.path.join(settings.MODELS_DIR,
                          "{}_{}_{}{}.png".format(self.model, self.player, self.direction, img_type))).convert_alpha()
 
     def reset(self):

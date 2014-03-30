@@ -3,7 +3,7 @@
 Base HUD elements: buttons, labels, etc.
 """
 import pygame
-import colors
+from nautili import colors
 
 __author__ = 'aikikode'
 

@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import os
+
 __author__ = 'aikikode'
 
 WIN_WIDTH = 1440
@@ -19,3 +21,5 @@ PLAYER2 = "green"
 NEUTRAL_PLAYER = "neutral"
 
 TMP_DIR = ".tmp"
+MODELS_DIR = os.path.join("data", "models")
+HUD_DIR = os.path.join("data", "hud")

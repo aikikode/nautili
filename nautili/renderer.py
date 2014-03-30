@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import pygame
 import random
-import colors
-from layers import LayersHandler
+from nautili.layers import LayersHandler
+from nautili import colors
 
 __author__ = 'aikikode'
 

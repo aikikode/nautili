@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import os
 import shutil
-from menus import MainMenu
-import settings
+from nautili.menus import MainMenu
+from nautili import settings
 
 __author__ = 'aikikode'
 

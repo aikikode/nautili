@@ -3,8 +3,8 @@
 Tiled maps handlers: read layers, objects
 """
 import pygame
-from models import Ship, Port, RoyalPort
-from textures import Sea, Island, Rock
+from nautili.models import Ship, Port, RoyalPort
+from nautili.textures import Sea, Island, Rock
 
 __author__ = 'aikikode'
 
