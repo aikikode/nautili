@@ -349,7 +349,17 @@ class Game(object):
                                 self.selected_ship = \
                                     filter(lambda obj: obj.coords() == (clicked.coords()), allowed_to_select)[0]
                                 self.selected_ship.select()
-                                self.right_panel.set_model(self.selected_ship.model)
+                                try:
+                                    self.right_panel.set_model(model=self.selected_ship.model,
+                                                               name=self.selected_ship.model.replace('_', ' ').capitalize(),
+                                                               fire_range=self.selected_ship.fire_range,
+                                                               max_move=self.selected_ship.max_move,
+                                                               stille_move=self.selected_ship.stille_move,
+                                                               storm_move=self.selected_ship.storm_move)
+                                except AttributeError:
+                                    self.right_panel.set_model(model=self.selected_ship.model,
+                                                               name=self.selected_ship.model.replace('_', ' ').capitalize(),
+                                                               fire_range=self.selected_ship.fire_range)
                                 self.right_panel.shoot_label.set_text("")
                                 #print "Object {} clicked".format(selected_ship)
                                 if self.selected_ship.is_alive():

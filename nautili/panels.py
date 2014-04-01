@@ -65,9 +65,9 @@ class RightPanel(Panel):
                                    on_click=self.shoot)
         self.shoot_label = Label(label_font, colors.WHITE, "", (10, 110), offset=offset)
         self.object_info_panel = ObjectInfo(game,
-                                            (offset[0], offset[1] + self.height / 2 - 40),
+                                            (offset[0], offset[1] + 150),
                                             (self.width, self.height / 2))
-        self.end_move_button = Button(button_font, "End turn (Enter)", (10, 370),
+        self.end_move_button = Button(button_font, "End turn (Enter)", (10, self.height - 30),
                                       offset=offset,
                                       on_click=self.end_move)
         self.objects.append(self.get_wind_button)
@@ -81,8 +81,8 @@ class RightPanel(Panel):
         Panel.draw(self)
         self.object_info_panel.draw()
 
-    def set_model(self, model=""):
-        self.object_info_panel.set_model(model)
+    def set_model(self, **kwargs):
+        self.object_info_panel.set_model(**kwargs)
 
     def get_wind(self):
         if not self.get_wind_button.enabled():
@@ -231,10 +231,40 @@ class ObjectInfo(Panel):
     def __init__(self, game, offset, size):
         Panel.__init__(self, game, offset, size)
         self.border = pygame.Rect((0, 0), (self.width, self.height))
-        self.image = ObjectImage((0,0), offset)
+        self.image = ObjectImage((0, 0), offset)
+        name_font = pygame.font.Font(None, 25)
+        font = pygame.font.Font(None, 22)
+        self.name_label = Label(name_font, colors.WHITE, "", (0, 220), offset=offset)
+        self.fire_range_label = Label(font, colors.WHITE, "", (10, 240), offset=offset)
+        self.max_move_label = Label(font, colors.WHITE, "", (10, 260), offset=offset)
+        self.stille_move_label = Label(font, colors.WHITE, "", (10, 280), offset=offset)
+        self.storm_move_label = Label(font, colors.WHITE, "", (10, 300), offset=offset)
         self.objects.append(self.image)
+        self.objects.append(self.name_label)
+        self.objects.append(self.fire_range_label)
+        self.objects.append(self.max_move_label)
+        self.objects.append(self.stille_move_label)
+        self.objects.append(self.storm_move_label)
 
-    def set_model(self, model):
+    def set_model(self, model="", name="", fire_range=0, max_move=0, stille_move=None, storm_move=0):
+        self.name_label.set_text(name)
+        self.name_label.center(self.width)
         if model:
             model = os.path.join(settings.MODELS_DIR, "{}.png".format(model))
+        if fire_range:
+            self.fire_range_label.set_text("Fire range: {}".format(fire_range))
+        else:
+            self.fire_range_label.set_text("")
+        if max_move:
+            self.max_move_label.set_text("Max move: {}".format(max_move))
+        else:
+            self.max_move_label.set_text("")
+        if stille_move is not None:
+            self.stille_move_label.set_text("Stille move: {}".format(stille_move))
+        else:
+            self.stille_move_label.set_text("")
+        if storm_move:
+            self.storm_move_label.set_text("Storm range: {}".format(storm_move))
+        else:
+            self.storm_move_label.set_text("")
         self.image.set_image(model)

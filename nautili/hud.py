@@ -90,3 +90,10 @@ class Label(HudElement):
         self.image = image.convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.topleft = self.pos
+
+    def center(self, width):
+        """
+        Center the label inside the width panel
+        """
+        text_width = self.font.size(self.text)[0]
+        self.rect.topleft = (self.pos[0] + (width - text_width) / 2, self.pos[1])
