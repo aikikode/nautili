@@ -61,7 +61,11 @@ class Game(object):
         self.background.fill(colors.BACKGROUND_COLOR)  # fill with water color
         self.background.add(self.sea + self.docks + self.rocks + self.islands)
         self.map_width, self.map_height = self.layers_handler.get_map_dimensions()
-        self.move_camera(((MAIN_WIN_WIDTH - self.map_width) / 2, 0))
+        # Move camera to first yellow royal port
+        yellow_port = self.yellow_royal_ports[0]
+        port_coords = map(lambda x: -x, self.layers_handler.isometric_to_orthogonal(*yellow_port.coords()))
+        self.move_camera((port_coords[0] + MAIN_WIN_WIDTH / 2, port_coords[1] + MAIN_WIN_HEIGHT / 2))
+        #
         self._cursor_default = pygame.mouse.get_cursor()
         self._cursor_close_hand = self._cursor_default
         self.selected_ship = None
