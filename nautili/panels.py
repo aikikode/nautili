@@ -1,10 +1,11 @@
 #!/usr/bin/env python
+import os
 import pygame
 import random
 
 import pygame.gfxdraw
 
-from hud import Button, Label
+from hud import Button, Label, HudElement
 from layers import LayersHandler
 from nautili import colors
 from renderer import Renderer
@@ -49,20 +50,24 @@ class Panel(object):
             return True
 
 
-class RightTopPanel(Panel):
+class RightPanel(Panel):
     def __init__(self, game, offset, size):
         Panel.__init__(self, game, offset, size)
         button_font = pygame.font.Font(None, 35)
-        self.get_wind_button = Button(button_font, "Wind (Tab):", (0, 10),
+        self.background = pygame.transform.scale(pygame.image.load(os.path.join("./data/hud", "shade.png")), size)
+        self.get_wind_button = Button(button_font, "Wind (Tab):", (10, 10),
                                       offset=offset,
                                       on_click=self.get_wind)
         label_font = pygame.font.Font(None, 35)
-        self.wind_label = Label(label_font, colors.WHITE, "", (0, 40), offset=offset)
-        self.shoot_button = Button(button_font, "Shoot (Shift)", (0, 80),
+        self.wind_label = Label(label_font, colors.WHITE, "", (10, 40), offset=offset)
+        self.shoot_button = Button(button_font, "Shoot (Shift)", (10, 80),
                                    offset=offset,
                                    on_click=self.shoot)
-        self.shoot_label = Label(label_font, colors.WHITE, "", (0, 110), offset=offset)
-        self.end_move_button = Button(button_font, "End turn (Enter)", (0, 170),
+        self.shoot_label = Label(label_font, colors.WHITE, "", (10, 110), offset=offset)
+        self.object_info_panel = ObjectInfo(game,
+                                            (offset[0], offset[1] + self.height / 2 - 40),
+                                            (self.width, self.height / 2))
+        self.end_move_button = Button(button_font, "End turn (Enter)", (10, 370),
                                       offset=offset,
                                       on_click=self.end_move)
         self.objects.append(self.get_wind_button)
@@ -70,6 +75,14 @@ class RightTopPanel(Panel):
         self.objects.append(self.shoot_button)
         self.objects.append(self.shoot_label)
         self.objects.append(self.end_move_button)
+
+    def draw(self):
+        self.game.screen.blit(self.background, self.offset)
+        Panel.draw(self)
+        self.object_info_panel.draw()
+
+    def set_model(self, model=""):
+        self.object_info_panel.set_model(model)
 
     def get_wind(self):
         if not self.get_wind_button.enabled():
@@ -189,3 +202,39 @@ class MiniMap(Panel):
                                  mouse_minimap_coordinates[1] - self.cam_height / 2)
             self.game.move_camera(map(lambda x, y: (x - y) * self.scale, current_camera_offset, new_camera_offset))
             return True
+
+
+class ObjectImage(HudElement):
+    def __init__(self, pos, offset):
+        HudElement.__init__(self, pos, offset)
+        self.image = None
+        self.rect = None
+        self.reset()
+
+    def reset(self):
+        font = pygame.font.Font(None, 1)
+        image = font.render("", True, colors.BLACK)
+        self.image = image.convert_alpha()
+        self.rect = self.image.get_rect()
+        self.rect.topleft = self.pos
+
+    def set_image(self, image):
+        if image:
+            self.image = pygame.image.load(image).convert_alpha()
+            self.rect = self.image.get_rect()
+            self.rect.topleft = self.pos
+        else:
+            self.reset()
+
+
+class ObjectInfo(Panel):
+    def __init__(self, game, offset, size):
+        Panel.__init__(self, game, offset, size)
+        self.border = pygame.Rect((0, 0), (self.width, self.height))
+        self.image = ObjectImage((0,0), offset)
+        self.objects.append(self.image)
+
+    def set_model(self, model):
+        if model:
+            model = os.path.join(settings.MODELS_DIR, "{}.png".format(model))
+        self.image.set_image(model)

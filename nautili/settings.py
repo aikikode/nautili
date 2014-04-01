@@ -9,7 +9,7 @@ DISPLAY = (WIN_WIDTH, WIN_HEIGHT)
 MAIN_WIN_WIDTH = WIN_WIDTH
 MAIN_WIN_HEIGHT = WIN_HEIGHT
 RIGHT_PANEL_WIDTH = 200
-RIGHT_PANEL_HEIGHT = 200
+RIGHT_PANEL_HEIGHT = 400
 TOP_PANEL_WIDTH = MAIN_WIN_WIDTH
 TOP_PANEL_HEIGHT = 50
 
@@ -23,3 +23,4 @@ NEUTRAL_PLAYER = "neutral"
 TMP_DIR = ".tmp"
 MODELS_DIR = os.path.join("data", "models")
 HUD_DIR = os.path.join("data", "hud")
+MISC_DIR = os.path.join("data", "misc")

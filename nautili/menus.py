@@ -5,7 +5,7 @@ import shutil
 from PIL import Image
 from nautili import colors
 from nautili.hud import Button, Label
-from nautili.settings import DISPLAY, WIN_HEIGHT, WIN_WIDTH, MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT, TMP_DIR, HUD_DIR
+from nautili.settings import DISPLAY, WIN_HEIGHT, WIN_WIDTH, MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT, TMP_DIR, HUD_DIR, MODELS_DIR, MISC_DIR
 
 __author__ = 'aikikode'
 
@@ -30,6 +30,7 @@ class BaseMainMenu(Menu):
         pygame.init()
         self.width, self.height = DISPLAY
         self.screen = pygame.display.set_mode(DISPLAY)
+        pygame.display.set_icon(pygame.image.load(os.path.join(MISC_DIR, "icon.png")).convert_alpha())
         pygame.display.set_caption("Nautili")
         self.bg_surface = pygame.Surface((WIN_WIDTH, WIN_HEIGHT), pygame.SRCALPHA).convert_alpha()
         image = os.path.join(HUD_DIR, "bg.png")

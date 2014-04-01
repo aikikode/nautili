@@ -5,7 +5,7 @@ from pytmx import tmxloader
 
 from menus import PauseMenu
 from nautili import colors
-from panels import RightTopPanel, TopPanel, MiniMap
+from panels import RightPanel, TopPanel, MiniMap
 from renderer import IsometricRenderer
 from layers import LayersHandler
 from settings import *
@@ -27,7 +27,7 @@ class Game(object):
         # Background
         self.bg_surface = pygame.Surface((MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT), pygame.SRCALPHA).convert_alpha()
         # Panel
-        self.right_top_panel = RightTopPanel(self,
+        self.right_panel = RightPanel(self,
                                              (MAIN_WIN_WIDTH - RIGHT_PANEL_WIDTH, MINIMAP_HEIGHT),
                                              (RIGHT_PANEL_WIDTH, RIGHT_PANEL_HEIGHT))
         self.top_panel = TopPanel(self, (0, 0), (TOP_PANEL_WIDTH, TOP_PANEL_HEIGHT))
@@ -76,6 +76,7 @@ class Game(object):
 
     def drop_selection(self):
         if self.selected_ship:
+            self.right_panel.set_model()
             self.selected_ship.unselect()
             self.selected_ship.aim_reset()
             self.selected_ship = None
@@ -276,7 +277,7 @@ class Game(object):
 
     def start(self):
         background = self.background
-        right_top_panel = self.right_top_panel
+        right_panel = self.right_panel
         background.draw()
         exit_game = False
         drag_mode = False
@@ -296,11 +297,11 @@ class Game(object):
                     p.run()
                     exit_game = True
                 if e.type == pygame.KEYDOWN and e.key == pygame.K_RETURN:
-                    right_top_panel.end_move()
+                    right_panel.end_move()
                 if e.type == pygame.KEYDOWN and (e.key == pygame.K_LSHIFT or e.key == pygame.K_RSHIFT):
-                    right_top_panel.shoot()
+                    right_panel.shoot()
                 if e.type == pygame.KEYDOWN and e.key == pygame.K_TAB:
-                    right_top_panel.get_wind()
+                    right_panel.get_wind()
                 if e.type == pygame.KEYDOWN and (e.key == pygame.K_UP or e.key == pygame.K_w):
                     self.move_camera((0, 300))
                 if e.type == pygame.KEYDOWN and (e.key == pygame.K_DOWN or e.key == pygame.K_s):
@@ -319,7 +320,7 @@ class Game(object):
                     previous_mouse_pos = None
                 if e.type == pygame.MOUSEBUTTONDOWN and (e.button == 1 or e.button == 3):
                     clicked = False
-                    if not right_top_panel.check_click(e.pos) and not self.minimap.check_click(e.pos):
+                    if not right_panel.check_click(e.pos) and not self.minimap.check_click(e.pos):
                         for obj in self.clickable_objects_list:
                             clicked = obj.check_click(e.pos)
                             if clicked:
@@ -328,6 +329,7 @@ class Game(object):
                             if self.selected_ship:
                                 self.selected_ship.unselect()
                                 self.selected_ship = None
+                                self.right_panel.set_model()
                                 self.redraw()
                     if clicked:
                         # Check whether there's an object
@@ -338,11 +340,13 @@ class Game(object):
                                 else:
                                     allowed_to_select = self.green_ships + self.green_ports
                                 if self.selected_ship:
+                                    self.right_panel.set_model()
                                     self.selected_ship.unselect()
                                 self.selected_ship = \
                                     filter(lambda obj: obj.coords() == (clicked.coords()), allowed_to_select)[0]
                                 self.selected_ship.select()
-                                self.right_top_panel.shoot_label.set_text("")
+                                self.right_panel.set_model(self.selected_ship.model)
+                                self.right_panel.shoot_label.set_text("")
                                 #print "Object {} clicked".format(selected_ship)
                                 if self.selected_ship.is_alive():
                                     shots = self.selected_ship.calculate_shots(
@@ -377,6 +381,7 @@ class Game(object):
                                     self.all_sprites = self.layers_handler.get_all_sprites()
                                     self.redraw()
                                     self.selected_ship = None
+                                    self.right_panel.set_model()
                         else:
                             try:
                                 targets = self.ships + self.ports
@@ -392,12 +397,12 @@ class Game(object):
                         self.move_camera(map(lambda x, y: x - y, cur_mouse_pos, previous_mouse_pos))
                         previous_mouse_pos = cur_mouse_pos
                         # Process HUD mouse over
-            right_top_panel.mouse_over(pygame.mouse.get_pos())
+            right_panel.mouse_over(pygame.mouse.get_pos())
             # end event handing
             self.screen.blit(self.bg_surface, (0, 0))
             self.all_sprites.update()
             self.all_sprites.draw(self.screen)
-            right_top_panel.draw()
+            right_panel.draw()
             self.top_panel.update()
             self.top_panel.draw()
             self.minimap.draw()
