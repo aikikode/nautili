@@ -1,0 +1,5 @@
+v0.1
+ Features:
+ - Implement all the game rules: wind, ships movement, ports, repairing, royal ports
+ - Add ships and ports models
+ - Use Tiled as map editor

@@ -68,7 +68,7 @@ class BaseMainMenu(Menu):
     def process_events(self):
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
-                raise SystemExit, "QUIT"
+                raise SystemExit("QUIT")
             if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                 self.check_click(e.pos)
             if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
@@ -100,12 +100,12 @@ class MainMenu(BaseMainMenu):
     def exit(self):
         if os.path.exists(TMP_DIR):
             shutil.rmtree(TMP_DIR)
-        raise SystemExit, "QUIT"
+        raise SystemExit("QUIT")
 
     def process_events(self):
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
-                raise SystemExit, "QUIT"
+                raise SystemExit("QUIT")
             if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                 self.check_click(e.pos)
             if e.type == pygame.KEYDOWN and e.key == pygame.K_q and pygame.key.get_mods() & pygame.KMOD_CTRL:
@@ -201,7 +201,7 @@ class PauseMenu(Menu):
     def process_events(self):
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
-                raise SystemExit, "QUIT"
+                raise SystemExit("QUIT")
             if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                 self.check_click(e.pos)
             if e.type == pygame.KEYDOWN and (e.key == pygame.K_SPACE or e.key == pygame.K_ESCAPE):

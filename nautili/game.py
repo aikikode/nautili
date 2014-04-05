@@ -27,8 +27,8 @@ class Game(object):
         self.bg_surface = pygame.Surface((MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT), pygame.SRCALPHA).convert_alpha()
         # Panel
         self.right_panel = RightPanel(self,
-                                             (MAIN_WIN_WIDTH - RIGHT_PANEL_WIDTH, MINIMAP_HEIGHT),
-                                             (RIGHT_PANEL_WIDTH, RIGHT_PANEL_HEIGHT))
+                                      (MAIN_WIN_WIDTH - RIGHT_PANEL_WIDTH, MINIMAP_HEIGHT),
+                                      (RIGHT_PANEL_WIDTH, RIGHT_PANEL_HEIGHT))
         self.top_panel = TopPanel(self, (0, 0), (TOP_PANEL_WIDTH, TOP_PANEL_HEIGHT))
         self.minimap = MiniMap(self, (MAIN_WIN_WIDTH - MINIMAP_WIDTH, 0), (MINIMAP_WIDTH, MINIMAP_HEIGHT))
         self.background = IsometricRenderer(self.layers_handler, self.bg_surface)
@@ -385,7 +385,7 @@ class Game(object):
                                                                       map(lambda x: x.coords(), self.royal_ports) +
                                                                       self.get_docks_obstacles(),
                                                             docks=self.layers_handler.docks_coords)
-                                    except AttributeError, ex:
+                                    except AttributeError:
                                         pass
                                 else:
                                     shots = []
