@@ -10,13 +10,13 @@ See full game rules description and instructions on map creation on [Wiki](https
 Run / Запуск игры
 -----------------
 
-1. Install dependencies / Установите необходимые пакеты:  
+Install dependencies / Установите необходимые пакеты:  
 ```bash
 pip install pytmx
 pip install pygame
 ```
 
-2. Run the game / Запустите игру:  
+Run the game / Запустите игру:  
 ```bash
 python ./nautili.py
 ```
