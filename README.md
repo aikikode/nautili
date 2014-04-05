@@ -8,11 +8,11 @@ See full game rules description and instructions on map creation on [Wiki](https
 Подробное описание правил игры и как создавать свои карты смотрите в соответствующих разделах [Wiki](https://github.com/aikikode/nautili/wiki).
 
 Run / Запуск игры
-=================
+-----------------
 
 1. Install dependencies / Установите необходимые пакеты:
 pip install pytmx
 pip install pygame
 
 2. Run the game / Запустите игру:
-python ./nautili.py
+ python ./nautili.py
