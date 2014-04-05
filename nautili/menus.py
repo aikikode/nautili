@@ -5,7 +5,7 @@ import shutil
 from PIL import Image
 from nautili import colors
 from nautili.hud import Button, Label
-from nautili.settings import DISPLAY, WIN_HEIGHT, WIN_WIDTH, MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT, TMP_DIR, HUD_DIR, MODELS_DIR, MISC_DIR
+from nautili.settings import DISPLAY, WIN_HEIGHT, WIN_WIDTH, MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT, TMP_DIR, HUD_DIR, MISC_DIR
 
 __author__ = 'aikikode'
 
@@ -81,10 +81,14 @@ class MainMenu(BaseMainMenu):
     def __init__(self):
         BaseMainMenu.__init__(self)
         self.button_font = pygame.font.Font(None, 60)
-        self.new_game_button = Button(self.button_font, "New game",
-                                      (self.width / 2 - 110, self.height / 2 - 60),
+        text = "New game"
+        text_width = self.button_font.size(text)[0]
+        self.new_game_button = Button(self.button_font, text,
+                                      ((self.width - text_width) / 2, self.height / 2 - 60),
                                       on_click=self.new_game)
-        self.exit_button = Button(self.button_font, "Exit", (self.width / 2 - 45, self.height / 2),
+        text = "Exit"
+        text_width = self.button_font.size(text)[0]
+        self.exit_button = Button(self.button_font, text, ((self.width - text_width) / 2, self.height / 2),
                                   on_click=self.exit)
         self.objects.append(self.new_game_button)
         self.objects.append(self.exit_button)
@@ -117,8 +121,10 @@ class LoadMapMenu(BaseMainMenu):
         BaseMainMenu.__init__(self)
         label_font = pygame.font.Font(None, 50)
         self.button_font = pygame.font.Font(None, 30)
-        label = Label(label_font, colors.WHITE, "Select a map from the list below",
-                            (self.width / 2 - 250, 80))
+        text = "Select a map from the list below"
+        text_width = label_font.size(text)[0]
+        label = Label(label_font, colors.WHITE, text,
+                      ((self.width - text_width) / 2, 80))
         self.objects.append(label)
         self.read_map_dir()
 
@@ -135,6 +141,7 @@ class LoadMapMenu(BaseMainMenu):
         map = os.path.join(LoadMapMenu.MAP_DIR, map_file + ".tmx")
         try:
             from nautili import game
+
             g = game.Game(map)
             g.start()
         except ValueError:
@@ -150,16 +157,19 @@ class PauseMenu(Menu):
         image = os.path.join("./data/hud", "shade.png")
         self.bg_image = Image.open(image)
         self.pygame_bg_image = pygame.image.load(image)
-        label_font = pygame.font.Font(None, 50)
-        prompt_font = pygame.font.Font(None, 30)
-        delta = 135/17. * len(text) # x delta based on font size
-        self.pause_label = Label(label_font, color, text,
-                                  (MAIN_WIN_WIDTH / 2 - delta, MAIN_WIN_HEIGHT / 2 - 90))
-        prompt_label = Label(prompt_font, colors.WHITE, "Press Spacebar to continue",
-                                 (MAIN_WIN_WIDTH / 2 - 130, MAIN_WIN_HEIGHT / 2 - 40))
         self.objects = []
+        if text:
+            label_font = pygame.font.Font(None, 50)
+            text_width = label_font.size(text)[0]
+            self.pause_label = Label(label_font, color, text,
+                                     ((MAIN_WIN_WIDTH - text_width) / 2, MAIN_WIN_HEIGHT / 2 - 90))
+            self.objects.append(self.pause_label)
+        prompt_text = "Press Spacebar to continue"
+        prompt_font = pygame.font.Font(None, 30)
+        text_width = prompt_font.size(prompt_text)[0]
+        prompt_label = Label(prompt_font, colors.WHITE, prompt_text,
+                             ((MAIN_WIN_WIDTH - text_width) / 2, MAIN_WIN_HEIGHT / 2 - 40))
         self.objects.append(prompt_label)
-        self.objects.append(self.pause_label)
 
     def mouse_over(self, event_position):
         for obj in self.objects:
@@ -194,11 +204,26 @@ class PauseMenu(Menu):
                 raise SystemExit, "QUIT"
             if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                 self.check_click(e.pos)
-            if e.type == pygame.KEYDOWN and e.key == pygame.K_SPACE:
+            if e.type == pygame.KEYDOWN and (e.key == pygame.K_SPACE or e.key == pygame.K_ESCAPE):
                 return False
         self.mouse_over(pygame.mouse.get_pos())
         return True
 
 
-class OptionsMenu(Menu):
+class ExitGameException(Exception):
     pass
+
+
+class GameMenu(PauseMenu):
+    def __init__(self, screen, text="", color=colors.WHITE):
+        PauseMenu.__init__(self, screen, text, color)
+        self.button_font = pygame.font.Font(None, 60)
+        text = "Exit game"
+        text_width = self.button_font.size(text)[0]
+        self.exit_game_button = Button(self.button_font, text,
+                                       ((self.width - text_width) / 2, self.height / 2 - 90),
+                                       on_click=self.exit_game)
+        self.objects.append(self.exit_game_button)
+
+    def exit_game(self):
+        raise ExitGameException()

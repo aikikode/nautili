@@ -1,10 +1,18 @@
 #!/usr/bin/env python
 import os
+import pygame
 
 __author__ = 'aikikode'
 
-WIN_WIDTH = 1440
-WIN_HEIGHT = 1080
+try:
+    infoObject = pygame.display.Info()
+except pygame.error:  # pygame hadn't been initialized
+    pygame.init()
+    infoObject = pygame.display.Info()
+
+win_delta = 100
+WIN_WIDTH = infoObject.current_w - win_delta
+WIN_HEIGHT = infoObject.current_h - win_delta
 DISPLAY = (WIN_WIDTH, WIN_HEIGHT)
 MAIN_WIN_WIDTH = WIN_WIDTH
 MAIN_WIN_HEIGHT = WIN_HEIGHT

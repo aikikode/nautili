@@ -164,7 +164,7 @@ class MiniMap(Panel):
     def draw_layer(self, layer, color):
         for tile in LayersHandler.filter_not_none(LayersHandler.flatten(layer)):
             pygame.draw.circle(self.hud_surface, color,
-                               map(lambda x, offs: int(x/self.scale + offs),
+                               map(lambda x, offs: int(x / self.scale + offs),
                                    self.game.layers_handler.isometric_to_orthogonal(*tile.coords()), self.map_offset),
                                1)
 
@@ -246,25 +246,29 @@ class ObjectInfo(Panel):
         self.objects.append(self.stille_move_label)
         self.objects.append(self.storm_move_label)
 
-    def set_model(self, model="", name="", fire_range=0, max_move=0, stille_move=None, storm_move=0):
-        self.name_label.set_text(name)
-        self.name_label.center(self.width)
+    def set_model(self, model="", properties={}):
         if model:
             model = os.path.join(settings.MODELS_DIR, "{}.png".format(model))
-        if fire_range:
-            self.fire_range_label.set_text("Fire range: {}".format(fire_range))
-        else:
+        # Read properties and display them
+        try:
+            self.name_label.set_text(properties['name'])
+        except KeyError:
+            self.name_label.set_text("")
+        self.name_label.center(self.width)
+        try:
+            self.fire_range_label.set_text("Fire range: {}".format(properties['fire_range']))
+        except KeyError:
             self.fire_range_label.set_text("")
-        if max_move:
-            self.max_move_label.set_text("Max move: {}".format(max_move))
-        else:
+        try:
+            self.max_move_label.set_text("Max move: {}".format(properties['max_move']))
+        except KeyError:
             self.max_move_label.set_text("")
-        if stille_move is not None:
-            self.stille_move_label.set_text("Stille move: {}".format(stille_move))
-        else:
+        try:
+            self.stille_move_label.set_text("Stille move: {}".format(properties['stille_move']))
+        except KeyError:
             self.stille_move_label.set_text("")
-        if storm_move:
-            self.storm_move_label.set_text("Storm range: {}".format(storm_move))
-        else:
+        try:
+            self.storm_move_label.set_text("Storm range: {}".format(properties['storm_move']))
+        except KeyError:
             self.storm_move_label.set_text("")
         self.image.set_image(model)

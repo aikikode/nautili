@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-import pygame
 
 from pytmx import tmxloader
 
-from menus import PauseMenu
+from menus import PauseMenu, GameMenu, ExitGameException
 from nautili import colors
 from panels import RightPanel, TopPanel, MiniMap
 from renderer import IsometricRenderer
@@ -287,12 +286,18 @@ class Game(object):
         drag_mode = False
         previous_mouse_pos = None
         pause = PauseMenu(self.screen)
+        game_menu = GameMenu(self.screen)
         timer = pygame.time.Clock()
         while not self.game_ended() and not exit_game:
             timer.tick(60)
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     raise SystemExit("QUIT")
+                if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
+                    try:
+                        game_menu.run()
+                    except ExitGameException:
+                        exit_game = True
                 if e.type == pygame.KEYDOWN and e.key == pygame.K_q and pygame.key.get_mods() & pygame.KMOD_CTRL:
                     if self.player == PLAYER1:
                         p = PauseMenu(self.screen, "Green won!", color=colors.GREEN)
@@ -306,9 +311,11 @@ class Game(object):
                     right_panel.shoot()
                 if e.type == pygame.KEYDOWN and e.key == pygame.K_TAB:
                     right_panel.get_wind()
-                if e.type == pygame.KEYDOWN and (e.key == pygame.K_UP or e.key == pygame.K_w):
+                if (e.type == pygame.KEYDOWN and (e.key == pygame.K_UP or e.key == pygame.K_w)) or\
+                        (e.type == pygame.MOUSEBUTTONDOWN and e.button == 4):
                     self.move_camera((0, 300))
-                if e.type == pygame.KEYDOWN and (e.key == pygame.K_DOWN or e.key == pygame.K_s):
+                if (e.type == pygame.KEYDOWN and (e.key == pygame.K_DOWN or e.key == pygame.K_s)) or\
+                        (e.type == pygame.MOUSEBUTTONDOWN and e.button == 5):
                     self.move_camera((0, -300))
                 if e.type == pygame.KEYDOWN and (e.key == pygame.K_LEFT or e.key == pygame.K_a):
                     self.move_camera((300, 0))
@@ -350,16 +357,16 @@ class Game(object):
                                     filter(lambda obj: obj.coords() == (clicked.coords()), allowed_to_select)[0]
                                 self.selected_ship.select()
                                 try:
-                                    self.right_panel.set_model(model=self.selected_ship.model,
-                                                               name=self.selected_ship.model.replace('_', ' ').capitalize(),
-                                                               fire_range=self.selected_ship.fire_range,
-                                                               max_move=self.selected_ship.max_move,
-                                                               stille_move=self.selected_ship.stille_move,
-                                                               storm_move=self.selected_ship.storm_move)
+                                    self.right_panel.set_model(model=self.selected_ship.model, properties={
+                                        'name': self.selected_ship.model.replace('_', ' ').capitalize(),
+                                        'fire_range': self.selected_ship.fire_range,
+                                        'max_move': self.selected_ship.max_move,
+                                        'stille_move': self.selected_ship.stille_move,
+                                        'storm_move': self.selected_ship.storm_move})
                                 except AttributeError:
-                                    self.right_panel.set_model(model=self.selected_ship.model,
-                                                               name=self.selected_ship.model.replace('_', ' ').capitalize(),
-                                                               fire_range=self.selected_ship.fire_range)
+                                    self.right_panel.set_model(model=self.selected_ship.model, properties={
+                                        'name': self.selected_ship.model.replace('_', ' ').capitalize(),
+                                        'fire_range': self.selected_ship.fire_range})
                                 self.right_panel.shoot_label.set_text("")
                                 #print "Object {} clicked".format(selected_ship)
                                 if self.selected_ship.is_alive():
