@@ -33,9 +33,8 @@ class BaseMainMenu(Menu):
         pygame.display.set_icon(pygame.image.load(os.path.join(MISC_DIR, "icon.png")).convert_alpha())
         pygame.display.set_caption("Nautili")
         self.bg_surface = pygame.Surface((WIN_WIDTH, WIN_HEIGHT), pygame.SRCALPHA).convert_alpha()
-        image = os.path.join(HUD_DIR, "bg.png")
-        self.bg_image = Image.open(image)
-        self.pygame_bg_image = pygame.image.load(image)
+        bg_image = pygame.image.load(os.path.join(HUD_DIR, "sea.jpg"))
+        self.pygame_bg_image = pygame.transform.scale(bg_image, DISPLAY)
         self.objects = []
 
     def mouse_over(self, event_position):
@@ -48,13 +47,7 @@ class BaseMainMenu(Menu):
 
     def redraw(self):
         self.bg_surface.fill(colors.BACKGROUND_COLOR)
-        ypos = 0
-        while ypos <= self.height:
-            xpos = 0
-            while xpos <= self.width:
-                self.bg_surface.blit(self.pygame_bg_image, (xpos, ypos))
-                xpos += self.bg_image.size[0]
-            ypos += self.bg_image.size[1]
+        self.bg_surface.blit(self.pygame_bg_image, (0, 0))
         self.screen.blit(self.bg_surface, (0, 0))
         self.draw_sprites()
         pygame.display.update()
@@ -85,10 +78,12 @@ class MainMenu(BaseMainMenu):
         text_width = self.button_font.size(text)[0]
         self.new_game_button = Button(self.button_font, text,
                                       ((self.width - text_width) / 2, self.height / 2 - 60),
+                                      colors=(colors.BLACK, colors.WHITE),
                                       on_click=self.new_game)
         text = "Exit"
         text_width = self.button_font.size(text)[0]
         self.exit_button = Button(self.button_font, text, ((self.width - text_width) / 2, self.height / 2),
+                                  colors=(colors.BLACK, colors.WHITE),
                                   on_click=self.exit)
         self.objects.append(self.new_game_button)
         self.objects.append(self.exit_button)
@@ -123,7 +118,7 @@ class LoadMapMenu(BaseMainMenu):
         self.button_font = pygame.font.Font(None, 30)
         text = "Select a map from the list below"
         text_width = label_font.size(text)[0]
-        label = Label(label_font, colors.WHITE, text,
+        label = Label(label_font, colors.BLACK, text,
                       ((self.width - text_width) / 2, 80))
         self.objects.append(label)
         self.read_map_dir()
@@ -134,6 +129,7 @@ class LoadMapMenu(BaseMainMenu):
         map_files.sort()
         for num, map_file in enumerate(map_files):
             button = Button(self.button_font, map_file, (self.width / 2 - 50, 140 + num * 30),
+                            colors=(colors.BLACK, colors.WHITE),
                             on_click=self.load_map, args=[map_file])
             self.objects.append(button)
 
