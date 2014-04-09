@@ -189,12 +189,20 @@ class LoadGameMenu(BaseMainMenu):
     def __init__(self):
         BaseMainMenu.__init__(self)
         label_font = pygame.font.Font(None, 50)
+        mini_label_font = pygame.font.Font(None, 20)
         self.button_font = pygame.font.Font(None, 30)
+        self.base_objects = []
         text = "Choose the savegame"
         text_width = label_font.size(text)[0]
         label = Label(label_font, colors.BLACK, text,
                       (((self.width / 3) - text_width) / 2, 80))
-        self.objects.append(label)
+        self.base_objects.append(label)
+        text = "(Middle mouse click to delete a save)"
+        text_width = mini_label_font.size(text)[0]
+        label = Label(mini_label_font, colors.BLACK, text,
+                      (((self.width / 3) - text_width) / 2, 120))
+        self.base_objects.append(label)
+        self.objects.extend(self.base_objects)
         self.read_savegame_dir()
 
     def read_savegame_dir(self):
@@ -217,6 +225,19 @@ class LoadGameMenu(BaseMainMenu):
         except ValueError:
             pass
 
+    def check_mmb_click(self, event_position):
+        # Remove saved game
+        for obj in self.objects:
+            try:
+                obj.mouse_over(event_position)
+                if obj.hovered:
+                    os.remove(os.path.join(SAVED_GAMES_DIR, obj.args[0] + ".sav"))
+                    self.objects = []
+                    self.objects.extend(self.base_objects)
+                    self.read_savegame_dir()
+            except AttributeError:
+                pass
+
     def process_events(self):
         scroll_step = 30
         for e in pygame.event.get():
@@ -224,6 +245,9 @@ class LoadGameMenu(BaseMainMenu):
                 raise SystemExit("QUIT")
             if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                 self.check_click(e.pos)
+            if e.type == pygame.MOUSEBUTTONDOWN and e.button == 2:
+                # Handle middle mouse button click
+                self.check_mmb_click(e.pos)
             if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
                 return False
             if (e.type == pygame.KEYDOWN and (e.key == pygame.K_DOWN or e.key == pygame.K_s)) or\
