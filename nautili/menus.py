@@ -211,15 +211,25 @@ class ExitGameException(Exception):
 
 
 class GameMenu(PauseMenu):
-    def __init__(self, screen, text="", color=colors.WHITE):
+    def __init__(self, game, screen, text="", color=colors.WHITE):
         PauseMenu.__init__(self, screen, text, color)
+        self.game = game
         self.button_font = pygame.font.Font(None, 60)
+        text = "Save game"
+        text_width = self.button_font.size(text)[0]
+        self.save_game_button = Button(self.button_font, text,
+                                       ((self.width - text_width) / 2, self.height / 2 - 160),
+                                       on_click=self.save_game)
+        self.objects.append(self.save_game_button)
         text = "Exit game"
         text_width = self.button_font.size(text)[0]
         self.exit_game_button = Button(self.button_font, text,
                                        ((self.width - text_width) / 2, self.height / 2 - 90),
                                        on_click=self.exit_game)
         self.objects.append(self.exit_game_button)
+
+    def save_game(self):
+        self.game.save_game()
 
     def exit_game(self):
         raise ExitGameException()

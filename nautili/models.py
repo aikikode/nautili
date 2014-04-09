@@ -47,6 +47,15 @@ class Model(pygame.sprite.Sprite):
         self.cannon_bar = CannonBar(self)
         self.target_bar = TargetBar(self)
 
+    def get_data(self):
+        return self.model, self.player, self.x, self.y, \
+               self.base_armor, self.fire_range, self.shots_count,
+
+    @staticmethod
+    def from_data(layers_handler, data):
+        model, player, x, y, base_armor, fire_range, shots_count = data
+        return Model(layers_handler, x, y, model, player, base_armor, fire_range, shots_count)
+
     def coords(self):
         return self.x, self.y
 
@@ -318,6 +327,19 @@ class Ship(Model):
         self.max_move = int(max_move)
         self.stille_move = int(stille_move)
 
+    def get_data(self):
+        return self.model, self.player, self.x, self.y, \
+               self.base_armor, self.fire_range, self.shots_count, \
+               self.stille_move, self.storm_move
+
+    @staticmethod
+    def from_data(layers_handler, data):
+        model, player, x, y, base_armor, fire_range, shots_count, stille_move, storm_move = data
+        print x,y
+        return Ship(layers_handler, x, y, model=model, player=player,
+                    base_armor=base_armor, fire_range=fire_range, shots_count=shots_count,
+                    stille_move=stille_move, storm_move=storm_move)
+
     def _update_image(self, img_type=""):
         if img_type:
             img_type = "_{}".format(img_type)
@@ -469,7 +491,8 @@ class Port(Model):
         Model.__init__(self, layers_handler, isom_x, isom_y, model, player, base_armor, fire_range, shots_count)
 
     def get_dock(self):
-        return [(self.x + delta_x, self.y + delta_y) for delta_x in xrange(-1, 2) for delta_y in xrange(-1, 2) if abs(delta_x) + abs(delta_y) != 0]
+        return [(self.x + delta_x, self.y + delta_y) for delta_x in xrange(-1, 2) for delta_y in xrange(-1, 2) if
+                abs(delta_x) + abs(delta_y) != 0]
 
     def set_player(self, player):
         self.player = player
@@ -485,7 +508,8 @@ class Port(Model):
 
 
 class RoyalPort(Port):
-    def __init__(self, layers_handler, isom_x, isom_y, model='royal_port', player=settings.PLAYER1, base_armor=1, **kwargs):
+    def __init__(self, layers_handler, isom_x, isom_y, model='royal_port', player=settings.PLAYER1, base_armor=1,
+                 **kwargs):
         Port.__init__(self, layers_handler, isom_x, isom_y, model, player, base_armor, fire_range=0, shots_count=0)
 
     def take_damage(self, damage):

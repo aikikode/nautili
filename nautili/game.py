@@ -1,9 +1,12 @@
 #!/usr/bin/env python
+import pickle
+import pprint
 
 from pytmx import tmxloader
 
 from menus import PauseMenu, GameMenu, ExitGameException
 from nautili import colors
+from nautili.models import Ship
 from panels import RightPanel, TopPanel, MiniMap
 from renderer import IsometricRenderer
 from layers import LayersHandler
@@ -33,14 +36,18 @@ class Game(object):
         self.minimap = MiniMap(self, (MAIN_WIN_WIDTH - MINIMAP_WIDTH, 0), (MINIMAP_WIDTH, MINIMAP_HEIGHT))
         self.background = IsometricRenderer(self.layers_handler, self.bg_surface)
         # Helper variables from layers handler
-        self.all_sprites = lh.get_all_sprites()
-        self.clickable_objects_list = lh.get_clickable_objects()
         self.sea = lh.sea
         self.docks = lh.docks
         self.highlighted_sea = lh.highlighted_sea
         self.fire = lh.fire
         self.rocks = lh.rocks
         self.islands = lh.islands
+        # Load game before getting sprites, clickable objects, etc., because loading the game
+        # modifies game layers
+        self.load_game()
+        #
+        self.all_sprites = lh.get_all_sprites()
+        self.clickable_objects_list = lh.get_clickable_objects()
         self.ships = lh.ships
         self.yellow_ships = lh.yellow_ships
         self.green_ships = lh.green_ships
@@ -286,7 +293,7 @@ class Game(object):
         drag_mode = False
         previous_mouse_pos = None
         pause = PauseMenu(self.screen)
-        game_menu = GameMenu(self.screen)
+        game_menu = GameMenu(self, self.screen)
         timer = pygame.time.Clock()
         while not self.game_ended() and not exit_game:
             timer.tick(60)
@@ -434,3 +441,22 @@ class Game(object):
         if not exit_game:
             self.win_menu.run()
         return False
+
+    def save_game(self):
+        output = open('data.pkl', 'wb')
+        # for data in [self.yellow_ports, self.green_ports, self.neutral_ports,
+        #              self.yellow_royal_ports, self.green_royal_ports,
+        #              self.yellow_ships, self.green_ships]:
+        for data in [self.yellow_ships, self.green_ships]:
+            serialization_data = [item.get_data() for item in data]
+            pickle.dump(serialization_data, output)
+        output.close()
+        print "Game saved"
+
+    def load_game(self, file=None):
+        pkl_file = open('data.pkl', 'rb')
+        self.layers_handler.yellow_ships = [Ship.from_data(self.layers_handler, pickled_data) for pickled_data in pickle.load(pkl_file)]
+        self.layers_handler.green_ships = [Ship.from_data(self.layers_handler, pickled_data) for pickled_data in pickle.load(pkl_file)]
+        pkl_file.close()
+        self.layers_handler.ships = self.layers_handler.yellow_ships + self.layers_handler.green_ships
+        print "Game loaded"
