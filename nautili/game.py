@@ -3,7 +3,7 @@ from pytmx import tmxloader
 import pickle
 import time
 
-from menus import PauseMenu, GameMenu, ExitGameException
+from menus import PauseMenu, GameMenu
 from nautili import colors
 from nautili.models import Ship, Port
 from panels import RightPanel, TopPanel, MiniMap
@@ -306,10 +306,7 @@ class Game(object):
                 if e.type == pygame.QUIT:
                     raise SystemExit("QUIT")
                 if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
-                    try:
-                        game_menu.run()
-                    except ExitGameException:
-                        exit_game = True
+                    game_menu.run()
                 if e.type == pygame.KEYDOWN and e.key == pygame.K_q and pygame.key.get_mods() & pygame.KMOD_CTRL:
                     if self.player == PLAYER1:
                         p = PauseMenu(self.screen, "Green won!", color=colors.GREEN)

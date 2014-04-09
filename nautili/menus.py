@@ -97,12 +97,18 @@ class MainMenu(BaseMainMenu):
         self.objects.append(self.exit_button)
 
     def new_game(self):
-        l = LoadMapMenu()
-        l.run()
+        try:
+            l = LoadMapMenu()
+            l.run()
+        except ExitToMainMenuException:
+            pass
 
     def load_game(self):
-        l = LoadGameMenu()
-        l.run()
+        try:
+            l = LoadGameMenu()
+            l.run()
+        except ExitToMainMenuException:
+          pass
 
     def exit(self):
         if os.path.exists(TMP_DIR):
@@ -129,7 +135,7 @@ class LoadMapMenu(BaseMainMenu):
         text = "Choose the map"
         text_width = label_font.size(text)[0]
         label = Label(label_font, colors.BLACK, text,
-                      ((self.width - text_width) / 2, 80))
+                      (((self.width / 3) - text_width) / 2, 80))
         self.objects.append(label)
         self.read_map_dir()
 
@@ -139,7 +145,7 @@ class LoadMapMenu(BaseMainMenu):
         map_files.sort()
         for num, map_file in enumerate(map_files):
             text_width, text_height = self.button_font.size(map_file)
-            button = Button(self.button_font, map_file, ((self.width-text_width) / 2, 140 + text_height*num),
+            button = Button(self.button_font, map_file, (((self.width / 3) - text_width)/2 + (1 if num % 2 == 0 else 2)*self.width/3, 40 + (text_height*1.2)*(num / 2)),
                             colors=(colors.BLACK, colors.WHITE),
                             on_click=self.load_map, args=[map_file])
             self.objects.append(button)
@@ -152,16 +158,42 @@ class LoadMapMenu(BaseMainMenu):
         except ValueError:
             pass
 
+    def process_events(self):
+        scroll_step = 30
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                raise SystemExit("QUIT")
+            if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                self.check_click(e.pos)
+            if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
+                return False
+            if (e.type == pygame.KEYDOWN and (e.key == pygame.K_DOWN or e.key == pygame.K_s)) or\
+                    (e.type == pygame.MOUSEBUTTONDOWN and e.button == 5):
+                # scroll down
+                last_obj = self.objects[-1]
+                if last_obj.pos[1] > self.height - 40:
+                    for obj in self.objects:
+                        obj.pos = map(lambda x, y: x + y, obj.pos, (0, -scroll_step))
+            if (e.type == pygame.KEYDOWN and (e.key == pygame.K_UP or e.key == pygame.K_w)) or\
+                    (e.type == pygame.MOUSEBUTTONDOWN and e.button == 4):
+                # scroll up
+                first_obj = self.objects[1]
+                if first_obj.pos[1] < 40:
+                    for obj in self.objects:
+                        obj.pos = map(lambda x, y: x + y, obj.pos, (0, scroll_step))
+        self.mouse_over(pygame.mouse.get_pos())
+        return True
+
 
 class LoadGameMenu(BaseMainMenu):
     def __init__(self):
         BaseMainMenu.__init__(self)
         label_font = pygame.font.Font(None, 50)
         self.button_font = pygame.font.Font(None, 30)
-        text = "Choose the game to load"
+        text = "Choose the savegame"
         text_width = label_font.size(text)[0]
         label = Label(label_font, colors.BLACK, text,
-                      ((self.width - text_width) / 2, 80))
+                      (((self.width / 3) - text_width) / 2, 80))
         self.objects.append(label)
         self.read_savegame_dir()
 
@@ -171,7 +203,7 @@ class LoadGameMenu(BaseMainMenu):
         saved_games.sort()
         for num, saved_game in enumerate(saved_games):
             text_width, text_height = self.button_font.size(saved_game)
-            button = Button(self.button_font, saved_game, ((self.width-text_width) / 2, 140 + text_height*num),
+            button = Button(self.button_font, saved_game, (((self.width / 3) - text_width)/2 + (1 if num % 2 == 0 else 2)*self.width/3, 40 + (text_height*1.2)*(num / 2)),
                             colors=(colors.BLACK, colors.WHITE),
                             on_click=self.load_game, args=[saved_game])
             self.objects.append(button)
@@ -184,6 +216,32 @@ class LoadGameMenu(BaseMainMenu):
             g.start()
         except ValueError:
             pass
+
+    def process_events(self):
+        scroll_step = 30
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                raise SystemExit("QUIT")
+            if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                self.check_click(e.pos)
+            if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
+                return False
+            if (e.type == pygame.KEYDOWN and (e.key == pygame.K_DOWN or e.key == pygame.K_s)) or\
+                    (e.type == pygame.MOUSEBUTTONDOWN and e.button == 5):
+                # scroll down
+                last_obj = self.objects[-1]
+                if last_obj.pos[1] > self.height - 40:
+                    for obj in self.objects:
+                        obj.pos = map(lambda x, y: x + y, obj.pos, (0, -scroll_step))
+            if (e.type == pygame.KEYDOWN and (e.key == pygame.K_UP or e.key == pygame.K_w)) or\
+                    (e.type == pygame.MOUSEBUTTONDOWN and e.button == 4):
+                # scroll up
+                first_obj = self.objects[1]
+                if first_obj.pos[1] < 40:
+                    for obj in self.objects:
+                        obj.pos = map(lambda x, y: x + y, obj.pos, (0, scroll_step))
+        self.mouse_over(pygame.mouse.get_pos())
+        return True
 
 
 class PauseMenu(Menu):
@@ -248,7 +306,7 @@ class PauseMenu(Menu):
         return True
 
 
-class ExitGameException(Exception):
+class ExitToMainMenuException(Exception):
     pass
 
 
@@ -256,22 +314,42 @@ class GameMenu(PauseMenu):
     def __init__(self, game, screen, text="", color=colors.WHITE):
         PauseMenu.__init__(self, screen, text, color)
         self.game = game
-        self.button_font = pygame.font.Font(None, 60)
-        text = "Save game"
+        self.button_font = pygame.font.Font(None, 50)
+        text = "Save and exit"
         text_width = self.button_font.size(text)[0]
         self.save_game_button = Button(self.button_font, text,
-                                       ((self.width - text_width) / 2, self.height / 2 - 160),
+                                       ((self.width - text_width) / 2, self.height / 2 - 150),
                                        on_click=self.save_game)
         self.objects.append(self.save_game_button)
-        text = "Exit game"
+        text = "Exit without saving"
         text_width = self.button_font.size(text)[0]
         self.exit_game_button = Button(self.button_font, text,
-                                       ((self.width - text_width) / 2, self.height / 2 - 90),
+                                       ((self.width - text_width) / 2, self.height / 2 - 100),
                                        on_click=self.exit_game)
         self.objects.append(self.exit_game_button)
+        step = 20
+        top = min(self.save_game_button.rect.top, self.exit_game_button.rect.top)
+        left = min(self.save_game_button.rect.left, self.exit_game_button.rect.left)
+        right = max(self.save_game_button.rect.right, self.exit_game_button.rect.right)
+        bottom = max(self.save_game_button.rect.bottom, self.exit_game_button.rect.bottom) + 40
+        self.menu_border = pygame.Rect((left - step, top - step), (right - left + 2*step, bottom - top + 2*step))
 
     def save_game(self):
         self.game.save_game()
+        self.exit_game()
 
     def exit_game(self):
-        raise ExitGameException()
+        raise ExitToMainMenuException()
+
+    def draw(self):
+        self.bg_surface = pygame.Surface((WIN_WIDTH, WIN_HEIGHT), pygame.SRCALPHA).convert_alpha()
+        ypos = 0
+        while ypos <= self.height:
+            xpos = 0
+            while xpos <= self.width:
+                self.bg_surface.blit(self.pygame_bg_image, (xpos, ypos))
+                xpos += self.bg_image.size[0]
+            ypos += self.bg_image.size[1]
+        pygame.draw.rect(self.bg_surface, colors.WHITE, self.menu_border, 1)
+        self.screen.blit(self.bg_surface, (0, 0))
+        self.draw_sprites()
