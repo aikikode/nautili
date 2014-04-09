@@ -5,7 +5,8 @@ import shutil
 from PIL import Image
 from nautili import colors
 from nautili.hud import Button, Label
-from nautili.settings import DISPLAY, WIN_HEIGHT, WIN_WIDTH, MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT, TMP_DIR, HUD_DIR, MISC_DIR
+from nautili.settings import DISPLAY, WIN_HEIGHT, WIN_WIDTH, MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT, TMP_DIR, HUD_DIR, MISC_DIR, \
+    MAP_DIR, SAVED_GAMES_DIR
 
 __author__ = 'aikikode'
 
@@ -77,19 +78,30 @@ class MainMenu(BaseMainMenu):
         text = "New game"
         text_width = self.button_font.size(text)[0]
         self.new_game_button = Button(self.button_font, text,
-                                      ((self.width - text_width) / 2, self.height / 2 - 60),
+                                      ((self.width - text_width) / 2, self.height / 2 - 130),
                                       colors=(colors.BLACK, colors.WHITE),
                                       on_click=self.new_game)
+        text = "Load game"
+        text_width = self.button_font.size(text)[0]
+        self.load_game_button = Button(self.button_font, text,
+                                       ((self.width - text_width) / 2, self.height / 2 - 60),
+                                       colors=(colors.BLACK, colors.WHITE),
+                                       on_click=self.load_game)
         text = "Exit"
         text_width = self.button_font.size(text)[0]
         self.exit_button = Button(self.button_font, text, ((self.width - text_width) / 2, self.height / 2),
                                   colors=(colors.BLACK, colors.WHITE),
                                   on_click=self.exit)
         self.objects.append(self.new_game_button)
+        self.objects.append(self.load_game_button)
         self.objects.append(self.exit_button)
 
     def new_game(self):
         l = LoadMapMenu()
+        l.run()
+
+    def load_game(self):
+        l = LoadGameMenu()
         l.run()
 
     def exit(self):
@@ -110,13 +122,11 @@ class MainMenu(BaseMainMenu):
 
 
 class LoadMapMenu(BaseMainMenu):
-    MAP_DIR = "maps"
-
     def __init__(self):
         BaseMainMenu.__init__(self)
         label_font = pygame.font.Font(None, 50)
         self.button_font = pygame.font.Font(None, 30)
-        text = "Select a map from the list below"
+        text = "Choose the map"
         text_width = label_font.size(text)[0]
         label = Label(label_font, colors.BLACK, text,
                       ((self.width - text_width) / 2, 80))
@@ -124,21 +134,53 @@ class LoadMapMenu(BaseMainMenu):
         self.read_map_dir()
 
     def read_map_dir(self):
-        map_files = [os.path.splitext(f)[0] for f in os.listdir(LoadMapMenu.MAP_DIR)
-                     if os.path.isfile(os.path.join(LoadMapMenu.MAP_DIR, f)) and os.path.splitext(f)[1] == ".tmx"]
+        map_files = [os.path.splitext(f)[0] for f in os.listdir(MAP_DIR)
+                     if os.path.isfile(os.path.join(MAP_DIR, f)) and os.path.splitext(f)[1] == ".tmx"]
         map_files.sort()
         for num, map_file in enumerate(map_files):
-            button = Button(self.button_font, map_file, (self.width / 2 - 50, 140 + num * 30),
+            text_width, text_height = self.button_font.size(map_file)
+            button = Button(self.button_font, map_file, ((self.width-text_width) / 2, 140 + text_height*num),
                             colors=(colors.BLACK, colors.WHITE),
                             on_click=self.load_map, args=[map_file])
             self.objects.append(button)
 
-    def load_map(self, map_file):
-        map = os.path.join(LoadMapMenu.MAP_DIR, map_file + ".tmx")
+    def load_map(self, map_filename):
         try:
             from nautili import game
+            g = game.Game(map_filename)
+            g.start()
+        except ValueError:
+            pass
 
-            g = game.Game(map)
+
+class LoadGameMenu(BaseMainMenu):
+    def __init__(self):
+        BaseMainMenu.__init__(self)
+        label_font = pygame.font.Font(None, 50)
+        self.button_font = pygame.font.Font(None, 30)
+        text = "Choose the game to load"
+        text_width = label_font.size(text)[0]
+        label = Label(label_font, colors.BLACK, text,
+                      ((self.width - text_width) / 2, 80))
+        self.objects.append(label)
+        self.read_savegame_dir()
+
+    def read_savegame_dir(self):
+        saved_games = [os.path.splitext(f)[0] for f in os.listdir(SAVED_GAMES_DIR)
+                     if os.path.isfile(os.path.join(SAVED_GAMES_DIR, f)) and os.path.splitext(f)[1] == ".sav"]
+        saved_games.sort()
+        for num, saved_game in enumerate(saved_games):
+            text_width, text_height = self.button_font.size(saved_game)
+            button = Button(self.button_font, saved_game, ((self.width-text_width) / 2, 140 + text_height*num),
+                            colors=(colors.BLACK, colors.WHITE),
+                            on_click=self.load_game, args=[saved_game])
+            self.objects.append(button)
+
+    def load_game(self, saved_game_file):
+        saved_game = os.path.join(SAVED_GAMES_DIR, saved_game_file + ".sav")
+        try:
+            from nautili import game
+            g = game.Game.load(saved_game)
             g.start()
         except ValueError:
             pass

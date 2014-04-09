@@ -32,3 +32,5 @@ TMP_DIR = ".tmp"
 MODELS_DIR = os.path.join("data", "models")
 HUD_DIR = os.path.join("data", "hud")
 MISC_DIR = os.path.join("data", "misc")
+MAP_DIR = "maps"
+SAVED_GAMES_DIR = "saves"

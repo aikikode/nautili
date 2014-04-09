@@ -99,6 +99,18 @@ class RightPanel(Panel):
         if self.game.wind_type == wind.STORM:
             self.game.force_ships_move()
 
+    def set_wind(self, wind_type, wind_direction):
+        if wind_type is None:
+            return
+        self.get_wind_button.disable()
+        self.shoot_label.set_text("")
+        self.game.wind_type = wind_type
+        self.game.wind_direction = wind_direction
+        if self.game.wind_type == wind.WIND:
+            self.wind_label.set_text("{}".format(wind.wind_direction_to_str(self.game.wind_direction)))
+        else:
+            self.wind_label.set_text("{}".format(wind.wind_type_to_str(self.game.wind_type)))
+
     def shoot(self):
         miss = random.randint(0, 2)
         if self.game.player == settings.PLAYER1:
@@ -128,7 +140,9 @@ class TopPanel(Panel):
         Panel.__init__(self, game, offset, size)
         label_header_font = pygame.font.Font(None, 40)
         label_font = pygame.font.Font(None, 25)
-        self.turn_label = Label(label_header_font, colors.YELLOW, "Yellow player turn", (10, 10))
+        self.turn_label = Label(label_header_font,
+                                colors.YELLOW if self.game.player == settings.PLAYER1 else colors.GREEN,
+                                "{} player turn".format(self.game.player.capitalize()), (10, 10))
         self.yellow_label = Label(label_font, colors.YELLOW, "Yellow", (self.width / 2 - 300, 15))
         self.yellow_counts = Label(label_font, colors.YELLOW, "ships: 0  ports: 0", (self.width / 2 - 240, 15))
         self.green_label = Label(label_font, colors.GREEN, "Green", (self.width / 2 + 90, 15))

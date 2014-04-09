@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-import pickle
-import pprint
-
 from pytmx import tmxloader
+import pickle
+import time
 
 from menus import PauseMenu, GameMenu, ExitGameException
 from nautili import colors
-from nautili.models import Ship
+from nautili.models import Ship, Port
 from panels import RightPanel, TopPanel, MiniMap
 from renderer import IsometricRenderer
 from layers import LayersHandler
@@ -17,12 +16,14 @@ __author__ = 'aikikode'
 
 
 class Game(object):
-    def __init__(self, map_file):
+    def __init__(self, map_filename, saved_game=None):
         pygame.init()
         self.screen = pygame.display.set_mode(DISPLAY)
         pygame.display.set_caption("Nautili")
+        self.player = PLAYER1
+        self.map_filename = map_filename
         try:
-            self.layers_handler = lh = LayersHandler(tmxloader.load_pygame(map_file, pixelalpha=True))
+            self.layers_handler = lh = LayersHandler(tmxloader.load_pygame(os.path.join(MAP_DIR, map_filename + ".tmx"), pixelalpha=True))
         except Exception:
             print "Unable to read map data. Possibly messed up layers."
             raise ValueError
@@ -32,7 +33,6 @@ class Game(object):
         self.right_panel = RightPanel(self,
                                       (MAIN_WIN_WIDTH - RIGHT_PANEL_WIDTH, MINIMAP_HEIGHT),
                                       (RIGHT_PANEL_WIDTH, RIGHT_PANEL_HEIGHT))
-        self.top_panel = TopPanel(self, (0, 0), (TOP_PANEL_WIDTH, TOP_PANEL_HEIGHT))
         self.minimap = MiniMap(self, (MAIN_WIN_WIDTH - MINIMAP_WIDTH, 0), (MINIMAP_WIDTH, MINIMAP_HEIGHT))
         self.background = IsometricRenderer(self.layers_handler, self.bg_surface)
         # Helper variables from layers handler
@@ -42,10 +42,18 @@ class Game(object):
         self.fire = lh.fire
         self.rocks = lh.rocks
         self.islands = lh.islands
+        self.wind_type = None
+        self.wind_direction = None
+        self.selected_ship = None
+        self.target_ships = []
         # Load game before getting sprites, clickable objects, etc., because loading the game
         # modifies game layers
-        self.load_game()
+        try:
+            self.load_game(saved_game)
+        except IOError:
+            print "Couldn't load the game"
         #
+        self.top_panel = TopPanel(self, (0, 0), (TOP_PANEL_WIDTH, TOP_PANEL_HEIGHT))
         self.all_sprites = lh.get_all_sprites()
         self.clickable_objects_list = lh.get_clickable_objects()
         self.ships = lh.ships
@@ -59,9 +67,6 @@ class Game(object):
         self.green_royal_ports = lh.green_royal_ports
         self.royal_ports = lh.royal_ports
         # Initial game variables state
-        self.wind_type = None
-        self.wind_direction = None
-        self.player = PLAYER1
         self._paused = False
         # Prepare rendering
         self.background.fill(colors.BACKGROUND_COLOR)  # fill with water color
@@ -74,8 +79,6 @@ class Game(object):
         #
         self._cursor_default = pygame.mouse.get_cursor()
         self._cursor_close_hand = self._cursor_default
-        self.selected_ship = None
-        self.target_ships = []
         self.setup_cursors()
         self.yellow_docks = []
         self.green_docks = []
@@ -277,8 +280,10 @@ class Game(object):
         for obj in self.ships + self.ports + self.royal_ports +\
                 [ship.health_bar for ship in self.ships] + \
                 [ship.cannon_bar for ship in self.ships] + \
+                [ship.target_bar for ship in self.ships] + \
                 [port.health_bar for port in self.ports] + \
                 [port.cannon_bar for port in self.ports] + \
+                [port.target_bar for port in self.ports] + \
                 [port.health_bar for port in self.royal_ports] + \
                 [port.cannon_bar for port in self.royal_ports]:
             obj.offset = self.background.offset
@@ -424,7 +429,7 @@ class Game(object):
                     if cur_mouse_pos != previous_mouse_pos:
                         self.move_camera(map(lambda x, y: x - y, cur_mouse_pos, previous_mouse_pos))
                         previous_mouse_pos = cur_mouse_pos
-                        # Process HUD mouse over
+            # Process HUD mouse over
             right_panel.mouse_over(pygame.mouse.get_pos())
             # end event handing
             self.screen.blit(self.bg_surface, (0, 0))
@@ -443,20 +448,46 @@ class Game(object):
         return False
 
     def save_game(self):
-        output = open('data.pkl', 'wb')
-        # for data in [self.yellow_ports, self.green_ports, self.neutral_ports,
-        #              self.yellow_royal_ports, self.green_royal_ports,
-        #              self.yellow_ships, self.green_ships]:
-        for data in [self.yellow_ships, self.green_ships]:
-            serialization_data = [item.get_data() for item in data]
-            pickle.dump(serialization_data, output)
-        output.close()
-        print "Game saved"
+        # We don't save aims
+        self.drop_selection()
+        for ship in self.ships:
+            ship.aim_reset()
+        filename = time.strftime("%Y-%m-%d %H:%M:%S") + " " + self.map_filename + ".sav"
+        with open(os.path.join(SAVED_GAMES_DIR, filename), 'wb') as output:
+            pickle.dump(self.map_filename, output)
+            pickle.dump(self.player, output)
+            pickle.dump((self.wind_type, self.wind_direction), output)
+            for data in [self.yellow_ports, self.green_ports, self.neutral_ports,
+                         self.yellow_royal_ports, self.green_royal_ports,
+                         self.yellow_ships, self.green_ships]:
+                serialization_data = [item.get_data() for item in data]
+                pickle.dump(serialization_data, output)
 
-    def load_game(self, file=None):
-        pkl_file = open('data.pkl', 'rb')
-        self.layers_handler.yellow_ships = [Ship.from_data(self.layers_handler, pickled_data) for pickled_data in pickle.load(pkl_file)]
-        self.layers_handler.green_ships = [Ship.from_data(self.layers_handler, pickled_data) for pickled_data in pickle.load(pkl_file)]
-        pkl_file.close()
-        self.layers_handler.ships = self.layers_handler.yellow_ships + self.layers_handler.green_ships
-        print "Game loaded"
+    def load_game(self, file):
+        if file:
+            with open(file, 'rb') as pkl_file:
+                map_filename = pickle.load(pkl_file)
+                # Get current player
+                self.player = pickle.load(pkl_file)
+                # Get wind
+                self.right_panel.set_wind(*pickle.load(pkl_file))
+                # Load ports
+                self.layers_handler.yellow_ports = [Port.from_data(self.layers_handler, pickled_data) for pickled_data in pickle.load(pkl_file)]
+                self.layers_handler.green_ports = [Port.from_data(self.layers_handler, pickled_data) for pickled_data in pickle.load(pkl_file)]
+                neutral_ports = [Port.from_data(self.layers_handler, pickled_data) for pickled_data in pickle.load(pkl_file)]
+                self.layers_handler.ports = self.layers_handler.yellow_ports + self.layers_handler.green_ports + neutral_ports
+                # Load royal ports
+                self.layers_handler.yellow_royal_ports = [Port.from_data(self.layers_handler, pickled_data) for pickled_data in pickle.load(pkl_file)]
+                self.layers_handler.green_royal_ports = [Port.from_data(self.layers_handler, pickled_data) for pickled_data in pickle.load(pkl_file)]
+                self.layers_handler.royal_ports = self.layers_handler.yellow_royal_ports + self.layers_handler.green_royal_ports
+                # Load ships
+                self.layers_handler.yellow_ships = [Ship.from_data(self.layers_handler, pickled_data) for pickled_data in pickle.load(pkl_file)]
+                self.layers_handler.green_ships = [Ship.from_data(self.layers_handler, pickled_data) for pickled_data in pickle.load(pkl_file)]
+                self.layers_handler.ships = self.layers_handler.yellow_ships + self.layers_handler.green_ships
+
+    @classmethod
+    def load(cls, file):
+        map_filename = None
+        with open(file, 'rb') as pkl_file:
+            map_filename = pickle.load(pkl_file)
+            return cls(map_filename, file)

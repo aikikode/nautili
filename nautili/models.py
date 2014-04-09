@@ -49,12 +49,20 @@ class Model(pygame.sprite.Sprite):
 
     def get_data(self):
         return self.model, self.player, self.x, self.y, \
-               self.base_armor, self.fire_range, self.shots_count,
+               self.base_armor, self.fire_range, self.shots_count, \
+               self.armor, self._has_shot, self.shots_left
 
-    @staticmethod
-    def from_data(layers_handler, data):
-        model, player, x, y, base_armor, fire_range, shots_count = data
-        return Model(layers_handler, x, y, model, player, base_armor, fire_range, shots_count)
+    @classmethod
+    def from_data(cls, layers_handler, data):
+        model, player, x, y, base_armor, fire_range, shots_count, armor, has_shot, shots_left = data
+        model = cls(layers_handler, x, y, model=model, player=player,
+                    base_armor=base_armor, fire_range=fire_range, shots_count=shots_count)
+        model.armor = armor
+        model._has_shot = has_shot
+        model.shots_left = shots_left
+        model.health_bar = HealthBar(model)
+        model.cannon_bar = CannonBar(model)
+        return model
 
     def coords(self):
         return self.x, self.y
@@ -330,15 +338,23 @@ class Ship(Model):
     def get_data(self):
         return self.model, self.player, self.x, self.y, \
                self.base_armor, self.fire_range, self.shots_count, \
-               self.stille_move, self.storm_move
+               self.stille_move, self.storm_move, \
+               self.armor, self._has_moved, self._has_shot, \
+               self.shots_left
 
-    @staticmethod
-    def from_data(layers_handler, data):
-        model, player, x, y, base_armor, fire_range, shots_count, stille_move, storm_move = data
-        print x,y
-        return Ship(layers_handler, x, y, model=model, player=player,
-                    base_armor=base_armor, fire_range=fire_range, shots_count=shots_count,
-                    stille_move=stille_move, storm_move=storm_move)
+    @classmethod
+    def from_data(cls, layers_handler, data):
+        model, player, x, y, base_armor, fire_range, shots_count, stille_move, storm_move, armor, has_moved, has_shot, shots_left = data
+        ship = cls(layers_handler, x, y, model=model, player=player,
+                   base_armor=base_armor, fire_range=fire_range, shots_count=shots_count,
+                   stille_move=stille_move, storm_move=storm_move)
+        ship.armor = armor
+        ship._has_moved = has_moved
+        ship._has_shot = has_shot
+        ship.shots_left = shots_left
+        ship.health_bar = HealthBar(ship)
+        ship.cannon_bar = CannonBar(ship)
+        return ship
 
     def _update_image(self, img_type=""):
         if img_type:
