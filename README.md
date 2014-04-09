@@ -15,7 +15,7 @@ See full game rules description and instructions on map creation on [Wiki](https
 Run / Запуск игры
 -----------------
 
-###Install dependencies / Установите необходимые пакеты:  
+###Install dependencies / Установите необходимые зависимости  
 ####Linux users / Для Linux:  
 ```bash
 pip install pytmx
@@ -25,10 +25,13 @@ pip install Pillow
 ####Windows users / Для Windows:  
 * [Python 2.7](https://www.python.org/ftp/python/2.7.6/python-2.7.6.msi)
 * [PyGame](http://pygame.org/ftp/pygame-1.9.1.win32-py2.7.msi)
-* [PyTMX](https://github.com/bitcraft/PyTMX) - copy pytmx directory into internal nautili directory / скопируйте папку pytmx во внутренюю папку nautili (туда, где находится файл __init__.py)
+* [PyTMX](https://github.com/bitcraft/PyTMX) - copy pytmx directory into internal nautili directory / скопируйте папку pytmx во внутренюю папку nautili (туда, где находится файл \__init__.py)
 * [Pillow](https://pypi.python.org/packages/2.7/P/Pillow/Pillow-2.4.0.win32-py2.7.exe#md5=6c181d7041c147c2293daf59af213c5e)
 
-###Run the game / Запустите игру:  
+###Run the game / Запустите игру  
+####Linux users / Для Linux:  
 ```bash
-python ./nautili.py
+python ./nautili.pyw
 ```
+####Windows users / Для Windows:  
+Double click nautili.pyw and if prompt input path to installed Python 2.7 / Запустите файл nautili.pyw и если понадобится, укажите путь до Python 2.7, который вы устанавливали до этого.
