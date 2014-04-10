@@ -10,8 +10,9 @@ Board-style game inspired by the book ['Nautili and tin soldiers'](http://www.li
 See full game rules description and instructions on map creation on [Wiki](https://github.com/aikikode/nautili/wiki).
 
 По мотивам настольной игры, описанной в книге ["Кораблики и солдатики"](http://www.livelib.ru/book/1000541123) Олегом Орловым и Рюриком Поповым.  
-Подробное описание правил игры и как создавать свои карты смотрите в соответствующих разделах [Wiki](https://github.com/aikikode/nautili/wiki).
-
+Подробное описание правил игры и как создавать свои карты смотрите в соответствующих разделах [Wiki](https://github.com/aikikode/nautili/wiki).  
+  
+![](http://i.imgur.com/TvUeenu.png)  
 Run / Запуск игры
 -----------------
 
