@@ -347,16 +347,16 @@ class Ship(Model):
     def get_data(self):
         return self.model, self.player, self.x, self.y, \
                self.base_armor, self.fire_range, self.shots_count, \
-               self.stille_move, self.storm_move, \
+               self.max_move, self.stille_move, self.storm_move, \
                self.armor, self._has_moved, self._has_shot, \
                self.shots_left
 
     @classmethod
     def from_data(cls, layers_handler, data):
-        model, player, x, y, base_armor, fire_range, shots_count, stille_move, storm_move, armor, has_moved, has_shot, shots_left = data
+        model, player, x, y, base_armor, fire_range, shots_count, max_move, stille_move, storm_move, armor, has_moved, has_shot, shots_left = data
         ship = cls(layers_handler, x, y, model=model, player=player,
                    base_armor=base_armor, fire_range=fire_range, shots_count=shots_count,
-                   stille_move=stille_move, storm_move=storm_move)
+                   max_move=max_move, stille_move=stille_move, storm_move=storm_move)
         ship.armor = armor
         ship._has_moved = has_moved
         ship._has_shot = has_shot
@@ -444,7 +444,7 @@ class Ship(Model):
 
         if self._has_moved or wind_type not in [wind.STILLE, wind.WIND, wind.STORM]:
             return []
-            # Handle wind as a number of obstacles
+        # Handle wind as a number of obstacles
         max_move = self.max_move
         if wind_type == wind.STORM:
             cur = get_dock_moves()
