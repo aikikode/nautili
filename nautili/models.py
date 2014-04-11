@@ -5,7 +5,6 @@ Ships, ports, etc.
 from collections import Counter
 import os
 import pygame
-import numpy as np
 import math
 from PIL import Image
 from nautili import wind, settings
@@ -108,6 +107,13 @@ class Model(pygame.sprite.Sprite):
         return self.possible_shots
 
     def calculate_area(self, limit, obstacles):
+        def sign(num):
+            if num > 0:
+                return 1
+            elif num < 0:
+                return -1
+            else:
+                return 0
         moves = []  # moves are just example, we use it to calculate all types of actions: moves, shots, etc.
         for delta in xrange(1, limit + 1):
             moves.append((self.x, self.y + delta))
@@ -132,8 +138,8 @@ class Model(pygame.sprite.Sprite):
                     try:
                         while abs(stepx) + abs(stepy) <= 2 * (limit + 1):
                             moves.remove((movex + stepx, movey + stepy))
-                            stepx += np.sign(stepx)
-                            stepy += np.sign(stepy)
+                            stepx += sign(stepx)
+                            stepy += sign(stepy)
                     except:
                         pass
             except:
