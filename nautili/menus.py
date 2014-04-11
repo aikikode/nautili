@@ -178,7 +178,7 @@ class LoadMapMenu(BaseMainMenu):
                     (e.type == pygame.MOUSEBUTTONDOWN and e.button == 4):
                 # scroll up
                 first_obj = self.objects[1]
-                if first_obj.pos[1] < 40:
+                if first_obj.pos[1] < 120:
                     for obj in self.objects:
                         obj.pos = map(lambda x, y: x + y, obj.pos, (0, scroll_step))
         self.mouse_over(pygame.mouse.get_pos())
@@ -261,7 +261,7 @@ class LoadGameMenu(BaseMainMenu):
                     (e.type == pygame.MOUSEBUTTONDOWN and e.button == 4):
                 # scroll up
                 first_obj = self.objects[1]
-                if first_obj.pos[1] < 40:
+                if first_obj.pos[1] < 120:
                     for obj in self.objects:
                         obj.pos = map(lambda x, y: x + y, obj.pos, (0, scroll_step))
         self.mouse_over(pygame.mouse.get_pos())
