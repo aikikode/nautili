@@ -449,7 +449,7 @@ class Game(object):
         self.drop_selection()
         for ship in self.ships:
             ship.aim_reset()
-        filename = time.strftime("%Y-%m-%d %H:%M:%S") + " " + self.map_filename + ".sav"
+        filename = time.strftime("%Y-%m-%d %H-%M-%S") + " " + self.map_filename + ".sav"
         with open(os.path.join(SAVED_GAMES_DIR, filename), 'wb') as output:
             pickle.dump(self.map_filename, output)
             pickle.dump(self.player, output)
