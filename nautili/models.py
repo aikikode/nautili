@@ -208,16 +208,19 @@ class Model(pygame.sprite.Sprite):
 
 
 class HealthBar(pygame.sprite.Sprite):
+    damage_image = Image.open(os.path.join(settings.MODELS_DIR, "health_bar_cell_red.png"))
+    health_image_yellow = Image.open(os.path.join(settings.MODELS_DIR, "health_bar_cell_yellow.png"))
+    health_image_green = Image.open(os.path.join(settings.MODELS_DIR, "health_bar_cell_green.png"))
+    health_image_neutral = Image.open(os.path.join(settings.MODELS_DIR, "health_bar_cell_neutral.png"))
     def __init__(self, model):
         pygame.sprite.Sprite.__init__(self)
         self.model = model
-        self.damage_image = Image.open(os.path.join(settings.MODELS_DIR, "health_bar_cell_red.png"))
         if self.model.player == settings.PLAYER1:
-            self.health_image = Image.open(os.path.join(settings.MODELS_DIR, "health_bar_cell_yellow.png"))
+            self.health_image = HealthBar.health_image_yellow
         elif self.model.player == settings.PLAYER2:
-            self.health_image = Image.open(os.path.join(settings.MODELS_DIR, "health_bar_cell_green.png"))
+            self.health_image = HealthBar.health_image_green
         else:
-            self.health_image = Image.open(os.path.join(settings.MODELS_DIR, "health_bar_cell_neutral.png"))
+            self.health_image = HealthBar.health_image_neutral
         self._cell_width, self._cell_height = self.damage_image.size
         self.image = None
         self.bar_width = 0
@@ -253,11 +256,11 @@ class HealthBar(pygame.sprite.Sprite):
 
 
 class CannonBar(pygame.sprite.Sprite):
+    empty_image = Image.open(os.path.join(settings.MODELS_DIR, "cannon_bar_cell_empty.png"))
+    cannon_image = Image.open(os.path.join(settings.MODELS_DIR, "cannon_bar_cell.png"))
     def __init__(self, model):
         pygame.sprite.Sprite.__init__(self)
         self.model = model
-        self.empty_image = Image.open(os.path.join(settings.MODELS_DIR, "cannon_bar_cell_empty.png"))
-        self.cannon_image = Image.open(os.path.join(settings.MODELS_DIR, "cannon_bar_cell.png"))
         self._cell_width, self._cell_height = self.empty_image.size
         self.image = None
         self.bar_width = 0
@@ -292,10 +295,10 @@ class CannonBar(pygame.sprite.Sprite):
 
 
 class TargetBar(pygame.sprite.Sprite):
+    target_image = Image.open(os.path.join(settings.MODELS_DIR, "target_bar_cell.png"))
     def __init__(self, model):
         pygame.sprite.Sprite.__init__(self)
         self.model = model
-        self.target_image = Image.open(os.path.join(settings.MODELS_DIR, "target_bar_cell.png"))
         self._cell_width, self._cell_height = self.target_image.size
         self.image = None
         self.bar_width = 0
