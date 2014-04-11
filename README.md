@@ -20,7 +20,6 @@ Run / Запуск игры
 ####Linux users / Для Linux:  
 ```bash
 pip install pytmx
-pip install numpy
 pip install pygame
 pip install Pillow
 ```
