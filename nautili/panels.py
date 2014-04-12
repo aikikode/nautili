@@ -90,8 +90,8 @@ class RightPanel(Panel):
         self.game.drop_selection()
         self.get_wind_button.disable()
         self.shoot_label.set_text("")
-        self.game.wind_type = random.sample(wind.WIND_TYPES, 1)[0]
-        self.game.wind_direction = random.sample(wind.WIND_DIRECTIONS, 1)[0]
+        self.game.wind_type = wind.get_random_wind()
+        self.game.wind_direction = wind.get_random_direction()
         if self.game.wind_type == wind.WIND:
             self.wind_label.set_text("{}".format(wind.wind_direction_to_str(self.game.wind_direction)))
         else:

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import pygame
-import random
 from nautili.layers import LayersHandler
 from nautili import colors
 
@@ -45,12 +44,6 @@ class IsometricRenderer(Renderer):
     def clear(self):
         Renderer.clear(self)
         self._lines = []
-
-    def add_line(self, (x0, y0), (x1, y1)):
-        (x0, y0) = (x0 + 32, y0 + 32)
-        (x1, y1) = (x1 + 32, y1 + 32)
-        noise = 20 * random.random() - 10
-        self._lines.append(((x0 + noise, y0 + noise), (x1, y1)))
 
     def draw_lines(self):
         for line in self._lines:
