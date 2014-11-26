@@ -19,9 +19,9 @@ Run / Запуск игры
 ###Install dependencies / Установите необходимые зависимости  
 ####Linux users / Для Linux:  
 ```bash
-pip install pytmx
-pip install pygame
-pip install Pillow
+sudo apt-get install python-pygame
+sudo apt-get install python-pip
+sudo pip install -r requirements.txt
 ```
 ####Windows users / Для Windows  
 #####x32 system / 32-разрядная система:

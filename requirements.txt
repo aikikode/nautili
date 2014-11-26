@@ -1,0 +1,3 @@
+pygame==1.9.1release
+Pillow==2.6.1
+PyTMX==2.16.2
