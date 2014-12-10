@@ -1,10 +1,10 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Helper module holding wind types and directions
 """
-import random
 
-__author__ = 'aikikode'
+import random
 
 STILLE = 0
 WIND = 1

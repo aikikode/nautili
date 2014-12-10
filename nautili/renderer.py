@@ -1,9 +1,10 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import pygame
+
 from nautili.layers import LayersHandler
 from nautili import colors
-
-__author__ = 'aikikode'
 
 
 class Renderer(object):

@@ -1,7 +1,10 @@
 #!/usr/bin/env python
-from pytmx import tmxloader
-import pickle
+# -*- coding: utf-8 -*-
+
 import time
+
+from pytmx.util_pygame import load_pygame
+import pickle
 
 from menus import PauseMenu, GameMenu
 from nautili import colors
@@ -12,9 +15,6 @@ from layers import LayersHandler
 from settings import *
 
 
-__author__ = 'aikikode'
-
-
 class Game(object):
     def __init__(self, map_filename, saved_game=None):
         pygame.init()
@@ -23,8 +23,10 @@ class Game(object):
         self.player = PLAYER1
         self.map_filename = map_filename
         try:
-            self.layers_handler = lh = LayersHandler(tmxloader.load_pygame(os.path.join(MAP_DIR, map_filename + ".tmx"), pixelalpha=True))
-        except Exception:
+            self.layers_handler = lh = LayersHandler(
+                load_pygame(os.path.join(MAP_DIR, map_filename + ".tmx"))
+            )
+        except Exception as ex:
             print "Unable to read map data. Possibly messed up layers."
             raise ValueError
         # Background
@@ -377,7 +379,7 @@ class Game(object):
                                         'name': self.selected_ship.model.replace('_', ' ').capitalize(),
                                         'fire_range': self.selected_ship.fire_range})
                                 self.right_panel.shoot_label.set_text("")
-                                #print "Object {} clicked".format(selected_ship)
+                                # print "Object {} clicked".format(self.selected_ship)
                                 if self.selected_ship.is_alive():
                                     shots = self.selected_ship.calculate_shots(
                                         obstacles=self.layers_handler.shoot_obstacles)

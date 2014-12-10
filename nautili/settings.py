@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-import os
-import pygame
+# -*- coding: utf-8 -*-
 
-__author__ = 'aikikode'
+import os
+
+import pygame
 
 try:
     infoObject = pygame.display.Info()

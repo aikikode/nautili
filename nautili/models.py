@@ -1,15 +1,17 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Ships, ports, etc.
 """
+
 from collections import Counter
 import os
-import pygame
 import math
-from PIL import Image
-from nautili import wind, settings
 
-__author__ = 'aikikode'
+import pygame
+from PIL import Image
+
+from nautili import wind, settings
 
 
 def clear_image(image):

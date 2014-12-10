@@ -1,12 +1,19 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import os
-import pygame
 import shutil
+
+import pygame
 from PIL import Image
+
 from nautili import colors
 from nautili.hud import Button, Label
-from nautili.settings import DISPLAY, WIN_HEIGHT, WIN_WIDTH, MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT, TMP_DIR, HUD_DIR, MISC_DIR, \
-    MAP_DIR, SAVED_GAMES_DIR
+from nautili.settings import (
+    DISPLAY, WIN_HEIGHT, WIN_WIDTH, MAIN_WIN_WIDTH,
+    MAIN_WIN_HEIGHT, TMP_DIR, HUD_DIR, MISC_DIR,
+    MAP_DIR, SAVED_GAMES_DIR,
+)
 
 __author__ = 'aikikode'
 

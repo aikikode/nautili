@@ -1,12 +1,13 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Tiled maps handlers: read layers, objects
 """
+
 import pygame
+
 from nautili.models import Ship, Port, RoyalPort
 from nautili.textures import Sea, Island, Rock
-
-__author__ = 'aikikode'
 
 
 class LayersHandler(object):
@@ -59,7 +60,7 @@ class LayersHandler(object):
         res = [[None for _ in xrange(0, self.tiledmap.height)] for _ in xrange(0, self.tiledmap.width)]
         for y in xrange(0, self.tiledmap.height):
             for x in xrange(0, self.tiledmap.width):
-                tile = self.tiledmap.getTileImage(x, y, layer_num)
+                tile = self.tiledmap.get_tile_image(x, y, layer_num)
                 if tile:
                     ort_x, ort_y = self.isometric_to_orthogonal(x, y)
                     res[x][y] = classname(tile, x, y, pygame.Rect((ort_x + 16, ort_y + 30), (32, 20)))
@@ -71,7 +72,7 @@ class LayersHandler(object):
         for obj in objects:
             # convert to global coords:
             player = object_name.split('_')[-1]
-            res.append(classname(self, player=player, *self.tile_to_isometric(obj.x, obj.y), **obj.__dict__))
+            res.append(classname(self, player=player, *self.tile_to_isometric(obj.x, obj.y), **obj.properties))
         return res
 
     def get_all_sprites(self):
@@ -117,7 +118,7 @@ class LayersHandler(object):
 
     def tile_to_isometric(self, x, y):
         tw = self.tiledmap.tilewidth
-        return (x - 1) / (tw / 2), (y - 1) / (tw / 2)
+        return int((2 * x) / tw) - 1, int((2 * y) / tw) + 1
 
     @staticmethod
     def filter_layer(layer_table, coords_list):

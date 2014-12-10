@@ -1,11 +1,12 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Base HUD elements: buttons, labels, etc.
 """
-import pygame
-from nautili import colors
 
-__author__ = 'aikikode'
+import pygame
+
+from nautili import colors
 
 
 class HudElement(pygame.sprite.Sprite):

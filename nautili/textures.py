@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-import pygame
+# -*- coding: utf-8 -*-
 
-__author__ = 'aikikode'
+import pygame
 
 
 class BaseTexture(object):

@@ -1,8 +1,10 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import os
-import pygame
 import random
 
+import pygame
 import pygame.gfxdraw
 
 from hud import Button, Label, HudElement
@@ -11,9 +13,6 @@ from nautili import colors
 from renderer import Renderer
 import settings
 import wind
-
-
-__author__ = 'aikikode'
 
 
 class Panel(object):
