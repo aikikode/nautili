@@ -6,13 +6,13 @@ import time
 from pytmx.util_pygame import load_pygame
 import pickle
 
-from menus import PauseMenu, GameMenu
+from nautili.menus import PauseMenu, GameMenu
 from nautili import colors
 from nautili.models import Ship, Port
-from panels import RightPanel, TopPanel, MiniMap
-from renderer import IsometricRenderer
-from layers import LayersHandler
-from settings import *
+from nautili.panels import RightPanel, TopPanel, MiniMap
+from nautili.renderer import IsometricRenderer
+from nautili.layers import LayersHandler
+from nautili.settings import *
 
 
 class Game(object):
@@ -27,7 +27,7 @@ class Game(object):
                 load_pygame(os.path.join(MAP_DIR, map_filename + ".tmx"))
             )
         except Exception as ex:
-            print "Unable to read map data. Possibly messed up layers."
+            print("Unable to read map data. Possibly messed up layers.")
             raise ValueError
         # Background
         self.bg_surface = pygame.Surface((MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT), pygame.SRCALPHA).convert_alpha()
@@ -53,7 +53,7 @@ class Game(object):
         try:
             self.load_game(saved_game)
         except IOError:
-            print "Couldn't load the game"
+            print("Couldn't load the game")
         #
         self.top_panel = TopPanel(self, (0, 0), (TOP_PANEL_WIDTH, TOP_PANEL_HEIGHT))
         self.all_sprites = lh.get_all_sprites()
@@ -64,7 +64,7 @@ class Game(object):
         self.yellow_ports = lh.yellow_ports
         self.green_ports = lh.green_ports
         self.ports = lh.ports
-        self.neutral_ports = filter(lambda s: s.player == NEUTRAL_PLAYER, self.ports)
+        self.neutral_ports = list(filter(lambda s: s.player == NEUTRAL_PLAYER, self.ports))
         self.yellow_royal_ports = lh.yellow_royal_ports
         self.green_royal_ports = lh.green_royal_ports
         self.royal_ports = lh.royal_ports
@@ -76,8 +76,8 @@ class Game(object):
         self.map_width, self.map_height = self.layers_handler.get_map_dimensions()
         # Move camera to first yellow royal port
         yellow_port = self.yellow_royal_ports[0]
-        port_coords = map(lambda x: -x, self.layers_handler.isometric_to_orthogonal(*yellow_port.coords()))
-        self.move_camera((port_coords[0] + MAIN_WIN_WIDTH / 2, port_coords[1] + MAIN_WIN_HEIGHT / 2))
+        port_coords = [-x for x in self.layers_handler.isometric_to_orthogonal(*yellow_port.coords())]
+        self.move_camera((port_coords[0] + MAIN_WIN_WIDTH // 2, port_coords[1] + MAIN_WIN_HEIGHT // 2))
         #
         self._cursor_default = pygame.mouse.get_cursor()
         self._cursor_close_hand = self._cursor_default
@@ -171,13 +171,13 @@ class Game(object):
         # Repair own ports
         for port in ports:
             # 3 ships are necessary to repair 2 points of port armor
-            if len(filter(lambda ship: ship.skipped_turn() and ship.coords() in port.get_dock(), ships)) > 2:
+            if len([ship for ship in ships if ship.skipped_turn() and ship.coords() in port.get_dock()]) > 2:
                 port.repair(2)
         # Repair neutral ports
         for port in self.neutral_ports:
             # 3 ships are necessary to repair 2 points of port armor
-            if len(filter(lambda ship: ship.skipped_turn() and ship.coords() in port.get_dock(), ships)) > 2 and \
-                            len(filter(lambda ship: ship.coords() in port.get_dock(), enemy_ships)) == 0:
+            if len([ship for ship in ships if ship.skipped_turn() and ship.coords() in port.get_dock()]) > 2 and \
+                            len([ship for ship in enemy_ships if ship.coords() in port.get_dock()]) == 0:
                 port.repair(2)
                 if port.is_alive():
                     port.set_player(self.player)
@@ -185,14 +185,14 @@ class Game(object):
                     self.update_player_models()
         # Capture enemy royal port...
         for port in enemy_royal_ports:
-            if len(filter(lambda ship: ship.skipped_turn() and ship.coords() in port.get_dock(), ships)) > 0:
+            if len([ship for ship in ships if ship.skipped_turn() and ship.coords() in port.get_dock()]) > 0:
                 port.take_damage(1)
                 self.update_player_models()
             else:
                 port.repair(port.base_armor)
         # ...and see whether this turn was the last for us to kill the ship that is capturing our royal port:
         for port in royal_ports:
-            if len(filter(lambda ship: ship.coords() in port.get_dock(), enemy_ships)) > 0 and port.armor == 1:
+            if len([ship for ship in enemy_ships if ship.coords() in port.get_dock()]) > 0 and port.armor == 1:
                 port.take_damage(1)
                 self.update_player_models()
         self.player = next_player
@@ -236,14 +236,14 @@ class Game(object):
             ships_to_move = self.yellow_ships
         else:
             ships_to_move = self.green_ships
-        for x in xrange(0, self.max_storm_move()):
+        for x in range(0, self.max_storm_move()):
             for ship in ships_to_move:
                 if ship.coords() not in self.layers_handler.docks_coords:  # Do not move ships that are in ports
                     ship.calculate_moves(self.wind_type, self.wind_direction,
                                          obstacles=self.layers_handler.storm_move_obstacles +
-                                                   map(lambda s: s.coords(), self.ships) +
-                                                   map(lambda p: p.coords(), self.ports) +
-                                                   map(lambda p: p.coords(), self.royal_ports) +
+                                                   [s.coords() for s in self.ships] +
+                                                   [p.coords() for p in self.ports] +
+                                                   [p.coords() for p in self.royal_ports] +
                                                    self.get_docks_obstacles(),
                                          docks=self.layers_handler.docks_coords,
                                          step=1)
@@ -252,13 +252,13 @@ class Game(object):
         self.update_player_models()
 
     def update_player_models(self):
-        self.yellow_ports = filter(lambda s: s.is_alive() and s.player == PLAYER1, self.ports)
-        self.green_ports = filter(lambda s: s.is_alive() and s.player == PLAYER2, self.ports)
-        self.neutral_ports = filter(lambda s: s.player == NEUTRAL_PLAYER, self.ports)
-        self.yellow_royal_ports = filter(lambda s: s.is_alive(), self.yellow_royal_ports)
-        self.green_royal_ports = filter(lambda s: s.is_alive(), self.green_royal_ports)
-        self.yellow_ships = filter(lambda s: s.is_alive(), self.yellow_ships)
-        self.green_ships = filter(lambda s: s.is_alive(), self.green_ships)
+        self.yellow_ports = list(filter(lambda s: s.is_alive() and s.player == PLAYER1, self.ports))
+        self.green_ports = list(filter(lambda s: s.is_alive() and s.player == PLAYER2, self.ports))
+        self.neutral_ports = list(filter(lambda s: s.player == NEUTRAL_PLAYER, self.ports))
+        self.yellow_royal_ports = list(filter(lambda s: s.is_alive(), self.yellow_royal_ports))
+        self.green_royal_ports = list(filter(lambda s: s.is_alive(), self.green_royal_ports))
+        self.yellow_ships = list(filter(lambda s: s.is_alive(), self.yellow_ships))
+        self.green_ships = list(filter(lambda s: s.is_alive(), self.green_ships))
         self.ships = self.yellow_ships + self.green_ships
         self.update_player_docks()
 
@@ -365,7 +365,7 @@ class Game(object):
                                     self.right_panel.set_model()
                                     self.selected_ship.unselect()
                                 self.selected_ship = \
-                                    filter(lambda obj: obj.coords() == (clicked.coords()), allowed_to_select)[0]
+                                    list(filter(lambda obj: obj.coords() == (clicked.coords()), allowed_to_select))[0]
                                 self.selected_ship.select()
                                 try:
                                     self.right_panel.set_model(model=self.selected_ship.model, properties={
@@ -391,9 +391,9 @@ class Game(object):
                                             calculate_moves(self.wind_type,
                                                             self.wind_direction,
                                                             obstacles=self.layers_handler.move_obstacles +
-                                                                      map(lambda x: x.coords(), self.ships) +
-                                                                      map(lambda x: x.coords(), self.ports) +
-                                                                      map(lambda x: x.coords(), self.royal_ports) +
+                                                                      [x.coords() for x in self.ships] +
+                                                                      [x.coords() for x in self.ports] +
+                                                                      [x.coords() for x in self.royal_ports] +
                                                                       self.get_docks_obstacles(),
                                                             docks=self.layers_handler.docks_coords)
                                     except AttributeError:
@@ -417,7 +417,7 @@ class Game(object):
                         else:
                             try:
                                 targets = self.ships + self.ports
-                                target_ship = filter(lambda obj: obj.coords() == (clicked.coords()), targets)[0]
+                                target_ship = list(filter(lambda obj: obj.coords() == (clicked.coords()), targets))[0]
                                 if self.selected_ship and self.selected_ship != target_ship:
                                     if self.selected_ship.aim(target_ship):
                                         self.target_ships.append(target_ship)
@@ -426,7 +426,7 @@ class Game(object):
                 if drag_mode:
                     cur_mouse_pos = pygame.mouse.get_pos()
                     if cur_mouse_pos != previous_mouse_pos:
-                        self.move_camera(map(lambda x, y: x - y, cur_mouse_pos, previous_mouse_pos))
+                        self.move_camera(tuple(x - y for x, y in zip(cur_mouse_pos, previous_mouse_pos)))
                         previous_mouse_pos = cur_mouse_pos
             # Process HUD mouse over
             right_panel.mouse_over(pygame.mouse.get_pos())

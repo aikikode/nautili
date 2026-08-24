@@ -117,7 +117,7 @@ class Model(pygame.sprite.Sprite):
             else:
                 return 0
         moves = []  # moves are just example, we use it to calculate all types of actions: moves, shots, etc.
-        for delta in xrange(1, limit + 1):
+        for delta in range(1, limit + 1):
             moves.append((self.x, self.y + delta))
             moves.append((self.x, self.y - delta))
             moves.append((self.x + delta, self.y))
@@ -133,9 +133,9 @@ class Model(pygame.sprite.Sprite):
                                 movey < 0 or \
                                 move in obstacles:
                     deltax = movex - self.x
-                    stepx = deltax / abs(deltax) if deltax else 0
+                    stepx = deltax // abs(deltax) if deltax else 0
                     deltay = movey - self.y
-                    stepy = deltay / abs(deltay) if deltay else 0
+                    stepy = deltay // abs(deltay) if deltay else 0
                     if (movex, movey) in moves: moves.remove((movex, movey))
                     try:
                         while abs(stepx) + abs(stepy) <= 2 * (limit + 1):
@@ -166,7 +166,7 @@ class Model(pygame.sprite.Sprite):
             if self._targets and target in self._targets:
                 c = Counter(self._targets)
                 self.shots_left += c[target]
-                self._targets = filter(lambda t: t != target, self._targets)
+                self._targets = list(filter(lambda t: t != target, self._targets))
                 target.unset_aimed(c[target])
                 self.cannon_bar.draw()
             return False
@@ -240,15 +240,15 @@ class HealthBar(pygame.sprite.Sprite):
         if not os.path.exists(out_fname):
             blank_image = Image.new("RGBA", (64, self._cell_height), None)
             clear_image(blank_image)
-            for x in xrange(self.model.armor):
+            for x in range(self.model.armor):
                 blank_image.paste(self.health_image, (self._cell_width * x, 0), self.health_image)
-            for x in xrange(self.model.armor, self.model.base_armor):
+            for x in range(self.model.armor, self.model.base_armor):
                 blank_image.paste(self.damage_image, (self._cell_width * x, 0), self.damage_image)
             blank_image.save(out_fname)
         self.image = pygame.image.load(out_fname).convert_alpha()
         tile_width = 64  # TODO: remove hardcode value
         self.bar_width = self._cell_width * self.model.base_armor
-        self._delta = (tile_width - self.bar_width) / 2
+        self._delta = (tile_width - self.bar_width) // 2
         self.move()
 
     def move(self):
@@ -279,9 +279,9 @@ class CannonBar(pygame.sprite.Sprite):
         if not os.path.exists(out_fname):
             blank_image = Image.new("RGBA", (64, self._cell_height), None)
             clear_image(blank_image)
-            for x in xrange(self.model.shots_left):
+            for x in range(self.model.shots_left):
                 blank_image.paste(self.cannon_image, (self._cell_width * x, 0), self.cannon_image)
-            for x in xrange(self.model.shots_left, self.model.shots_count):
+            for x in range(self.model.shots_left, self.model.shots_count):
                 blank_image.paste(self.empty_image, (self._cell_width * x, 0), self.empty_image)
             blank_image.save(out_fname)
         self.image = pygame.image.load(out_fname).convert_alpha()
@@ -316,7 +316,7 @@ class TargetBar(pygame.sprite.Sprite):
             if not os.path.exists(out_fname):
                 blank_image = Image.new("RGBA", (self._cell_width * 8, self._cell_height), None)
                 clear_image(blank_image)
-                for x in xrange(self.model.aimed_count):
+                for x in range(self.model.aimed_count):
                     blank_image.paste(self.target_image, (self._cell_width * x, 0), self.target_image)
                 blank_image.save(out_fname)
             self.image = pygame.image.load(out_fname).convert_alpha()
@@ -379,7 +379,8 @@ class Ship(Model):
         self._storm_moves_left = self.storm_move
         self._has_moved = False
 
-    def move(self, (x, y)=(None, None)):
+    def move(self, xy=(None, None)):
+        x, y = xy
         if self._has_moved:
             return False
         if (x, y) in self.possible_moves:
@@ -394,9 +395,8 @@ class Ship(Model):
                 return False
         else:
             return False
-        self.rect.topleft = map(lambda offset, self_coord: offset + self_coord,
-                                self.offset,
-                                self.layers_handler.isometric_to_orthogonal(self.x, self.y))
+        self.rect.topleft = tuple(offset + self_coord for offset, self_coord in
+                                  zip(self.offset, self.layers_handler.isometric_to_orthogonal(self.x, self.y)))
         self.health_bar.move()
         self.cannon_bar.move()
         self.target_bar.move()
@@ -405,7 +405,9 @@ class Ship(Model):
         self.aim_reset()
         return True
 
-    def calculate_moves(self, wind_type, wind_direction, obstacles=[], step=None, docks=[]):
+    def calculate_moves(self, wind_type, wind_direction, obstacles=None, step=None, docks=None):
+        obstacles = list(obstacles) if obstacles is not None else []
+        docks = docks if docks is not None else []
         def rotate(axis, obj):
             """
             Rotate object with obj coords around the axis, getting closer and closer to the axis with each step till pi
@@ -413,10 +415,11 @@ class Ship(Model):
             """
             res = [obj]
             arr = []
-            for x in xrange(1, 8):
+            for x in range(1, 8):
                 arr.append((x, self.max_move - (8 - x if x > 4 else x) + 1))
-            sector = (math.atan2(*map(lambda x, y: x - y, obj, axis)[::-1]) / math.pi * 4) % 8
-            arr = map(lambda x: ((x[0] + sector) % 8, x[1] if x[1] > 0 else 1), arr)
+            diff = [x - y for x, y in zip(obj, axis)]
+            sector = (math.atan2(*diff[::-1]) / math.pi * 4) % 8
+            arr = [((x[0] + sector) % 8, x[1] if x[1] > 0 else 1) for x in arr]
             for el in arr:
                 if el[0] == 0:
                     res.append((axis[0] + el[1], axis[1]))
@@ -441,7 +444,7 @@ class Ship(Model):
 
         def get_dock_moves():
             if is_in_port():
-                return filter(lambda dock: max(abs(self.x - dock[0]), abs(self.y - dock[1])) == 1, docks)
+                return list(filter(lambda dock: max(abs(self.x - dock[0]), abs(self.y - dock[1])) == 1, docks))
             return []
 
         if self._has_moved or wind_type not in [wind.STILLE, wind.WIND, wind.STORM]:
@@ -453,7 +456,7 @@ class Ship(Model):
             if not is_in_port():
                 obstacles += docks
                 max_move = step if step else self.storm_move
-                for delta in xrange(1, max_move + 1):
+                for delta in range(1, max_move + 1):
                     if wind_direction == wind.NORTH:
                         next_move = (self.x - delta, self.y - delta)
                     if wind_direction == wind.EAST:
@@ -518,7 +521,7 @@ class Port(Model):
         Model.__init__(self, layers_handler, isom_x, isom_y, model, player, base_armor, fire_range, shots_count)
 
     def get_dock(self):
-        return [(self.x + delta_x, self.y + delta_y) for delta_x in xrange(-1, 2) for delta_y in xrange(-1, 2) if
+        return [(self.x + delta_x, self.y + delta_y) for delta_x in range(-1, 2) for delta_y in range(-1, 2) if
                 abs(delta_x) + abs(delta_y) != 0]
 
     def set_player(self, player):

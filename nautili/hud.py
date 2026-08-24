@@ -12,7 +12,7 @@ from nautili import colors
 class HudElement(pygame.sprite.Sprite):
     def __init__(self, pos, offset):
         pygame.sprite.Sprite.__init__(self)
-        self.pos = map(lambda x, y: x + y, pos, offset)
+        self.pos = tuple(x + y for x, y in zip(pos, offset))
 
     def draw(self):
         pass
@@ -99,4 +99,4 @@ class Label(HudElement):
         Center the label inside the width panel
         """
         text_width = self.font.size(self.text)[0]
-        self.rect.topleft = (self.pos[0] + (width - text_width) / 2, self.pos[1])
+        self.rect.topleft = (self.pos[0] + (width - text_width) // 2, self.pos[1])

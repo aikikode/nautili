@@ -7,12 +7,12 @@ import random
 import pygame
 import pygame.gfxdraw
 
-from hud import Button, Label, HudElement
-from layers import LayersHandler
+from nautili.hud import Button, Label, HudElement
+from nautili.layers import LayersHandler
 from nautili import colors
-from renderer import Renderer
-import settings
-import wind
+from nautili.renderer import Renderer
+from nautili import settings
+from nautili import wind
 
 
 class Panel(object):
@@ -65,7 +65,7 @@ class RightPanel(Panel):
         self.shoot_label = Label(label_font, colors.WHITE, "", (10, 110), offset=offset)
         self.object_info_panel = ObjectInfo(game,
                                             (offset[0], offset[1] + 150),
-                                            (self.width, self.height / 2))
+                                            (self.width, self.height // 2))
         self.end_move_button = Button(button_font, "End turn (Enter)", (10, self.height - 30),
                                       offset=offset,
                                       on_click=self.end_move)
@@ -116,7 +116,7 @@ class RightPanel(Panel):
             targets_to_shoot = self.game.yellow_ships + self.game.yellow_ports
         else:
             targets_to_shoot = self.game.green_ships + self.game.green_ports
-        targets_to_shoot = filter(lambda s: s.has_targets(), targets_to_shoot)
+        targets_to_shoot = list(filter(lambda s: s.has_targets(), targets_to_shoot))
         for target in targets_to_shoot:
             target.shoot(not miss)
         if targets_to_shoot:
@@ -142,10 +142,10 @@ class TopPanel(Panel):
         self.turn_label = Label(label_header_font,
                                 colors.YELLOW if self.game.player == settings.PLAYER1 else colors.GREEN,
                                 "{} player turn".format(self.game.player.capitalize()), (10, 10))
-        self.yellow_label = Label(label_font, colors.YELLOW, "Yellow", (self.width / 2 - 300, 15))
-        self.yellow_counts = Label(label_font, colors.YELLOW, "ships: 0  ports: 0", (self.width / 2 - 240, 15))
-        self.green_label = Label(label_font, colors.GREEN, "Green", (self.width / 2 + 90, 15))
-        self.green_counts = Label(label_font, colors.GREEN, "ships: 0  ports: 0", (self.width / 2 + 150, 15))
+        self.yellow_label = Label(label_font, colors.YELLOW, "Yellow", (self.width // 2 - 300, 15))
+        self.yellow_counts = Label(label_font, colors.YELLOW, "ships: 0  ports: 0", (self.width // 2 - 240, 15))
+        self.green_label = Label(label_font, colors.GREEN, "Green", (self.width // 2 + 90, 15))
+        self.green_counts = Label(label_font, colors.GREEN, "ships: 0  ports: 0", (self.width // 2 + 150, 15))
         self.objects.append(self.turn_label)
         self.objects.append(self.yellow_label)
         self.objects.append(self.yellow_counts)
@@ -168,17 +168,17 @@ class MiniMap(Panel):
         self.scale = max(orig_map_width / float(self.width), orig_map_height / float(self.height))
         self.map_offset = ((self.width - orig_map_width / self.scale) / 2,
                            (self.height - orig_map_height / self.scale) / 2)
-        self.sea_polygon = map(lambda p: (p[0] / self.scale + self.map_offset[0],
-                                          p[1] / self.scale + self.map_offset[1]),
-                               orig_map_polygon)
+        self.sea_polygon = [(p[0] / self.scale + self.map_offset[0],
+                            p[1] / self.scale + self.map_offset[1])
+                           for p in orig_map_polygon]
         self.cam_width = settings.MAIN_WIN_WIDTH / self.scale
         self.cam_height = settings.MAIN_WIN_HEIGHT / self.scale
 
     def draw_layer(self, layer, color):
         for tile in LayersHandler.filter_not_none(LayersHandler.flatten(layer)):
             pygame.draw.circle(self.hud_surface, color,
-                               map(lambda x, offs: int(x / self.scale + offs),
-                                   self.game.layers_handler.isometric_to_orthogonal(*tile.coords()), self.map_offset),
+                               tuple(int(x / self.scale + offs) for x, offs in
+                                     zip(self.game.layers_handler.isometric_to_orthogonal(*tile.coords()), self.map_offset)),
                                1)
 
     def draw(self):
@@ -197,7 +197,8 @@ class MiniMap(Panel):
         self.draw_layer(self.game.green_ports, colors.YELLOW_GREEN)
         self.draw_layer(self.game.green_royal_ports, colors.LIGHT_LIGHT_BLUE)
         # Draw camera rectangle
-        camera_offset = map(lambda p, offs: p / -self.scale + offs, self.game.get_camera_offset(), self.map_offset)
+        camera_offset = tuple(p / -self.scale + offs for p, offs in
+                              zip(self.game.get_camera_offset(), self.map_offset))
         cam_rect = pygame.Rect(camera_offset, (self.cam_width, self.cam_height))
         pygame.draw.rect(self.hud_surface, colors.WHITE, cam_rect, 1)
         pygame.draw.rect(self.hud_surface, colors.WHITE, self.border, 1)
@@ -207,13 +208,13 @@ class MiniMap(Panel):
 
     def check_click(self, event_position):
         if self.rect.collidepoint(event_position):
-            current_camera_offset = map(lambda p, offs: p / -self.scale + offs,
-                                        self.game.get_camera_offset(),
-                                        self.map_offset)
-            mouse_minimap_coordinates = map(lambda x, y: x - y, event_position, self.offset)
+            current_camera_offset = tuple(p / -self.scale + offs for p, offs in
+                                          zip(self.game.get_camera_offset(), self.map_offset))
+            mouse_minimap_coordinates = tuple(x - y for x, y in zip(event_position, self.offset))
             new_camera_offset = (mouse_minimap_coordinates[0] - self.cam_width / 2,
                                  mouse_minimap_coordinates[1] - self.cam_height / 2)
-            self.game.move_camera(map(lambda x, y: (x - y) * self.scale, current_camera_offset, new_camera_offset))
+            self.game.move_camera(tuple((x - y) * self.scale for x, y in
+                                        zip(current_camera_offset, new_camera_offset)))
             return True
 
 

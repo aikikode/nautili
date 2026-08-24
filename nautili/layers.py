@@ -30,11 +30,11 @@ class LayersHandler(object):
                 self.sea,
                 self.rocks),
             self.islands)
-        self.shoot_obstacles = map(lambda island: island.coords(),
-                                   LayersHandler.filter_not_none(LayersHandler.flatten(self.islands)))
+        self.shoot_obstacles = [island.coords() for island in
+                                LayersHandler.filter_not_none(LayersHandler.flatten(self.islands))]
         self.storm_move_obstacles = self.shoot_obstacles
-        self.deadly_obstacles = map(lambda rock: rock.coords(),
-                                    LayersHandler.filter_not_none(LayersHandler.flatten(self.rocks)))
+        self.deadly_obstacles = [rock.coords() for rock in
+                                 LayersHandler.filter_not_none(LayersHandler.flatten(self.rocks))]
         self.move_obstacles = self.storm_move_obstacles + self.deadly_obstacles
         self.yellow_ships = self.get_objects("ships_yellow", Ship)
         self.green_ships = self.get_objects("ships_green", Ship)
@@ -49,17 +49,17 @@ class LayersHandler(object):
         docks_coords = []
         for port in self.ports + self.royal_ports:
             docks_coords.extend(port.get_dock())
-        for x in xrange(0, len(docks)):
-            for y in xrange(0, len(docks[x])):
+        for x in range(0, len(docks)):
+            for y in range(0, len(docks[x])):
                 if docks[x][y].coords() not in docks_coords:
                     docks[x][y] = None
         self.docks = docks
         self.docks_coords = docks_coords
 
     def get_layer_tiles(self, layer_num, classname):
-        res = [[None for _ in xrange(0, self.tiledmap.height)] for _ in xrange(0, self.tiledmap.width)]
-        for y in xrange(0, self.tiledmap.height):
-            for x in xrange(0, self.tiledmap.width):
+        res = [[None for _ in range(0, self.tiledmap.height)] for _ in range(0, self.tiledmap.width)]
+        for y in range(0, self.tiledmap.height):
+            for x in range(0, self.tiledmap.width):
                 tile = self.tiledmap.get_tile_image(x, y, layer_num)
                 if tile:
                     ort_x, ort_y = self.isometric_to_orthogonal(x, y)
@@ -68,7 +68,7 @@ class LayersHandler(object):
 
     def get_objects(self, object_name, classname):
         res = []
-        objects = filter(lambda gr: gr.name == object_name, self.tiledmap.objectgroups)[0]
+        objects = list(filter(lambda gr: gr.name == object_name, self.tiledmap.objectgroups))[0]
         for obj in objects:
             # convert to global coords:
             player = object_name.split('_')[-1]
@@ -76,7 +76,7 @@ class LayersHandler(object):
         return res
 
     def get_all_sprites(self):
-        alive_ships = filter(lambda s: s.is_alive(), self.ships)
+        alive_ships = list(filter(lambda s: s.is_alive(), self.ships))
         ships_health_bars = [ship.health_bar for ship in alive_ships]
         ships_cannon_bars = [ship.cannon_bar for ship in alive_ships]
         ships_target_bars = [ship.target_bar for ship in alive_ships]
@@ -94,8 +94,8 @@ class LayersHandler(object):
         return LayersHandler.filter_not_none(LayersHandler.flatten(self.visible_sea))
 
     def isometric_to_orthogonal(self, x, y):
-        return (self.tiledmap.height + x - y - 1) * (self.tiledmap.tilewidth / 2), \
-               (x + y) * (self.tiledmap.tileheight / 2)
+        return (self.tiledmap.height + x - y - 1) * (self.tiledmap.tilewidth // 2), \
+               (x + y) * (self.tiledmap.tileheight // 2)
 
     def get_map_polygon(self):
         p0 = self.isometric_to_orthogonal(0, 0)
@@ -139,8 +139,8 @@ class LayersHandler(object):
         return map(lambda x, y: map(lambda a, b: a if b is None else None, x, y), l1, l2)
 
     @staticmethod
-    def filter_not_none(list):
-        return filter(lambda x: x is not None, list)
+    def filter_not_none(items):
+        return list(filter(lambda x: x is not None, items))
 
     @staticmethod
     def flatten(list_of_lists):

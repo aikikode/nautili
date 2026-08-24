@@ -1,3 +1,7 @@
+v0.2
+ - Port codebase from Python 2 to Python 3
+ - Switch to pygame-ce, and update Pillow and PyTMX to current releases
+
 v0.1.1
  New Features:
  - Add latest PyTMX (3.20.5) support

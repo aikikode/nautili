@@ -85,18 +85,18 @@ class MainMenu(BaseMainMenu):
         text = "New game"
         text_width = self.button_font.size(text)[0]
         self.new_game_button = Button(self.button_font, text,
-                                      ((self.width - text_width) / 2, self.height / 2 - 130),
+                                      ((self.width - text_width) // 2, self.height // 2 - 130),
                                       colors=(colors.BLACK, colors.WHITE),
                                       on_click=self.new_game)
         text = "Load game"
         text_width = self.button_font.size(text)[0]
         self.load_game_button = Button(self.button_font, text,
-                                       ((self.width - text_width) / 2, self.height / 2 - 60),
+                                       ((self.width - text_width) // 2, self.height // 2 - 60),
                                        colors=(colors.BLACK, colors.WHITE),
                                        on_click=self.load_game)
         text = "Exit"
         text_width = self.button_font.size(text)[0]
-        self.exit_button = Button(self.button_font, text, ((self.width - text_width) / 2, self.height / 2),
+        self.exit_button = Button(self.button_font, text, ((self.width - text_width) // 2, self.height // 2),
                                   colors=(colors.BLACK, colors.WHITE),
                                   on_click=self.exit)
         self.objects.append(self.new_game_button)
@@ -142,7 +142,7 @@ class LoadMapMenu(BaseMainMenu):
         text = "Choose the map"
         text_width = label_font.size(text)[0]
         label = Label(label_font, colors.BLACK, text,
-                      (((self.width / 3) - text_width) / 2, 80))
+                      (((self.width // 3) - text_width) // 2, 80))
         self.objects.append(label)
         self.read_map_dir()
 
@@ -152,7 +152,7 @@ class LoadMapMenu(BaseMainMenu):
         map_files.sort()
         for num, map_file in enumerate(map_files):
             text_width, text_height = self.button_font.size(map_file)
-            button = Button(self.button_font, map_file, (((self.width / 3) - text_width)/2 + (1 if num % 2 == 0 else 2)*self.width/3, 40 + (text_height*1.2)*(num / 2)),
+            button = Button(self.button_font, map_file, (((self.width // 3) - text_width)//2 + (1 if num % 2 == 0 else 2)*self.width//3, 40 + int(text_height*1.2)*(num // 2)),
                             colors=(colors.BLACK, colors.WHITE),
                             on_click=self.load_map, args=[map_file])
             self.objects.append(button)
@@ -180,14 +180,14 @@ class LoadMapMenu(BaseMainMenu):
                 last_obj = self.objects[-1]
                 if last_obj.pos[1] > self.height - 40:
                     for obj in self.objects:
-                        obj.pos = map(lambda x, y: x + y, obj.pos, (0, -scroll_step))
+                        obj.pos = tuple(x + y for x, y in zip(obj.pos, (0, -scroll_step)))
             if (e.type == pygame.KEYDOWN and (e.key == pygame.K_UP or e.key == pygame.K_w)) or\
                     (e.type == pygame.MOUSEBUTTONDOWN and e.button == 4):
                 # scroll up
                 first_obj = self.objects[1]
                 if first_obj.pos[1] < 120:
                     for obj in self.objects:
-                        obj.pos = map(lambda x, y: x + y, obj.pos, (0, scroll_step))
+                        obj.pos = tuple(x + y for x, y in zip(obj.pos, (0, scroll_step)))
         self.mouse_over(pygame.mouse.get_pos())
         return True
 
@@ -202,12 +202,12 @@ class LoadGameMenu(BaseMainMenu):
         text = "Choose the savegame"
         text_width = label_font.size(text)[0]
         label = Label(label_font, colors.BLACK, text,
-                      (((self.width / 3) - text_width) / 2, 80))
+                      (((self.width // 3) - text_width) // 2, 80))
         self.base_objects.append(label)
         text = "(Middle mouse click to delete a save)"
         text_width = mini_label_font.size(text)[0]
         label = Label(mini_label_font, colors.BLACK, text,
-                      (((self.width / 3) - text_width) / 2, 120))
+                      (((self.width // 3) - text_width) // 2, 120))
         self.base_objects.append(label)
         self.objects.extend(self.base_objects)
         self.read_savegame_dir()
@@ -218,7 +218,7 @@ class LoadGameMenu(BaseMainMenu):
         saved_games.sort()
         for num, saved_game in enumerate(saved_games):
             text_width, text_height = self.button_font.size(saved_game)
-            button = Button(self.button_font, saved_game, (((self.width / 3) - text_width)/2 + (1 if num % 2 == 0 else 2)*self.width/3, 40 + (text_height*1.2)*(num / 2)),
+            button = Button(self.button_font, saved_game, (((self.width // 3) - text_width)//2 + (1 if num % 2 == 0 else 2)*self.width//3, 40 + int(text_height*1.2)*(num // 2)),
                             colors=(colors.BLACK, colors.WHITE),
                             on_click=self.load_game, args=[saved_game])
             self.objects.append(button)
@@ -263,14 +263,14 @@ class LoadGameMenu(BaseMainMenu):
                 last_obj = self.objects[-1]
                 if last_obj.pos[1] > self.height - 40:
                     for obj in self.objects:
-                        obj.pos = map(lambda x, y: x + y, obj.pos, (0, -scroll_step))
+                        obj.pos = tuple(x + y for x, y in zip(obj.pos, (0, -scroll_step)))
             if (e.type == pygame.KEYDOWN and (e.key == pygame.K_UP or e.key == pygame.K_w)) or\
                     (e.type == pygame.MOUSEBUTTONDOWN and e.button == 4):
                 # scroll up
                 first_obj = self.objects[1]
                 if first_obj.pos[1] < 120:
                     for obj in self.objects:
-                        obj.pos = map(lambda x, y: x + y, obj.pos, (0, scroll_step))
+                        obj.pos = tuple(x + y for x, y in zip(obj.pos, (0, scroll_step)))
         self.mouse_over(pygame.mouse.get_pos())
         return True
 
@@ -289,13 +289,13 @@ class PauseMenu(Menu):
             label_font = pygame.font.Font(None, 50)
             text_width = label_font.size(text)[0]
             self.pause_label = Label(label_font, color, text,
-                                     ((MAIN_WIN_WIDTH - text_width) / 2, MAIN_WIN_HEIGHT / 2 - 90))
+                                     ((MAIN_WIN_WIDTH - text_width) // 2, MAIN_WIN_HEIGHT // 2 - 90))
             self.objects.append(self.pause_label)
         prompt_text = "Press Spacebar to continue"
         prompt_font = pygame.font.Font(None, 30)
         text_width = prompt_font.size(prompt_text)[0]
         prompt_label = Label(prompt_font, colors.WHITE, prompt_text,
-                             ((MAIN_WIN_WIDTH - text_width) / 2, MAIN_WIN_HEIGHT / 2 - 40))
+                             ((MAIN_WIN_WIDTH - text_width) // 2, MAIN_WIN_HEIGHT // 2 - 40))
         self.objects.append(prompt_label)
 
     def mouse_over(self, event_position):
@@ -349,13 +349,13 @@ class GameMenu(PauseMenu):
         text = "Save and exit"
         text_width = self.button_font.size(text)[0]
         self.save_game_button = Button(self.button_font, text,
-                                       ((self.width - text_width) / 2, self.height / 2 - 150),
+                                       ((self.width - text_width) // 2, self.height // 2 - 150),
                                        on_click=self.save_game)
         self.objects.append(self.save_game_button)
         text = "Exit without saving"
         text_width = self.button_font.size(text)[0]
         self.exit_game_button = Button(self.button_font, text,
-                                       ((self.width - text_width) / 2, self.height / 2 - 100),
+                                       ((self.width - text_width) // 2, self.height // 2 - 100),
                                        on_click=self.exit_game)
         self.objects.append(self.exit_game_button)
         step = 20
