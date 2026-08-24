@@ -53,7 +53,7 @@ class RightPanel(Panel):
     def __init__(self, game, offset, size):
         Panel.__init__(self, game, offset, size)
         button_font = pygame.font.Font(None, 35)
-        self.background = pygame.transform.scale(pygame.image.load(os.path.join("./data/hud", "shade.png")), size)
+        self.background = pygame.transform.scale(pygame.image.load(os.path.join(settings.HUD_DIR, "shade.png")), size)
         self.get_wind_button = Button(button_font, "Wind (Tab):", (10, 10),
                                       offset=offset,
                                       on_click=self.get_wind)

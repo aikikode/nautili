@@ -28,7 +28,7 @@ class Game(object):
             )
         except Exception as ex:
             print("Unable to read map data. Possibly messed up layers.")
-            raise ValueError
+            raise ValueError(str(ex)) from ex
         # Background
         self.bg_surface = pygame.Surface((MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT), pygame.SRCALPHA).convert_alpha()
         # Panel
@@ -52,7 +52,7 @@ class Game(object):
         # modifies game layers
         try:
             self.load_game(saved_game)
-        except IOError:
+        except (IOError, EOFError, pickle.UnpicklingError, AttributeError, IndexError):
             print("Couldn't load the game")
         #
         self.top_panel = TopPanel(self, (0, 0), (TOP_PANEL_WIDTH, TOP_PANEL_HEIGHT))

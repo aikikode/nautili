@@ -242,6 +242,7 @@ class LoadGameMenu(BaseMainMenu):
                     self.objects = []
                     self.objects.extend(self.base_objects)
                     self.read_savegame_dir()
+                    return
             except AttributeError:
                 pass
 
@@ -281,7 +282,7 @@ class PauseMenu(Menu):
         self.width, self.height = DISPLAY
         self.screen = screen
         self.bg_surface = pygame.Surface((WIN_WIDTH, WIN_HEIGHT), pygame.SRCALPHA).convert_alpha()
-        image = os.path.join("./data/hud", "shade.png")
+        image = os.path.join(HUD_DIR, "shade.png")
         self.bg_image = Image.open(image)
         self.pygame_bg_image = pygame.image.load(image)
         self.objects = []
